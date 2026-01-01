@@ -4,24 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VCL for PHP 2.0 is a Delphi-inspired Visual Component Library framework for PHP 5.x, developed by qadram software S.L. (2004-2008). It enables building web applications using a component-based paradigm similar to Delphi's VCL.
+VCL for PHP 2.0 is a Delphi-inspired Visual Component Library framework, originally developed by qadram software S.L. (2004-2008). It enables building web applications using a component-based paradigm similar to Delphi's VCL.
+
+**Branch `php84-migration`**: Modernized version compatible with PHP 7.4 - 8.4 and modern browsers.
 
 ## Development Environment
 
 ### Using DDEV (Recommended)
 ```bash
-ddev start              # Start PHP 5.6 + MySQL 5.5 containers
+ddev start              # Start containers (PHP 8.4 supported)
 ddev ssh                # Shell into web container
 ddev xdebug on          # Enable debugging
 ddev stop               # Stop containers
 ```
 Access at: `http://vcl.ddev.site`
-
-### Using Legacy Docker
-```bash
-docker-compose -f docker-compose.legacy-php56.yml up -d
-```
-Access at: `http://localhost:8080`
 
 ## Running Tests
 
@@ -40,7 +36,7 @@ Test configuration files:
 
 ### Class Hierarchy
 ```
-Object (system.inc.php)
+VCLObject (system.inc.php)  # Note: Named "Object" in legacy code, renamed for PHP 7.2+
   └── Persistent (classes.inc.php) - Session serialization
       └── Component (classes.inc.php) - Parent/child relationships
           ├── Control (controls.inc.php) - Visual elements
@@ -88,23 +84,40 @@ $control->Caption = "Text";
 $value = $control->Caption;
 ```
 
-### Component Creation
+### Component Creation (Programmatic)
+For programmatically created pages (without XML resource files), you **must** call `preinit()` and `init()` before `show()`:
+
 ```php
-require_once("vcl/vcl.inc.php");
+require_once("vcl.inc.php");
 use_unit("forms.inc.php");
 use_unit("stdctrls.inc.php");
 
-$Application = new Application();
-
 class MyPage extends Page {
-    function MyPageBeforeShow(&$sender, &$params) {
-        // Initialize
+    public $Button1 = null;
+
+    function __construct($aowner = null) {
+        parent::__construct($aowner);
+        $this->Name = "MyPage";  // Required! Prevents JS errors
+
+        $this->Button1 = new Button($this);
+        $this->Button1->Name = "Button1";
+        $this->Button1->Parent = $this;
+        $this->Button1->OnClick = "Button1Click";
+    }
+
+    function Button1Click($sender, $params) {
+        // Event handler
     }
 }
 
-$page = new MyPage(null);
+global $application;
+$page = new MyPage($application);
+$page->preinit();  // Reads form values from POST
+$page->init();     // Processes events, calls event handlers
 $page->show();
 ```
+
+**Critical**: Without `preinit()` and `init()`, form values won't be read and events won't fire!
 
 ### Session Persistence
 Components automatically serialize changed properties to `$_SESSION` at shutdown and restore them on subsequent requests. Only properties that differ from defaults are stored.
@@ -136,3 +149,24 @@ External library assets in: `qooxdoo/`, `dynapi/`, `xajax/`, `smarty/`, `libchar
 - Events are JavaScript-based (OnClick, OnChange, etc.) and generate client-side code
 - Database connections trigger OnBeforeConnect/OnAfterConnect events
 - Layout uses alignment constants: alNone, alTop, alBottom, alLeft, alRight, alClient
+
+## PHP 8.4 Migration Notes (Branch: php84-migration)
+
+### Completed Migrations
+| Original | Replacement | Reason |
+|----------|-------------|--------|
+| `class Object` | `class VCLObject` | "Object" is reserved in PHP 7.2+ |
+| `each($array)` | `foreach($array as $k => $v)` | Removed in PHP 8.0 |
+| `$str{0}` | `$str[0]` | Curly brace syntax removed in PHP 8.0 |
+| `mysql_*` | `mysqli_*` | mysql extension removed in PHP 7.0 |
+| `split()` | `preg_split()` or `explode()` | Removed in PHP 7.0 |
+| `utf8_decode()` | `mb_convert_encoding($s, 'ISO-8859-1', 'UTF-8')` | Deprecated in PHP 8.2 |
+| `$HTTP_SERVER_VARS` | `$_SERVER` | Removed in PHP 5.4 |
+
+### JavaScript Fixes for Modern Browsers
+- Removed `var event = event || window.event` (causes syntax error in strict mode)
+- Removed `document.all` and `document.layers` fallbacks
+- Use `document.getElementById()` instead
+
+### ADOdb
+Updated from version 5.05 to 5.22.8 for PHP 8.x compatibility.
