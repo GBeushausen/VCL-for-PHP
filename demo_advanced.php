@@ -51,6 +51,7 @@ class AdvancedDemoPage extends Page
     {
         parent::__construct($aowner);
 
+        $this->Name = "AdvancedDemoPage";
         $this->Caption = "VCL Advanced UI Demo";
         $this->Color = "#ffffff";
 
@@ -277,5 +278,7 @@ class AdvancedDemoPage extends Page
 // Seite erstellen und anzeigen
 global $application;
 $page = new AdvancedDemoPage($application);
+$page->preinit();  // Formular-Werte lesen
+$page->init();     // Events verarbeiten
 $page->show();
 ?>
