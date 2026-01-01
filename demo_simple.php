@@ -25,6 +25,7 @@ class SimpleDemoPage extends Page
     {
         parent::__construct($aowner);
 
+        $this->Name = "SimpleDemoPage";
         $this->Caption = "VCL Simple Demo";
         $this->Color = "#f5f5f5";
 

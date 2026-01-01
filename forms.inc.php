@@ -1514,7 +1514,8 @@ class Page extends CustomPage
                   $sp="<script type=\"text/javascript\" src=\"".VCL_HTTP_PATH."/js/common.js\"></script>\n";
                   define('COMMON_JS',1);
                 }
-                $sp.="<script type=\"text/javascript\">var $this->Name=new Object(Object);</script>\n";
+                $pageName = !empty($this->Name) ? $this->Name : 'page' . uniqid();
+                $sp.="<script type=\"text/javascript\">var $pageName={};</script>\n";
                 if (trim($js)!="")
                 {
                         $sp.="<script type=\"text/javascript\">\n";
