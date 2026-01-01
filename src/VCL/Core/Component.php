@@ -4,25 +4,36 @@ declare(strict_types=1);
 
 namespace VCL\Core;
 
-/**
- * Component is the base class for all VCL components.
- *
- * Components are objects that can be manipulated at design time and have
- * owner/parent relationships. They support:
- * - Ownership hierarchy (owner manages lifecycle)
- * - Session persistence (properties serialized to session)
- * - Event handling
- * - Named component lookup
- */
-class Component extends VCLObject
-{
-    // Backing fields
-    private string $_name = '';
-    private ?Component $_owner = null;
-    private int $_tag = 0;
+use VCL\Core\Exception\DuplicateNameException;
 
-    /** @var array<Component> Child components */
-    protected array $_components = [];
+/**
+ * Component is the common ancestor of all component classes.
+ *
+ * A base class for components that provides owner relationship properties and
+ * basic methods for calling events.
+ *
+ * Components are persistent objects that have the following capabilities:
+ * - IDE integration
+ * - Ownership (A owns B means A is responsible for destroying B)
+ * - Streaming and filing
+ *
+ * PHP 8.4 version with Property Hooks for clean syntax while maintaining
+ * backwards compatibility with legacy getters/setters.
+ */
+class Component extends Persistent
+{
+    // Backing fields (public for legacy compatibility)
+    public string $_name = '';
+    public ?Component $owner = null;
+    public int $_tag = 0;
+    public int $_controlstate = 0;
+    public string $lastresourceread = '';
+    public array $reallastresourceread = [];
+    public bool $alreadycreated = false;
+    protected string $_namepath = '';
+
+    /** @var Collection Child components */
+    public ?Collection $components = null;
 
     /**
      * Component name (must be unique within owner)
@@ -30,31 +41,26 @@ class Component extends VCLObject
     public string $Name {
         get => $this->_name;
         set {
-            // Validate name format
-            if ($value !== '' && !preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $value)) {
-                throw new \InvalidArgumentException("Invalid component name: {$value}");
-            }
+            global $checkduplicatenames;
 
-            // Check for duplicates in owner
-            if ($this->_owner !== null && $value !== '') {
-                foreach ($this->_owner->_components as $sibling) {
-                    if ($sibling !== $this && $sibling->_name === $value) {
-                        throw new \RuntimeException("Duplicate component name: {$value}");
+            if ($checkduplicatenames ?? true) {
+                if ($value !== $this->_name) {
+                    if ($this->owner !== null && !$this->owner->classNameIs('application')) {
+                        if ($value !== '' && isset($this->owner->_childnames[$value])) {
+                            throw new DuplicateNameException($value);
+                        }
+                        if ($this->_name !== '') {
+                            unset($this->owner->_childnames[$this->_name]);
+                        }
                     }
                 }
             }
 
-            // Update parent's childnames index
-            if ($this->_owner !== null) {
-                if ($this->_name !== '') {
-                    unset($this->_owner->_childnames[$this->_name]);
-                }
-                if ($value !== '') {
-                    $this->_owner->_childnames[$value] = $this;
-                }
-            }
-
             $this->_name = $value;
+
+            if ($this->owner !== null && $value !== '') {
+                $this->owner->_childnames[$value] = $this;
+            }
         }
     }
 
@@ -62,7 +68,7 @@ class Component extends VCLObject
      * Owner component (manages this component's lifecycle)
      */
     public ?Component $Owner {
-        get => $this->_owner;
+        get => $this->owner;
     }
 
     /**
@@ -74,83 +80,116 @@ class Component extends VCLObject
     }
 
     /**
+     * Control state flags (csLoading, csDesigning)
+     */
+    public int $ControlState {
+        get => $this->_controlstate;
+        set => $this->_controlstate = $value;
+    }
+
+    /**
      * Number of child components
      */
     public int $ComponentCount {
-        get => count($this->_components);
+        get => $this->components?->count() ?? 0;
     }
 
     public function __construct(?Component $owner = null)
     {
         parent::__construct();
 
+        $this->components = new Collection();
+        $this->owner = null;
+        $this->_name = '';
+        $this->_controlstate = 0;
+
         if ($owner !== null) {
-            $this->setOwner($owner);
+            if (!is_object($owner)) {
+                throw new \InvalidArgumentException('Owner must be an object');
+            }
+            $this->owner = $owner;
+            $this->owner->insertComponent($this);
         }
     }
 
+    // =========================================================================
+    // LIFECYCLE METHODS
+    // =========================================================================
+
     /**
-     * Set the owner of this component
+     * Called after the form file has been read into memory.
+     * Override this to initialize data that depends on other components.
      */
-    protected function setOwner(?Component $owner): void
+    public function loaded(): void
     {
-        if ($this->_owner === $owner) {
-            return;
-        }
+        // Override in subclasses
+    }
 
-        // Remove from old owner
-        if ($this->_owner !== null) {
-            $this->_owner->removeComponent($this);
-        }
-
-        $this->_owner = $owner;
-
-        // Add to new owner
-        if ($owner !== null) {
-            $owner->insertComponent($this);
+    /**
+     * Calls loaded() on all children recursively.
+     */
+    public function loadedChildren(): void
+    {
+        foreach ($this->components->items as $v) {
+            $v->loaded();
         }
     }
 
     /**
-     * Add a component as child
+     * Called before init(). Override for pre-initialization logic.
+     */
+    public function preinit(): void
+    {
+        foreach ($this->components->items as $v) {
+            $v->preinit();
+        }
+    }
+
+    /**
+     * Initialize the component.
+     * Override this to fire events after all components are loaded.
+     */
+    public function init(): void
+    {
+        $comps = $this->components->items;
+        foreach ($comps as $v) {
+            $v->init();
+        }
+    }
+
+    // =========================================================================
+    // COMPONENT MANAGEMENT
+    // =========================================================================
+
+    /**
+     * Inserts a component into the component's collection.
      */
     public function insertComponent(Component $component): void
     {
-        if (!in_array($component, $this->_components, true)) {
-            $this->_components[] = $component;
-
-            if ($component->_name !== '') {
-                $this->_childnames[$component->_name] = $component;
-            }
-        }
+        $component->owner = $this;
+        $this->_childnames[$component->_name] = $component;
+        $this->components->add($component);
     }
 
     /**
-     * Remove a child component
+     * Removes a component from the component's collection.
      */
     public function removeComponent(Component $component): void
     {
-        $key = array_search($component, $this->_components, true);
-        if ($key !== false) {
-            unset($this->_components[$key]);
-            $this->_components = array_values($this->_components);
-
-            if ($component->_name !== '') {
-                unset($this->_childnames[$component->_name]);
-            }
-        }
+        $this->components->remove($component);
+        unset($this->_childnames[$component->_name]);
     }
 
     /**
-     * Get child component by index
+     * Get child component by index.
      */
     public function getComponent(int $index): ?Component
     {
-        return $this->_components[$index] ?? null;
+        return $this->components->get($index);
     }
 
     /**
-     * Find component by name
+     * Find component by name.
      */
     public function findComponent(string $name): ?Component
     {
@@ -158,33 +197,406 @@ class Component extends VCLObject
     }
 
     /**
-     * Iterate over all child components
-     *
-     * @return \Generator<Component>
+     * Read the components collection.
      */
-    public function getComponents(): \Generator
+    public function readComponents(): Collection
     {
-        foreach ($this->_components as $component) {
-            yield $component;
+        return $this->components;
+    }
+
+    /**
+     * Read component count.
+     */
+    public function readComponentCount(): int
+    {
+        return $this->components->count();
+    }
+
+    // =========================================================================
+    // STATE & PATH
+    // =========================================================================
+
+    /**
+     * Read control state.
+     */
+    public function readControlState(): int
+    {
+        return $this->_controlstate;
+    }
+
+    /**
+     * Write control state.
+     */
+    public function writeControlState(int $value): void
+    {
+        $this->_controlstate = $value;
+    }
+
+    /**
+     * Get the unique path for this component.
+     */
+    public function readNamePath(): string
+    {
+        if ($this->_name !== '') {
+            $result = $this->_name;
+        } else {
+            $result = $this->className();
+        }
+
+        $owner = $this->readOwner();
+        if ($owner !== null) {
+            $s = $owner->readNamePath();
+            if ($s !== '') {
+                $result = $s . '.' . $result;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get the owner of this component.
+     */
+    public function readOwner(): ?Component
+    {
+        return $this->owner;
+    }
+
+    // =========================================================================
+    // LEGACY GETTER/SETTER METHODS
+    // =========================================================================
+
+    public function getName(): string
+    {
+        return $this->_name;
+    }
+
+    public function setName(string $value): void
+    {
+        $this->Name = $value;
+    }
+
+    public function defaultName(): string
+    {
+        return '';
+    }
+
+    public function getTag(): int
+    {
+        return $this->_tag;
+    }
+
+    public function setTag(int $value): void
+    {
+        $this->_tag = $value;
+    }
+
+    public function defaultTag(): int
+    {
+        return 0;
+    }
+
+    // =========================================================================
+    // SERIALIZATION
+    // =========================================================================
+
+    /**
+     * Serializes all children to session.
+     */
+    public function serializeChildren(): void
+    {
+        foreach ($this->components->items as $v) {
+            $v->serialize();
         }
     }
 
     /**
-     * Destroy this component and all children
+     * Unserializes all children from session.
+     */
+    public function unserializeChildren(): void
+    {
+        foreach ($this->components->items as $v) {
+            $v->unserialize();
+        }
+    }
+
+    // =========================================================================
+    // EVENTS
+    // =========================================================================
+
+    /**
+     * Calls a server event.
+     *
+     * @param string $event Name of the event to call
+     * @param mixed $params Parameters to send to the event handler
+     * @return mixed Calling event result
+     */
+    public function callEvent(string $event, mixed $params): mixed
+    {
+        // Check ACL if not a Page
+        if (!$this->inheritsFrom('Page')) {
+            if (function_exists('acl_isallowed') && !acl_isallowed($this->className() . '::' . $this->_name, 'Execute')) {
+                return null;
+            }
+        }
+
+        $ievent = '_' . $event;
+        if (property_exists($this, $ievent) && $this->$ievent !== null) {
+            $eventHandler = $this->$ievent;
+            if ($this->owner !== null && !$this->owner->classNameIs('application')) {
+                return $this->owner->$eventHandler($this, $params);
+            }
+            return $this->$eventHandler($this, $params);
+        }
+
+        return null;
+    }
+
+    /**
+     * Dumps javascript code for an event.
+     */
+    public function dumpJSEvent(?string $event): void
+    {
+        if ($event === null || $this->owner === null) {
+            return;
+        }
+
+        $defName = $this->owner->Name . '_' . $event;
+        if (!defined($defName)) {
+            define($defName, 1);
+            echo "function {$event}(event)\n";
+            echo "{\n\n";
+            echo "var params=null;\n";
+
+            if ($this->inheritsFrom('CustomPage')) {
+                $this->$event($this, []);
+            } elseif ($this->owner !== null) {
+                $this->owner->$event($this, []);
+            }
+
+            echo "\n}\n\n";
+        }
+    }
+
+    /**
+     * Resolves object property references after loading.
+     *
+     * @param mixed $value String name or object reference
+     * @return mixed Resolved object or original value
+     */
+    public function fixupProperty(mixed $value): mixed
+    {
+        if (($this->_controlstate & CS_DESIGNING) === CS_DESIGNING) {
+            return $value;
+        }
+
+        if (empty($value) || is_object($value)) {
+            return $value;
+        }
+
+        $form = $this->inheritsFrom('CustomPage') ? $this : $this->owner;
+
+        if (str_contains($value, '.')) {
+            $pieces = explode('.', $value);
+            $count = count($pieces);
+
+            if ($count === 2) {
+                $form = $pieces[0];
+                $value = $pieces[1];
+            } elseif ($count === 3) {
+                $form = $pieces[1];
+                $value = $pieces[2];
+            }
+
+            global $$form;
+            $form = $$form ?? $form;
+        }
+
+        if (is_object($form) && isset($form->$value) && is_object($form->$value)) {
+            return $form->$value;
+        }
+
+        return $value;
+    }
+
+    // =========================================================================
+    // AJAX SUPPORT
+    // =========================================================================
+
+    /**
+     * Returns javascript code for an ajax event.
+     */
+    public function generateAjaxEvent(string $jsEvent, string $phpEvent): string
+    {
+        $ownerName = $this->owner?->Name ?? '';
+        return " {$jsEvent}=\"xajax_ajaxProcess('{$ownerName}','{$this->_name}',null,'{$phpEvent}',xajax.getFormValues('{$ownerName}'))\" ";
+    }
+
+    /**
+     * Dumps javascript code for an ajax call.
+     */
+    public function ajaxCall(string $phpEvent, array $params = [], array $comps = []): string
+    {
+        $jcomps = !empty($comps) ? '["' . implode('","', $comps) . '"]' : '[]';
+        $ownerName = $this->owner?->Name ?? '';
+        return " xajax_ajaxProcess('{$ownerName}','{$this->_name}',params,'{$phpEvent}',xajax.getFormValues('{$ownerName}'),{$jcomps});\n ";
+    }
+
+    // =========================================================================
+    // CODE GENERATION
+    // =========================================================================
+
+    /**
+     * Override to dump component-specific javascript.
+     */
+    public function dumpJavascript(): void
+    {
+        // Override in subclasses
+    }
+
+    /**
+     * Override to dump component-specific header code.
+     */
+    public function dumpHeaderCode(): void
+    {
+        // Override in subclasses
+    }
+
+    /**
+     * Override to dump form items (hidden fields etc.).
+     */
+    public function dumpFormItems(): void
+    {
+        // Override in subclasses
+    }
+
+    /**
+     * Dumps javascript for all children.
+     */
+    public function dumpChildrenJavascript(): void
+    {
+        $this->dumpJavascript();
+        foreach ($this->components->items as $v) {
+            if ($v->inheritsFrom('Control')) {
+                if (method_exists($v, 'canShow') && $v->canShow()) {
+                    $v->dumpJavascript();
+                }
+            } else {
+                $v->dumpJavascript();
+            }
+        }
+    }
+
+    /**
+     * Dumps header code for all children.
+     */
+    public function dumpChildrenHeaderCode(bool $returnContents = false): string
+    {
+        if ($returnContents) {
+            ob_start();
+        }
+
+        foreach ($this->components->items as $v) {
+            if ($v->inheritsFrom('Control')) {
+                if (method_exists($v, 'canShow') && $v->canShow()) {
+                    $v->dumpHeaderCode();
+                }
+            } else {
+                $v->dumpHeaderCode();
+            }
+        }
+
+        if ($returnContents) {
+            $contents = ob_get_contents();
+            ob_end_clean();
+            return $contents;
+        }
+
+        return '';
+    }
+
+    /**
+     * Dumps form items for all children.
+     */
+    public function dumpChildrenFormItems(bool $returnContents = false): string
+    {
+        if ($returnContents) {
+            ob_start();
+        }
+
+        foreach ($this->components->items as $v) {
+            if ($v->inheritsFrom('Control')) {
+                if (method_exists($v, 'canShow') && $v->canShow()) {
+                    $v->dumpFormItems();
+                }
+            } else {
+                $v->dumpFormItems();
+            }
+        }
+
+        if ($returnContents) {
+            $contents = ob_get_contents();
+            ob_end_clean();
+            return $contents;
+        }
+
+        return '';
+    }
+
+    // =========================================================================
+    // RPC & DATA-AWARE
+    // =========================================================================
+
+    /**
+     * Read accessibility for RPC.
+     */
+    public function readAccessibility(string $method, int $defAccessibility): int
+    {
+        if (function_exists('use_unit')) {
+            use_unit('rpc/rpc.inc.php');
+        }
+        return defined('Accessibility_Fail') ? Accessibility_Fail : 0;
+    }
+
+    /**
+     * Destroy this component and all children.
      */
     public function destroy(): void
     {
-        // Destroy children first
-        foreach ($this->_components as $child) {
+        foreach ($this->components->items as $child) {
             $child->destroy();
         }
-        $this->_components = [];
+        $this->components->clear();
         $this->_childnames = [];
 
-        // Remove from owner
-        if ($this->_owner !== null) {
-            $this->_owner->removeComponent($this);
-            $this->_owner = null;
+        if ($this->owner !== null) {
+            $this->owner->removeComponent($this);
+            $this->owner = null;
         }
+    }
+
+    // =========================================================================
+    // RESOURCE LOADING (Stub - full implementation in Streaming)
+    // =========================================================================
+
+    /**
+     * Loads this component from a resource file.
+     */
+    public function loadResource(string $filename, bool $inherited = false, bool $storeLastResource = true): void
+    {
+        // Implementation moved to Streaming namespace
+        // This stub maintains API compatibility
+        if ($storeLastResource) {
+            $this->lastresourceread = $filename;
+        }
+    }
+
+    /**
+     * Reads a component from a resource file.
+     */
+    public function readFromResource(string $filename = '', bool $createObjects = true): void
+    {
+        // Implementation requires Streaming classes
+        // See VCL\Core\Streaming\Reader
     }
 }
