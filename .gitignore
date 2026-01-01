@@ -1,0 +1,27 @@
+# IDE
+.vscode/
+.idea/
+
+# DDEV
+.ddev/.dbimageBuild/
+.ddev/.webimageBuild/
+.ddev/db_snapshots/
+.ddev/.ddev-docker-compose-*.yaml
+.ddev/.global_commands/
+.ddev/.homeadditions/
+.ddev/.sso-*
+.ddev/import.yaml
+.ddev/docker-compose.*.yaml
+!.ddev/docker-compose.override.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.swp
+*~

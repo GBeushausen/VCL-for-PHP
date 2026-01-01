@@ -1,0 +1,29 @@
+services:
+  web:
+    # PHP 5.3 scheitert auf aktuellen Docker-Versionen häufig am entfernten Image-Manifest v2 schema1.
+    # PHP 5.6 lässt sich hier pullen und ist für viele 2008er Apps der pragmatische „erstmal läuft’s“-Kompromiss.
+    image: php:5.6-apache
+    platform: linux/amd64
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html:rw
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.5
+    platform: linux/amd64
+    command: ["--sql-mode=", "--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "33060:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:

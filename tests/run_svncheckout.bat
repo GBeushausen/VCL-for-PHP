@@ -1,0 +1,1 @@
+@%SVNEXE% co https://vcl4php.svn.sourceforge.net/svnroot/vcl4php/trunk/vcl/tests/testsource

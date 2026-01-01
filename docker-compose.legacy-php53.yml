@@ -1,0 +1,33 @@
+services:
+  web:
+    # Hinweis: Offizielle "php:5.3-*" Images sind heute oft nicht mehr verfügbar.
+    # Wenn der Pull fehlschlägt, ersetze die image-Zeile z.B. durch ein passendes Legacy-Image aus eurer Umgebung/Registry.
+    image: php:5.3-apache
+    platform: linux/amd64
+    ports:
+      - "8080:80"
+    environment:
+      # Viele Legacy-Apps erwarten kurze PHP-Tags etc. – optional aktivieren:
+      PHP_INI_SCAN_DIR: "/usr/local/etc/php/conf.d"
+    volumes:
+      # Repo ins Apache-Docroot mounten
+      - ./:/var/www/html:rw
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.5
+    platform: linux/amd64
+    command: ["--sql-mode=", "--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "33060:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
