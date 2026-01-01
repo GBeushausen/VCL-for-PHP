@@ -283,7 +283,7 @@ function updateButtonTheme() {
                                 $submitEventValue = $this->readJSWrapperSubmitEventValue($this->_onclick);
                                 $hiddenfield = $this->readJSWrapperHiddenFieldName();
                                 $hiddenfield = "findObj('$hiddenfield')";
-                                echo "        $this->Name.addEventListener(\"execute\", function(){var event = event || window.event; return $wrapperEvent(event, $hiddenfield, '$submitEventValue', null) } );\n";
+                                echo "        $this->Name.addEventListener(\"execute\", function(event){ return $wrapperEvent(event, $hiddenfield, '$submitEventValue', null) } );\n";
 
 
                         }
@@ -802,7 +802,7 @@ class SpeedButton extends BitBtn
                                 $submitEventValue = $this->readJSWrapperSubmitEventValue($this->_onclick);
                                 $hiddenfield = $this->readJSWrapperHiddenFieldName();
                                 $hiddenfield = "findObj('$hiddenfield')";
-                                echo "        $this->Name.addEventListener(\"execute\", function(){ var event = event || window.event; return $wrapperEvent(event, $hiddenfield, '$submitEventValue', null) } );\n";
+                                echo "        $this->Name.addEventListener(\"execute\", function(event){ return $wrapperEvent(event, $hiddenfield, '$submitEventValue', null) } );\n";
                         }
 
                         // add the common JS events to the QWidget (0 = no JS OnChange event added)

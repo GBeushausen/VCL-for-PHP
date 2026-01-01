@@ -1308,7 +1308,7 @@ class Control extends Component
 
                         $res .= "function $funcName(event, hiddenfield, submitvalue, wrappedfunc)\n";
                         $res .= "{\n\n";
-                        $res .= "var event = event || window.event;\n";
+                        // Event is already passed as parameter - no need for window.event fallback
 
                         $res .= "submit1=true;\n";
                         $res .= "submit2=true;\n";

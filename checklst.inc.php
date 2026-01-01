@@ -337,7 +337,7 @@ class CustomCheckListBox extends FocusControl
 
                                 echo "function CheckListBoxClick(name, index)\n";
                                 echo "{\n";
-                                echo "  var event = event || window.event;\n";
+                                // Modern browsers pass event correctly - removed legacy fallback
                                 echo "  var obj=document.getElementById(name);\n";
                                 echo "  if (obj) {\n";
                                 echo "    if (!obj.disabled) {\n";

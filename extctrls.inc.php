@@ -2946,7 +2946,7 @@ class Timer extends Component
 
                         echo "  function " . $this->Name . "_Event()\n";
                         echo "  { \n";
-                        echo "  var event = event || window.event; \n";
+                        echo "  var event = {}; // synthetic event for timer\n";
                         echo "  if (" . $this->Name . "_TimerID)\n";
                         echo "    {  " . $this->Name . "_DisableTimer();\n";
                         echo "       " . $this->_jsontimer . "(event);\n";
