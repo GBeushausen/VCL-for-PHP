@@ -102,12 +102,11 @@ function exception_handler($exception)
 {
 ?>
 <script type="text/javascript">
+// Modern browser compatible version - removed document.all/document.layers fallbacks
 function toggleLayer( whichLayer )
 {
-  var elem;
-  if( document.getElementById ) elem = document.getElementById( whichLayer );
-  else if( document.all ) elem = document.all[whichLayer];
-  else if( document.layers ) elem = document.layers[whichLayer];
+  var elem = document.getElementById( whichLayer );
+  if (!elem) return;
   if(elem.style.display==''&&elem.offsetWidth!=undefined&&elem.offsetHeight!=undefined) elem.style.display = (elem.offsetWidth!=0&&elem.offsetHeight!=0)?'block':'none';
   elem.style.display = (elem.style.display==''||elem.style.display=='block')?'none':'block';
 }
@@ -1316,7 +1315,7 @@ class Component extends Persistent
                                 define($this->owner->Name.'_'.$event,1);
                                 echo "function $event(event)\n";
                                 echo "{\n\n";
-                                echo "var event = event || window.event;\n";            //To get the right event object
+                                // PHP 8.4: Removed 'var event = event || window.event' - modern browsers pass event correctly
                                 echo "var params=null;\n";                               //For Ajax calls
 
                                 if ($this->inheritsFrom('CustomPage'))

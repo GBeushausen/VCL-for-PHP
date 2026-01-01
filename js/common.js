@@ -3,38 +3,25 @@ function isdefined(object, variable)
         return (typeof(eval(object)[variable]) != 'undefined');
 }
 
-function findObj(id,thedoc)
+// Modern browser compatible version - removed document.all/document.layers fallbacks
+function findObj(id, thedoc)
 {
     var f, k;
 
-    if (!thedoc) thedoc=document;
+    if (!thedoc) thedoc = document;
 
-    if (thedoc.all)
+    // Try getElementById first (all modern browsers support this)
+    f = thedoc.getElementById(id);
+    if (f) return f;
+
+    // Fallback: search in forms
+    for (k = 0; k < thedoc.forms.length; k++)
     {
-        f=thedoc[id];
-        if (f) return(f);
+        f = thedoc.forms[k][id];
+        if (f) return f;
     }
 
-    for (k=0;k<thedoc.forms.length;k++)
-    {
-        f=thedoc.forms[k][id];
-        if (f) return(f);
-    }
-
-    if (thedoc.layers)
-    {
-        for(k=0;k<thedoc.layers.length;k++)
-        {
-            f=findObj(id,thedoc.layers[i].document);
-            if (f) return(f);
-        }
-    }
-
-    if (thedoc.getElementById)
-    {
-        f=thedoc.getElementById(id);
-        return(f);
-    }
+    return null;
 }
 
 function showLayer(layername,event)
@@ -144,11 +131,10 @@ function toJSON(xa)
         return(s.object(xa));
 };
 
+// Modern browser compatible: Use native JSON.parse instead of eval
 String.prototype.parseJSON = function () {
     try {
-        return !(/[^,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]/.test(
-                this.replace(/"(\\.|[^"\\])*"/g, ''))) &&
-            eval('(' + this + ')');
+        return JSON.parse(this);
     } catch (e) {
         return false;
     }
