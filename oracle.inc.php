@@ -618,8 +618,7 @@ class OracleDatabase extends CustomConnection
                                 while ($arow=oci_fetch_assoc($r))
                                 {
                                         $row=array();
-                                        reset($arow);
-                                        while (list($k,$v)=each($arow))
+                                        foreach($arow as $k => $v)
                                         {
                                                 $row[strtolower($k)]=$v;
                                         }
@@ -1266,8 +1265,7 @@ class CustomOracleTable extends OracleDataSet
             {
                 $where='';
                 $buffer=$this->fieldbuffer;
-                reset($this->_keyfields);
-                while(list($key, $fname)=each($this->_keyfields))
+                foreach($this->_keyfields as $key => $fname)
                 {
                     $val=$this->fieldbuffer[$fname];
                     unset($buffer[$fname]);
@@ -1277,8 +1275,7 @@ class CustomOracleTable extends OracleDataSet
                 }
 
                 $set="";
-                reset($buffer);
-                while(list($key, $fname)=each($buffer))
+                foreach($buffer as $key => $fname)
                 {
                     if ($set!="") $set.=", ";
                     $set.=" $key = '$fname' ";
@@ -1304,8 +1301,7 @@ class CustomOracleTable extends OracleDataSet
                 $fields='';
                 $values='';
 
-                reset($this->fieldbuffer);
-                while(list($key, $val)=each($this->fieldbuffer))
+                foreach($this->fieldbuffer as $key => $val)
                 {
                         if ($fields!='') $fields.=',';
                         $fields.="$key";
@@ -1363,9 +1359,8 @@ class CustomOracleTable extends OracleDataSet
                             $this->_mastersource->DataSet->open();
 
                             $ms="";
-                            reset($this->_masterfields);
 
-                            while(list($key, $val)=each($this->_masterfields))
+                            foreach($this->_masterfields as $key => $val)
                             {
                                 $thisfield=$key;
                                 $msfield=$val;
@@ -1433,12 +1428,12 @@ class CustomOracleTable extends OracleDataSet
                 $indexes=$this->Database->extractIndexes($this->_tablename,true);
                 if (is_array($indexes))
                 {
-                    list(,$primary)=each($indexes);
+                    $primary=reset($indexes);
 
                     $result=$primary['columns'];
                     if (is_array($result))
                     {
-                        while (list($k,$v)=each($result))
+                        foreach($result as $k => $v)
                         {
                                 $result[$k]=trim($v);
                         }
@@ -1459,8 +1454,7 @@ class CustomOracleTable extends OracleDataSet
 
                 if (is_array($keyfields))
                 {
-                    reset($keyfields);
-                    while (list($k,$v)=each($keyfields))
+                    foreach($keyfields as $k => $v)
                     {
                             echo "<input type=\"hidden\" name=\"".$basename."[$v]\" value=\"$values[$v]\" />";
                     }

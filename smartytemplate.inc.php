@@ -159,8 +159,7 @@ class SmartyTemplate extends PageTemplate
                 $this->_smarty->assign('StartForm', $this->startform());
                 $this->_smarty->assign('EndForm', $this->endform());
 
-                reset($form->controls->items);
-                while (list($k,$v)=each($form->controls->items))
+                foreach($form->controls->items as $k => $v)
                 {
                         $dump = false;
 
@@ -239,8 +238,7 @@ class VCLTemplate extends SmartyTemplate
         }
 
         //Process here all <php> tags
-        reset($form->controls->items);
-        while (list($k,$v)=each($form->controls->items))
+        foreach($form->controls->items as $k => $v)
         {
             $dump = false;
 
@@ -280,8 +278,7 @@ class VCLTemplate extends SmartyTemplate
                             		$values=substr(strtolower($style),7,strlen(style)-6);
                                		$st=explode(';',$values);
                                     $style='';
-                                    reset($st);
-                                    while(list($key, $val)=each($st))
+                                    foreach($st as $key => $val)
                                     {
                                     	if (strpos($val,'left:')===false)
                                         {
@@ -314,8 +311,7 @@ class VCLTemplate extends SmartyTemplate
             }
         }
 
-        reset($form->components->items);
-        while (list($k,$v)=each($form->components->items))
+        foreach($form->components->items as $k => $v)
         {
             $dump = false;
 

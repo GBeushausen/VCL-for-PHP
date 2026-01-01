@@ -68,8 +68,7 @@ function setIconPath($iconPath)
 function registerComponents($page,$components,$unit)
 {
    echo "page=$page\n";
-   reset($components);
-   while (list($k,$v)=each($components))
+   foreach($components as $k => $v)
    {
         echo "$v=$unit\n";
    }
@@ -78,8 +77,7 @@ function registerComponents($page,$components,$unit)
 function registerPropertiesInCategory($category, $properties)
 {
     echo "propcategory=$category\n";
-   reset($properties);
-   while (list($k,$v)=each($properties))
+   foreach($properties as $k => $v)
    {
         echo "propname=$v\n";
    }
@@ -105,12 +103,10 @@ function registerPropertiesInCategory($category, $properties)
  */
 function registerAsset($components, $assets)
 {
-        reset($components);
-        while (list($k,$v)=each($components))
+        foreach($components as $k => $v)
         {
                 echo "asset=$v\n";
-                reset($assets);
-                while (list($c,$asset)=each($assets))
+                foreach($assets as $c => $asset)
                 {
                         echo "value=".$asset."\n";
                 }
@@ -188,8 +184,7 @@ function registerPropertyValues($classname,$property,$values)
    echo "classname=$classname\n";
    echo "property=$property\n";
 
-   reset($values);
-   while (list($k,$v)=each($values))
+   foreach($values as $k => $v)
    {
         echo "value=$v\n";
    }
@@ -214,8 +209,7 @@ function registerBooleanProperty($classname,$property)
    echo "classname=$classname\n";
    echo "property=$property\n";
 
-   reset($values);
-   while (list($k,$v)=each($values))
+   foreach($values as $k => $v)
    {
         echo "value=$v\n";
    }
@@ -257,8 +251,7 @@ function registerPasswordProperty($classname,$property)
 function registerNoVisibleComponents($components,$unit)
 {
    echo "page=no\n";
-   reset($components);
-   while (list($k,$v)=each($components))
+   foreach($components as $k => $v)
    {
         echo "$v=$unit\n";
    }
@@ -272,8 +265,7 @@ function addSplashBitmap($caption,$bitmap)
 
 function registerDropDatasource($components)
 {
-   reset($components);
-   while (list($k,$v)=each($components))
+   foreach($components as $k => $v)
    {
         echo "multiline=$v\n";
    }
@@ -281,8 +273,7 @@ function registerDropDatasource($components)
 
 function registerDropDatafield($components)
 {
-   reset($components);
-   while (list($k,$v)=each($components))
+   foreach($components as $k => $v)
    {
         echo "singleline=$v\n";
    }
@@ -559,9 +550,8 @@ class ItemsPropertyEditor extends PropertyEditor
                 $output=array();
                 $children=array();
 
-                reset($input);
-                list($k,$props)=each($input);
-                while (list($k,$child)=each($input))
+                $props = reset($input);
+                foreach($input as $k => $child)
                 {
                         $c=$this->JSArrayToPHPArray($child[0]);
                         $children[]=$c[0];

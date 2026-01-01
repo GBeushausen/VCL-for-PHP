@@ -1321,7 +1321,7 @@ class ListView extends CustomListView
  *
  * Use PageControl to create a multiple page dialog or tabbed notebook. PageControl
  * displays multiple overlapping pages called Tabs. The user selects a page by clicking
- * the page’s tab that appears at the top of the control. To add a new page to a PageControl
+ * the pageï¿½s tab that appears at the top of the control. To add a new page to a PageControl
  * object at design time, edit the Pages property.
  */
 class CustomPageControl extends QWidget
@@ -1438,8 +1438,8 @@ class CustomPageControl extends QWidget
                         $pages=array();
                         $names=array();
 
-                        reset($this->_tabs);
-                        while (list(, $name) = each($this->_tabs))
+                        // PHP 8+: foreach replaces each()
+                        foreach($this->_tabs as $name)
                         {
                                 if ($name == "") continue;
 
@@ -1477,8 +1477,7 @@ class CustomPageControl extends QWidget
 
                                 echo "  $this->Name.getPane().add($pagelist);\n";
 
-                                reset($pages);
-                                while(list($key, $val)=each($pages))
+                                foreach($pages as $key => $val)
                                 {
                                     $this->dumpChildrenControls(-31,-11,$val, $names[$key]);
                                 }
@@ -1587,7 +1586,7 @@ class CustomPageControl extends QWidget
  *
  * Use PageControl to create a multiple page dialog or tabbed notebook. PageControl
  * displays multiple overlapping pages called Tabs. The user selects a page by clicking
- * the page’s tab that appears at the top of the control. To add a new page to a PageControl
+ * the pageï¿½s tab that appears at the top of the control. To add a new page to a PageControl
  * object at design time, edit the Pages property.
  *
  * @example PageControl/pagecontrolsample.php How to use PageControl
@@ -1838,7 +1837,7 @@ class TreeNode extends Persistent
         function setLevel($value) { $this->_level=$value; }
 
         /**
-        * Specifies the index in the tree view’s image list of the image displayed for the node when it is selected.
+        * Specifies the index in the tree viewï¿½s image list of the image displayed for the node when it is selected.
         *
         * Use the SelectedIndex property to specify an image to display when the tree node is selected.
         *
@@ -2170,7 +2169,7 @@ class CustomTreeView extends QWidget
                 if (count($items) > 0)
                 {
                         $i = 0;
-                        while (list($k, $child)=each($items))
+                        foreach($items as $k => $child)
                         {
                                 $this->dumpItem($child, $c, ($level + 1));
                         }
@@ -2217,8 +2216,7 @@ class CustomTreeView extends QWidget
                 {
                         $this->_itemcountatlevel = array();
                         echo "  var trs = null;\n";
-                        reset($this->_items);
-                        while (list($k, $item)=each($this->_items))
+                        foreach($this->_items as $k => $item)
                         {
                                 // Level is 1 since the real root node is the tree
                                 $this->dumpItem($item, $this->Name, 1);
@@ -2875,7 +2873,7 @@ class CustomTextField extends QWidget
         *       into the edit control. Changing the CharCase property to
         *       ecLowerCase or ecUpperCase changes the actual contents
         *       of the text, not just the appearance. Any case information
-        *       is lost and can’t be recaptured by changing CharCase to ecNormal.
+        *       is lost and canï¿½t be recaptured by changing CharCase to ecNormal.
         *
         * @return enum
         */
@@ -3805,9 +3803,8 @@ class GraphicMainMenu extends Control
 
                         if (array_key_exists('SubMenuWidth',$item)) $w=$item['SubMenuWidth'];
 
-                        reset($subitems);
                         echo $itemc."mbar = ".$this->Name.".createMenuBar('$itemc',$w);\n";
-                        while (list($k,$v)=each($subitems))
+                        foreach($subitems as $k => $v)
                         {
                         $this->dumpItem($v,$itemc."mbar");
                         }
@@ -3860,9 +3857,8 @@ class GraphicMainMenu extends Control
                          );
                 }
                 echo $this->Name."mbar = ".$this->Name.".createMenuBar('".$this->Name."main',".$this->_menuwidth.",".$this->_menuheight.",".$this->_submenuoffset.",0);\n";
-                reset($items);
 
-                while (list($k,$v)=each($items))
+                foreach($items as $k => $v)
                 {
                         $item=$v;
                         $this->dumpItem($item,$this->Name."mbar");
@@ -4102,14 +4098,12 @@ class CustomRichEdit extends CustomMemo
         ?>
         xinha_editors.<?php echo $this->_name;     ?>.config.toolbar=[
         <?php
-            reset($this->_toolbars);
-            while(list($key, $line)=each($this->_toolbars))
+            foreach($this->_toolbars as $key => $line)
             {
                 if ($key>0) echo ",\n";
                 $items=split(',',$line);
-                reset($items);
                 echo '[';
-                while(list($k, $toolbutton)=each($items))
+                foreach($items as $k => $toolbutton)
                 {
                     if ($k>0) echo ',';
                     echo '"'.$toolbutton.'"';
@@ -5095,7 +5089,7 @@ class CustomLabeledEdit extends CustomTextField
 
         /**
          * Use EditLabel to work with the label that is associated with this
-         * labeled edit control. Use this label’s properties to specify the
+         * labeled edit control. Use this labelï¿½s properties to specify the
          * caption that appears on the label.
          *
          * @return string
@@ -5311,8 +5305,7 @@ class CustomToolBar extends QWidget
         */
         private function dumpParts()
         {
-                reset($this->_items);
-                while(list($index, $item) = each($this->_items))
+                foreach($this->_items as $index => $item)
                 {
                         echo "\n";
                         echo "  <!-- Part #$index Start -->\n";
@@ -5337,8 +5330,7 @@ class CustomToolBar extends QWidget
         */
         private function dumpButtons($name, $items)
         {
-                reset($items);
-                while(list($index, $item) = each($items))
+                foreach($items as $index => $item)
                 {
                         $caption=$item['Caption'];
 

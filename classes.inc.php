@@ -119,11 +119,11 @@ function toggleLayer( whichLayer )
         $stacktrace.="Application raised an exception class <b>".get_class($exception)."</b> with message <b>'".$exception->getMessage()."'</b>\n";
         $msg=strip_tags($stacktrace)."|";
         $stack=array_reverse($exception->getTrace());
-        reset($stack);
         $tab="";
         $c="";
         $stacktrace.='<a href="javascript:toggleLayer(\'callstack\');">Click for detailed information</a><div id="callstack" style="display:none;">';
-        while (list($k,$v)=each($stack))
+        // PHP 8+: foreach replaces each()
+        foreach($stack as $k => $v)
         {
                 $stacktrace.=$tab.$c."Callstack #$k File: <b><A HREF=\"d4p://$v[file],$v[line]\">".$v['file']."</A></b> Line: <b>".$v['line']."</b>\n";
                 $tolog.=$v['line']."@".$v['file'].'@'.$msg;
@@ -449,9 +449,7 @@ class Filer extends Object
 
                         if (count($this->_properties)>1)
                         {
-                                reset($this->_properties);
-
-                                while (list($k,$v)=each($this->_properties))
+                                foreach($this->_properties as $k => $v)
                                 {
                                         if ($v==$this->_lastproperty)
                                         {
@@ -745,8 +743,7 @@ class Collection extends Object
         {
                 $result=-1;
 
-                reset($this->items);
-                while (list($k,$v)=each($this->items))
+                foreach($this->items as $k => $v)
                 {
                         if ($v===$item)
                         {
@@ -958,9 +955,7 @@ class Persistent extends Object
                 $refclass=new ReflectionClass($this->ClassName());
                 $methods=$refclass->getMethods();
 
-                reset($methods);
-
-                while (list($k,$method)=each($methods))
+                foreach($methods as $k => $method)
                 {
                         $methodname=$method->name;
                         if ($methodname[0] == 's' && $methodname[1] == 'e' && $methodname[2] == 't')   // fast check of: substr($methodname,0,3)=='set'
@@ -1231,7 +1226,7 @@ class Component extends Persistent
         * Initializes the component after the form file has been read into memory.
         *
         * Do not call the Loaded method. The streaming system calls this method after it
-        * loads the component’s form from a stream.
+        * loads the componentï¿½s form from a stream.
         *
         * When the streaming system loads a form or data module from its form file,
         * it first constructs the form component by calling its constructor, then reads
@@ -1271,8 +1266,7 @@ class Component extends Persistent
         function loadedChildren()
         {
                 //Calls childrens loaded recursively
-                reset($this->components->items);
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         $v->loaded();
                 }
@@ -1410,8 +1404,7 @@ class Component extends Persistent
          */
         function unserializeChildren()
         {
-                reset($this->components->items);
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         $v->unserialize();
                 }
@@ -1506,8 +1499,7 @@ class Component extends Persistent
         {
                 $jcomps="";
 
-                reset($comps);
-                while(list($key, $val)=each($comps))
+                foreach($comps as $key => $val)
                 {
                     if ($jcomps!='') $jcomps.=',';
                     $jcomps.='"'.$val.'"';
@@ -1535,8 +1527,7 @@ class Component extends Persistent
         function preinit()
         {
                 //Calls children's init recursively
-                reset($this->components->items);
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         $v->preinit();
                 }
@@ -1558,8 +1549,7 @@ class Component extends Persistent
                 //on init() methods
                 $comps=$this->components->items;
                 //Calls children's init recursively
-                reset($comps);
-                while (list($k,$v)=each($comps))
+                foreach($comps as $k => $v)
                 {
                         $v->init();
                 }
@@ -1612,8 +1602,7 @@ class Component extends Persistent
                                                 $values=$keys->asStringArray();
 
                                                 //Sets the key values
-                                                reset($values);
-                                                while (list($k,$v)=each($values))
+                                                foreach($values as $k => $v)
                                                 {
                                                         $this->_datasource->Dataset->fieldset($k,$v);
                                                 }
@@ -1728,8 +1717,7 @@ class Component extends Persistent
         function serializeChildren()
         {
                 //Calls children's serialize recursively
-                reset($this->components->items);
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         $v->serialize();
                 }
@@ -1772,8 +1760,7 @@ class Component extends Persistent
         {
                 //Iterates through components, dumping all javascript
                 $this->dumpJavascript();
-                reset($this->components->items);
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         if ($v->inheritsFrom('Control'))
                         {
@@ -1798,10 +1785,8 @@ class Component extends Persistent
         function dumpChildrenHeaderCode($return_contents=false)
         {
                 //Iterates through components, dumping all javascript
-                reset($this->components->items);
-
                 if ($return_contents) ob_start();
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         if ($v->inheritsFrom('Control'))
                         {
@@ -1849,10 +1834,8 @@ class Component extends Persistent
         function dumpChildrenFormItems($return_contents=false)
         {
                 //Iterates through components, dumping all form items
-                reset($this->components->items);
-
                 if ($return_contents) ob_start();
-                while (list($k,$v)=each($this->components->items))
+                foreach($this->components->items as $k => $v)
                 {
                         if ($v->inheritsFrom('Control'))
                         {
@@ -1972,8 +1955,7 @@ class Component extends Persistent
                     $this->Name=$this->className();
                     $components=$_SESSION['comps.'.$application->Name.'.'.$this->className()];
 
-                    reset($components);
-                    while(list($name, $classparts)=each($components))
+                    foreach($components as $name => $classparts)
                     {
                         $class=$classparts[1];
                         $parent=$classparts[0];

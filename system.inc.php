@@ -469,9 +469,8 @@ class InputParam
                 if ($this->filter_extension)
                 {
                         $data=$this->stream[$this->name];
-                        reset($data);
                         $result=array();
-                        while (list($k,$v)=each($data))
+                        foreach($data as $k => $v)
                         {
                                 $result[$filter_func($k,FILTER_SANITIZE_STRING)]=$filter_func($v,FILTER_SANITIZE_STRING);
                         }

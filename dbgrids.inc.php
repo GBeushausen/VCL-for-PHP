@@ -180,9 +180,6 @@ class DBGrid extends CustomListView
                         $origvalues=$params[2];
                         $dbgridrow=$params[3];
 
-                        reset($fieldnames);
-                        reset($fieldvalues);
-
                         if ($this->_datasource!=null)
                         {
                                 if ($this->_datasource->Dataset!=null)
@@ -195,7 +192,7 @@ class DBGrid extends CustomListView
                                                     $output=array();
 
                                                     $keys=$this->_datasource->DataSet->_keyfields;
-                                                    while (list($k,$v)=each($fieldnames))
+                                                    foreach($fieldnames as $k => $v)
                                                     {
                                                         if ((in_array($v,$keys)) || ($fieldvalues[$k]!=$origvalues[$k]))
                                                         {
@@ -372,9 +369,8 @@ class DBGrid extends CustomListView
 <?php
         if (count($this->_columns)>=1)
         {
-            reset($this->_columns);
             $i=0;
-            while(list($key, $val)=each($this->_columns))
+            foreach($this->_columns as $key => $val)
             {
                 $fname=$val['Fieldname'];
                 if ($fname!="")
@@ -399,9 +395,8 @@ class DBGrid extends CustomListView
         }
         else if (is_array($fields))
         {
-        reset($fields);
         $i=0;
-        while(list($fname, $value)=each($fields))
+        foreach($fields as $fname => $value)
         {
                 $props=$this->_datasource->DataSet->readFieldProperties($fname);
                 $dlabel=$fname;
@@ -429,8 +424,7 @@ class DBGrid extends CustomListView
         if (count($this->_columns))
         {
             $cnames=array();
-            reset($this->_columns);
-            while(list($key, $val)=each($this->_columns))
+            foreach($this->_columns as $key => $val)
             {
               $cnames[$val['Fieldname']]='1';
             }
@@ -438,9 +432,8 @@ class DBGrid extends CustomListView
 
         if (is_array($cnames))
         {
-        reset($cnames);
         $i=0;
-        while(list($fname, $value)=each($cnames))
+        foreach($cnames as $fname => $value)
         {
                 if ($i>0) echo ",";
                 echo '"'.$fname.'"';
@@ -459,8 +452,7 @@ class DBGrid extends CustomListView
 
         if (count($this->_columns)>=1)
         {
-            reset($this->_columns);
-            while(list($key, $val)=each($this->_columns))
+            foreach($this->_columns as $key => $val)
             {
                 $colvalues[$val['Fieldname']]=1;
             }
@@ -475,8 +467,7 @@ class DBGrid extends CustomListView
                                         if (count($colvalues)>=1)
                                         {
                                             $avalues=array();
-                                            reset($colvalues);
-                                            while(list($key, $val)=each($colvalues))
+                                            foreach($colvalues as $key => $val)
                                             {
                                                 $avalues[$key]=$rvalues[$key];
                                             }
@@ -485,9 +476,8 @@ class DBGrid extends CustomListView
 ?>
                         rowData.push([
                         <?php
-                                        reset($rvalues);
                                         $i=0;
-                                        while (list($k,$v)=each($rvalues))
+                                        foreach($rvalues as $k => $v)
                                         {
 
                                                 $v=str_replace("\n\r",'\n',$v);
@@ -518,9 +508,8 @@ class DBGrid extends CustomListView
                         ]);
                         oData.push([
                         <?php
-                                        reset($rvalues);
                                         $i=0;
-                                        while (list($k,$v)=each($rvalues))
+                                        foreach($rvalues as $k => $v)
                                         {
                                             if (count($colvalues)>=1)
                                             {
@@ -555,9 +544,8 @@ class DBGrid extends CustomListView
 
         if (count($this->_columns)>=1)
         {
-            reset($this->_columns);
             $i=0;
-            while(list($key, $value)=each($this->_columns))
+            foreach($this->_columns as $key => $value)
             {
                 $editable='true';
                 if ($value['ReadOnly']=='true') $editable='false';
@@ -572,9 +560,8 @@ class DBGrid extends CustomListView
         }
         else if (is_array($fields))
         {
-            reset($fields);
             $i=0;
-            while(list($fname, $value)=each($fields))
+            foreach($fields as $fname => $value)
             {
                 $editable='true';
                 if ($this->_readonly) $editable='false';
@@ -828,9 +815,8 @@ qx.Proto.getCellEditorValue = function(cellEditor) {
 
         if (count($this->_columns)>=1)
         {
-            reset($this->_columns);
             $i=0;
-            while(list($key, $value)=each($this->_columns))
+            foreach($this->_columns as $key => $value)
             {
                 $dwidth=$value['Width'];
                 $color=$value['Color'];
@@ -864,8 +850,7 @@ qx.Proto.getCellEditorValue = function(cellEditor) {
                 if (count($picklist)>0)
                 {
                     echo "var dat=[];\n";
-                    reset($picklist);
-                    while(list($key, $val)=each($picklist))
+                    foreach($picklist as $key => $val)
                     {
                         $val=str_replace("'","\\'",$val);
                         echo "dat.push(['$val','$val']);\n";
@@ -897,9 +882,8 @@ qx.Proto.getCellEditorValue = function(cellEditor) {
         }
         else if (is_array($fields))
             {
-                reset($fields);
                 $i=0;
-                while(list($fname, $value)=each($fields))
+                foreach($fields as $fname => $value)
                 {
                     $props=$this->_datasource->DataSet->readFieldProperties($fname);
                     $dwidth=100;

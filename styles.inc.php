@@ -103,10 +103,9 @@ class CustomStyleSheet extends Component
                 if ((!isset($lines)) || (count($lines) == 0)) return $array;
 
                 // Parse lines, remove CSS Definitions
-                reset($lines);
                 $flag = false;
                 $lines2=array();
-                while (list($index, $line) = each($lines))
+                foreach($lines as $index => $line)
                 {
                         while ($line!=="")
                         {
@@ -148,12 +147,10 @@ class CustomStyleSheet extends Component
                 if ((!isset($lines2)) || (count($lines2) == 0)) return $array;
 
                 // Prepare style list
-                reset($lines2);
-                while (list(, $line) = each($lines2))
+                foreach($lines2 as $line)
                 {
                         $words = explode(",", $line);
-                        reset($words);
-                        while (list(, $word) = each($words))
+                        foreach($words as $word)
                         {
                                 $word = trim($word);
                                 if ($word == "") continue;

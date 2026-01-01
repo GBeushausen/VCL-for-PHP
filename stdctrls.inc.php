@@ -364,8 +364,7 @@ class QWidget extends FocusControl
                 if ($ownername!="") $aowner=$ownername;
 
                 $js="";
-                reset($this->controls->items);
-                while (list($k,$v)=each($this->controls->items))
+                foreach($this->controls->items as $k => $v)
                 {
                     if ($v->Layer==$layer)
                     {
@@ -1585,7 +1584,7 @@ class CustomEdit extends FocusControl
         *       into the edit control. Changing the CharCase property to
         *       ecLowerCase or ecUpperCase changes the actual contents
         *       of the text, not just the appearance. Any case information
-        *       is lost and can’t be recaptured by changing CharCase to ecNormal.
+        *       is lost and canï¿½t be recaptured by changing CharCase to ecNormal.
         * @return enum (ecLowerCase, ecNormal, ecUpperCase)
         */
         function readCharCase() { return $this->_charcase; }
@@ -2946,8 +2945,7 @@ class CustomListBox extends CustomMultiSelectListControl
         *
         *                $items=$this->ListBox1->Items;
         *
-        *                reset($items);
-        *                while(list($key, $val)=each($items))
+        *                foreach($items as $key => $val)
         *                {
         *                        if ($this->ListBox1->readSelected($key))
         *                        {
@@ -3196,8 +3194,7 @@ class CustomListBox extends CustomMultiSelectListControl
                         //Keys from serialized arrays from the IDE are strings, if are numeric
                         //PHP is not able to find them
                         $this->_items=array();
-                        reset($value);
-                        while(list($key, $val)=each($value))
+                        foreach($value as $key => $val)
                         {
                                 $this->_items[$key]=$val;
                         }
@@ -5176,7 +5173,7 @@ class ScrollBar extends QWidget
                 //qooxdoo calculates delphi pagesize using current widget width
                 //and maximum value with folowing formula pagesize=(W^2/Max)
                 //So, we must calculate Maximum for the control based on current
-                //Pagesize, minimum and maximum. By the way minimum doesn´t exist in
+                //Pagesize, minimum and maximum. By the way minimum doesnï¿½t exist in
                 //qooxdoo it is supposed to be allways 0. It is app work to normalize
                 //the maximum based on the current minimum knowing that it is harcoded
                 //to 0 on qooxdoo.

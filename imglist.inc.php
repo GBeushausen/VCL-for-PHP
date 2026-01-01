@@ -70,8 +70,7 @@ class ImageList extends Component
                 if (isset($this->_images[$index])) return($this->_images[$index]);
                 else
                 {
-                        reset($this->_images);
-                        while(list($key, $val)=each($this->_images))
+                        foreach($this->_images as $key => $val)
                         {
                                 if ($key==$index) return($val);
                         }
@@ -91,12 +90,12 @@ class ImageList extends Component
                 $image="";
                 if (isset($this->_images))
                 {
-                        reset($this->_images);
-                        while ((list($k, $img) = each($this->_images)) && $image == "")
+                        foreach($this->_images as $k => $img)
                         {
                                 if ($k == $index)
                                 {
                                         $image = $img;
+                                        break;
                                 }
                         }
                 }

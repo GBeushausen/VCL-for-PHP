@@ -121,8 +121,8 @@ class Application extends Component
                 global $startup_functions;
 
                 //Call all startup functions before create the session
-                reset($startup_functions);
-                while(list($key, $val)=each($startup_functions))
+                // PHP 8+: foreach replaces each()
+                foreach($startup_functions as $key => $val)
                 {
                         $val();
                 }
@@ -140,8 +140,7 @@ class Application extends Component
                 }
 
                 //TODO: Check this for security issues
-                reset($_GET);
-                while (list($k,$v)=each($_GET))
+                foreach($_GET as $k => $v)
                 {
                         if (strpos($k,'.')===false) $_SESSION[$k]=$v;
                 }
@@ -179,8 +178,7 @@ class Application extends Component
         {
                 use_unit("language/php_language_detection.php");
                 $lang=get_languages('data');
-                reset($lang);
-                while (list($k,$v)=each($lang))
+                foreach($lang as $k => $v)
                 {
                         if (array_key_exists(2,$v))
                         {
@@ -228,8 +226,7 @@ class CustomPage extends ScrollingControl
         function serialize()
         {
             $toserialize=array();
-            reset($this->components->items);
-            while (list($k,$v)=each($this->components->items))
+            foreach($this->components->items as $k => $v)
             {
                 $parent="";
                 if ($v->inheritsFrom('Control')) $parent=$v->parent->Name;
@@ -348,9 +345,7 @@ class DataModule extends CustomPage
 
                 if (count($comps)>=1)
                 {
-                    reset($comps);
-
-                    while (list($k,$aname)=each($comps))
+                    foreach($comps as $k => $aname)
                     {
                         $v=$$owner->$aname;
                         if (is_object($v))
@@ -361,7 +356,7 @@ class DataModule extends CustomPage
                 }
                 else
                 {
-                    while (list($k,$v)=each($$owner->controls->items))
+                    foreach($$owner->controls->items as $k => $v)
                     {
                             ajaxDump($v);
                     }
@@ -1607,8 +1602,7 @@ class Page extends CustomPage
         $this->hasframes=false;
 
         //Iterates through controls to get the frames
-        reset($this->controls->items);
-        while (list($k,$v)=each($this->controls->items))
+        foreach($this->controls->items as $k => $v)
         {
                 if (($v->inheritsFrom('Frame')) || ($v->inheritsFrom('Frameset')))
                 {
@@ -1807,8 +1801,7 @@ class Page extends CustomPage
 
         echo "</td></tr></table>\n";
 
-        reset($this->controls->items);
-        while (list($k,$v)=each($this->controls->items))
+        foreach($this->controls->items as $k => $v)
         {
                 if (($v->Visible) && ($v->IsLayer))
                 {
@@ -2298,8 +2291,7 @@ class Frameset extends ScrollingControl
     function dumpClientFrames()
     {
         $fakeframe=true;
-        reset($this->controls->items);
-        while (list($k,$v)=each($this->controls->items))
+        foreach($this->controls->items as $k => $v)
         {
                 if (($v->inheritsFrom('Frame')) || ($v->inheritsFrom('Frameset')))
                 {
@@ -2327,10 +2319,9 @@ class Frameset extends ScrollingControl
     {
                 if (count($hframes)!=0)
                 {
-                        reset($hframes);
                         $leftwidths="";
                         $rightwidths="";
-                        while(list($key, $val)=each($hframes))
+                        foreach($hframes as $key => $val)
                         {
                           if ($val->Align==alLeft) $leftwidths.=$val->Width.",";
                           if ($val->Align==alRight) $rightwidths.=",".$val->Width;
@@ -2348,16 +2339,14 @@ class Frameset extends ScrollingControl
                         }
 
                         echo "<frameset cols=\"$leftwidths*$rightwidths\" rows=\"*\" frameborder=\"$frameborder\" border=\"$this->BorderWidth\" framespacing=\"$this->FrameSpacing\" $events>\n";
-                        reset($hframes);
-                        while(list($key, $val)=each($hframes))
+                        foreach($hframes as $key => $val)
                         {
                           if ($val->Align==alLeft) $val->show();
                         }
                         //Dump here the alClient frames
                         $this->dumpClientFrames();
 
-                        reset($hframes);
-                        while(list($key, $val)=each($hframes))
+                        foreach($hframes as $key => $val)
                         {
                           if ($val->Align==alRight) $val->show();
                         }
@@ -2384,10 +2373,9 @@ class Frameset extends ScrollingControl
                 }
                 else
                 {
-        reset($this->controls->items);
         $vframes=array();
         $hframes=array();
-        while (list($k,$v)=each($this->controls->items))
+        foreach($this->controls->items as $k => $v)
         {
                 if (($v->inheritsFrom('Frame')) || ($v->inheritsFrom('Frameset')))
                 {
@@ -2408,10 +2396,9 @@ class Frameset extends ScrollingControl
         //Dump rows
         if (count($vframes)!=0)
         {
-                reset($vframes);
                 $topheights="";
                 $bottomheights="";
-                while(list($key, $val)=each($vframes))
+                foreach($vframes as $key => $val)
                 {
                   if ($val->Align==alTop) $topheights.=$val->Height.",";
                   if ($val->Align==alBottom) $bottomheights.=",".$val->Height;
@@ -2420,8 +2407,7 @@ class Frameset extends ScrollingControl
                 $events = $this->readFramesetJSEvents();
 
                 echo "<frameset rows=\"$topheights*$bottomheights\" cols=\"*\" frameborder=\"$this->FrameBorder\" border=\"$this->BorderWidth\" framespacing=\"$this->FrameSpacing\" $events>\n";
-                reset($vframes);
-                while(list($key, $val)=each($vframes))
+                foreach($vframes as $key => $val)
                 {
                   if ($val->Align==alTop) $val->show();
                 }
@@ -2429,8 +2415,7 @@ class Frameset extends ScrollingControl
                 //**********************************
                 $this->dumpHorizontalFrames($hframes, false);
                 //**********************************
-                reset($vframes);
-                while(list($key, $val)=each($vframes))
+                foreach($vframes as $key => $val)
                 {
                   if ($val->Align==alBottom) $val->show();
                 }

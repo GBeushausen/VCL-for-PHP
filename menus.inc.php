@@ -158,8 +158,7 @@ class CustomMainMenu extends QWidget
                         echo "  var m$level = new qx.ui.menu.Menu;\n";
                         echo "  d.add(m$level);\n";
                 }
-                reset($items);
-                while(list($k,$v)=each($items))
+                foreach($items as $k => $v)
                 {
                         $caption=$v['Caption'];
                         $tag=$v['Tag'];
@@ -228,8 +227,7 @@ class CustomMainMenu extends QWidget
          */
         function dumpTopButtons()
         {
-                reset($this->_items);
-                while(list($k,$v)=each($this->_items))
+                foreach($this->_items as $k => $v)
                 {
                         echo "  <!-- Topbutton Start -->\n";
                         $caption=$v['Caption'];
@@ -392,8 +390,7 @@ class CustomPopupMenu extends Component
         {
                 if (isset($elements)) unset($elements);
 
-                reset($items);                     // $this->_items -> $k
-                while(list($index, $item) = each($items))
+                foreach($items as $index => $item)
         {
                         $caption=$item['Caption'];
 

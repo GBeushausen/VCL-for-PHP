@@ -277,7 +277,7 @@ class CustomCheckListBox extends FocusControl
                                                 // Allows only an OnClick if enabled
                                                 $itemclick = ($this->_enabled == 1 && $this->Owner != null) ? "onclick=\"return CheckListBoxClick('$this->Name" . "_" . $index . "', $index);\"" : "";
 
-                                                //ie needs cell style just in a span inside <td>, firefox needs them in the <td> amazing... ¬¬
+                                                //ie needs cell style just in a span inside <td>, firefox needs them in the <td> amazing... ï¿½ï¿½
                                                 echo "</td><td $alignment width=\"$itemWidth\ height=\"$rowHeight\" style=\"overflow:hidden;white-space:nowrap; $headerStyle\">\n";
                                                 echo "<span id=$element  style=\"white-space:nowrap;\" $itemclick $hinttext $spanstyle $class>$item</span>\n";
                                         }
@@ -524,8 +524,7 @@ class CustomCheckListBox extends FocusControl
         {
           //This changes string-key based array to integer-key based array
           $this->_header=array();
-          reset($value);
-          while (list($k,$v)=each($value))
+          foreach($value as $k => $v)
           {
             $this->_header[$k]=$v;
           }
@@ -588,8 +587,7 @@ class CustomCheckListBox extends FocusControl
         *      {
         *               $checked=$this->CheckListBox1->Checked;
         *
-        *               reset($checked);
-        *               while(list($key, $val)=each($checked))
+        *               foreach($checked as $key => $val)
         *               {
         *                       if ($val==1) echo "The item #$key is checked<br>";
         *               }
@@ -603,8 +601,7 @@ class CustomCheckListBox extends FocusControl
         {
           //This changes string-key based array to integer-key based array
           $this->_checked=array();
-          reset($value);
-          while (list($k,$v)=each($value))
+          foreach($value as $k => $v)
           {
             $this->_checked[$k]=$v;
           }

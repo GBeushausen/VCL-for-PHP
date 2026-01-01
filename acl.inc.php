@@ -124,8 +124,7 @@ class ACLManager
       if(count($this->acl_objects) == 0) return(true);
 
       $result = false;
-      reset($this->acl_objects);
-      while(list($k, $acl) = each($this->acl_objects))
+      foreach($this->acl_objects as $k => $acl)
       {
          if($acl->isAllowed($role, $resource, $privilege))
          {
@@ -154,8 +153,7 @@ class ACLManager
       //No acl objects registered, all actions allowed
       if(count($this->acl_objects) != 0)
       {
-         reset($this->acl_objects);
-         while(list($k, $acl) = each($this->acl_objects))
+         foreach($this->acl_objects as $k => $acl)
          {
             $acl->add($resourcename);
          }

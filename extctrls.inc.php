@@ -412,8 +412,7 @@ class Image extends FocusControl
                         if ($this->controls->count()>0)
                         {
                                 echo "<map name=\"map$this->_name\">\n";
-                                reset($this->controls->items);
-                                while (list($k,$v)=each($this->controls->items))
+                                foreach($this->controls->items as $k => $v)
                                 {
                                         if ($v->Visible)
                                         {
@@ -1563,13 +1562,12 @@ class CustomButtonView extends QWidget
 
                 if (($this->ControlState & csDesigning) == csDesigning) $event=", function dummy(){}";
 
-                reset($items);
                 if (isset($items))
                 {
                         echo "\n";
                         echo "  <!-- Define Buttons - Start -->\n";
                 }
-                while(list($index, $item) = each($items))
+                foreach($items as $index => $item)
                 {
                         $caption=$item['Caption'];
 
@@ -2055,7 +2053,7 @@ class CustomRadioGroup extends FocusControl
                                                 $itemclick = ($this->_enabled == 1 && $this->Owner != null) ? "onclick=\"return RadioGroupClick(document.forms[0].$this->_name, $index);\"" : "";
                                                 echo "<input type=\"radio\" id=\"{$this->_name}_{$key}\" name=\"$this->_name\" value=\"$key\" $events $checked $enabled $taborder $hinttext $class />\n";
                                                 $itemWidth=$columnsWidth-20;
-                                                //ie needs cell style just in a span inside <td>, firefox needs them in the <td> amazing... ¬¬
+                                                //ie needs cell style just in a span inside <td>, firefox needs them in the <td> amazing... ï¿½ï¿½
                                                 echo "</td><td $alignment width=\"$itemWidth\ height=\"$rowHeight\" style=\"overflow:hidden;white-space:nowrap\">\n";
                                                 echo "<span id=\"{$this->_name}_{$key}_caption\"  style=\"white-space:nowrap\" $itemclick $hinttext $spanstyle $class>$item</span>\n";
                                         }
@@ -2335,7 +2333,7 @@ function RadioGroupClick(elem, index)
 *
 * A RadioGroup object is a special group box that contains only radio buttons.
 * Radio buttons that are placed directly in the same control component are said
-* to be “grouped.” When the user checks a radio button, all other radio buttons
+* to be ï¿½grouped.ï¿½ When the user checks a radio button, all other radio buttons
 * in its group become unchecked. Hence, two radio buttons on a form can be
 * checked at the same time only if they are placed in separate containers,
 * such as group boxes.
@@ -2565,7 +2563,7 @@ class RadioGroup extends CustomRadioGroup
  * used to fill it.
  *
  * If the shape is only part of the image of a custom control, use the methods of the
- * control’s canvas instead.
+ * controlï¿½s canvas instead.
  */
 class Shape extends Control
 {
@@ -2893,7 +2891,7 @@ class Bevel extends GraphicControl
  * and to simplify processing the timer events. Use one timer component for each timer in the application.
  *
  * The execution of the timer occurs through its OnTimer event. Timer has an Interval property
- * that determines how often the timer’s OnTimer event occurs. Interval corresponds to the parameter
+ * that determines how often the timerï¿½s OnTimer event occurs. Interval corresponds to the parameter
  * for the javascript settimeout() function.
  *
  * @link http://developer.mozilla.org/en/docs/DOM:window.setTimeout
@@ -3022,7 +3020,7 @@ class Timer extends Component
  * Use PaintBox to add custom images to a form. Unlike Image, which displays an
  * image that is stored in a file, PaintBox requires an application to draw the
  * image directly on a canvas. Use the OnPaint event handler to draw on the paint
- * box’s Canvas, the drawing surface of the paint box.
+ * boxï¿½s Canvas, the drawing surface of the paint box.
  *
  * @example Canvas/TestCanvas.php How to use Canvas
  */
