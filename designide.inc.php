@@ -285,7 +285,7 @@ function registerDropDatafield($components)
  * Use this class if you want to wrote Property Editors in pure PHP.
  *
  */
-class PropertyEditor extends Object
+class PropertyEditor extends VCLObject
 {
         public $value;
 
@@ -334,7 +334,7 @@ class PropertyEditor extends Object
  * Base class for component editors
  *
  */
-class ComponentEditor extends Object
+class ComponentEditor extends VCLObject
 {
         public $component=null;
 

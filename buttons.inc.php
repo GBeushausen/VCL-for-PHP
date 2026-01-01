@@ -57,7 +57,7 @@ define('bkAll','bkAll');
  * their appearance and placement on the button. You can use your own customized bitmap for
  * the button. The button can be associated with only one bitmap throught the ImageSource property.
  *
- * You can specify the button’s response by writing an OnClick event handler.
+ * You can specify the buttonï¿½s response by writing an OnClick event handler.
  *
  * @see Button, SpeedButton, QWidget
  *
@@ -96,7 +96,7 @@ class BitBtn extends QWidget
         private function getImageSourcePath()
         {
                 // check if relative
-                if (substr($this->_imagesource, 0, 2) == ".." || $this->_imagesource{0} == ".")
+                if (substr($this->_imagesource, 0, 2) == ".." || $this->_imagesource[0] == ".")
                 {
                         return dirname($_SERVER['SCRIPT_FILENAME']).'/'.$this->_imagesource;
                 }

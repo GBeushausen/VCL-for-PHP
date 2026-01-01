@@ -74,7 +74,7 @@ class EPropertyNotFound extends Exception
  * To create a class that belongs to the class library, you must, at least, inherit
  * from Object, which provides the basic methods to work.
  */
-class Object
+class VCLObject
 {
         /**
         * Global input object, easily accessible without declaring global
@@ -346,7 +346,6 @@ class Object
 
 
 }
-
 
 define('sGET',0);
 define('sPOST',1);

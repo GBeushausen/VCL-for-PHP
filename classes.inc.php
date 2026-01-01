@@ -226,7 +226,7 @@ class ECollectionError extends Exception
  * @see Reader
  *
  */
-class Filer extends Object
+class Filer extends VCLObject
 {
         protected $_xmlparser;
         protected $_root;
@@ -648,7 +648,7 @@ class Reader extends Filer
  *
  * @link http://www.php.net/manual/en/ref.array.php
  */
-class Collection extends Object
+class Collection extends VCLObject
 {
         //Items array
         public $items;
@@ -837,7 +837,7 @@ $methodCache = array();
  * @see serialize(), unserialize()
  *
  */
-class Persistent extends Object
+class Persistent extends VCLObject
 {
                 /**
                  * Used to serialize/unserialize. It returns the full path to identify this component.

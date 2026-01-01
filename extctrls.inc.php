@@ -145,7 +145,7 @@ class Image extends FocusControl
         private function getImageSourcePath()
         {
                 // check if relative
-                if (substr($this->_imagesource, 0, 2) == ".." || $this->_imagesource{0} == ".")
+                if (substr($this->_imagesource, 0, 2) == ".." || $this->_imagesource[0] == ".")
                 {
                         return dirname($_SERVER['SCRIPT_FILENAME']).'/'.$this->_imagesource;
                 }
@@ -2908,7 +2908,7 @@ class Timer extends Component
         {
                 parent::dumpJavascript();
 
-                if (($this->ControlState & csDesigning) == csDesigning) Break;
+                if (($this->ControlState & csDesigning) == csDesigning) return;
 
                 if (($this->_enabled) && ($this->_jsontimer != null))
                 {

@@ -37,7 +37,7 @@ define('daAbort','daAbort');
  * to be shown on data-aware component.
  *
  */
-class Field extends Object
+class Field extends VCLObject
 {
         private $_fieldname;
         private $_displaylabel;
@@ -741,7 +741,7 @@ class DataSet extends Component
         * property identifies a dataset to use as a master table in establishing a detail-master
         * relationship between this table and another one.
         *
-        * Note: At design time choose an available data source from the MasterSource property’s
+        * Note: At design time choose an available data source from the MasterSource propertyï¿½s
         * drop-down list in the Object Inspector.
         *
         * After setting the MasterSource property, specify which fields to use in the master
@@ -1074,7 +1074,7 @@ class DataSet extends Component
         * carries out a request to cancel changes. OnBeforeCancel is called by the
         * Cancel method before it cancels a dataset operation such as Edit, Insert, or Delete.
         *
-        * An application might use the OnBeforeCancel event to record a user’s changes in an undo buffer.
+        * An application might use the OnBeforeCancel event to record a userï¿½s changes in an undo buffer.
         *
         * @see readOnAfterCancel()
         *
@@ -1167,7 +1167,7 @@ class DataSet extends Component
         * Specifies the text of the current filter for a dataset.
         *
         * Use Filter to specify a dataset filter. When filtering is applied to a
-        * dataset, only those records that meet a filter’s conditions are available.
+        * dataset, only those records that meet a filterï¿½s conditions are available.
         * Filter describes the filter condition.
         *
         * @return string
@@ -1354,7 +1354,7 @@ class DataSet extends Component
         *
         * If controls are not already disabled, DisableControls records the current
         * state of the dataset, broadcasts the state change to all associated data-aware
-        * controls and detail datasets, and increments the dataset’s disabled count variable.
+        * controls and detail datasets, and increments the datasetï¿½s disabled count variable.
         * Otherwise, DisableControls just increments the disabled count variable.
         *
         * The disabled count is used internally to determine whether to display data
@@ -1586,7 +1586,7 @@ class DataSet extends Component
         * Automatically posts or cancels data changes when the active record changes.
         *
         * CheckBrowseMode is used internally by many dataset methods to ensure that
-        * modifications to the active record are posted when a dataset’s state is
+        * modifications to the active record are posted when a datasetï¿½s state is
         * dsEdit, dsInsert, or dsSetKey and a method switches to a different record.
         *
         * If State is dsEdit or dsInsert, CheckBrowseMode calls UpdateRecord, and,
@@ -1632,7 +1632,7 @@ class DataSet extends Component
         *
         * Call Close to set the Active property of a dataset to false. When Active
         * is false, the dataset is closed; it cannot read or write data and data-aware
-        * controls can’t use it to fetch data or post edits.
+        * controls canï¿½t use it to fetch data or post edits.
         *
         * An application must close the dataset before changing properties that affect the
         * status of the database or the controls that display data in an application.
@@ -1708,7 +1708,7 @@ class DataSet extends Component
         *
         * Calls CheckBrowseMode to post any pending changes to a prior record if necessary.
         *
-        * Checks the CanModify property and raises an exception if the dataset can’t be edited.
+        * Checks the CanModify property and raises an exception if the dataset canï¿½t be edited.
         *
         * Calls the OnBeforeEdit event handler.
         *
@@ -2082,7 +2082,7 @@ class DataSet extends Component
         }
 
         /**
-        * Re-fetches data from the database to update a dataset’s view of data.
+        * Re-fetches data from the database to update a datasetï¿½s view of data.
         *
         * Call Refresh to ensure that an application has the latest data from a database.
         * For example, when an application turns off filtering for a dataset, it should immediately
@@ -2376,9 +2376,9 @@ class DataSet extends Component
         *
         * Opens a dataset.
         *
-        * Calls a dataset’s First method.
+        * Calls a datasetï¿½s First method.
         *
-        * Call a dataset’s Prior method, and the method fails because the first row is already active.
+        * Call a datasetï¿½s Prior method, and the method fails because the first row is already active.
         *
         * Bof is false in all other cases.
         *
@@ -2398,9 +2398,9 @@ class DataSet extends Component
         *
         * Opens an empty dataset.
         *
-        * Calls a dataset’s Last method. (Unless it is a unidirectional dataset)
+        * Calls a datasetï¿½s Last method. (Unless it is a unidirectional dataset)
         *
-        * Call a dataset’s Next method, and the method fails because the current record is already the last row in the dataset.
+        * Call a datasetï¿½s Next method, and the method fails because the current record is already the last row in the dataset.
         *
         *
         *

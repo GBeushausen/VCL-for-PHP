@@ -582,7 +582,7 @@ class Layout extends Persistent
         */
             function dumpGridBagLayout($exclude=array())
             {
-                    $this->dumpGrid($exclude, $this->_cols, $this->_rows, "100%");
+                    $this->dumpGrid($this->_cols, $this->_rows, "100%", $exclude);
             }
 
         /**
@@ -594,7 +594,7 @@ class Layout extends Persistent
         */
             function dumpRowLayout($exclude=array())
             {
-                    $this->dumpGrid($exclude, $this->_cols, 1, "100%");
+                    $this->dumpGrid($this->_cols, 1, "100%", $exclude);
             }
 
         /**
@@ -606,7 +606,7 @@ class Layout extends Persistent
         */
             function dumpColLayout($exclude=array())
             {
-                    $this->dumpGrid($exclude, 1, $this->_rows, "100%");
+                    $this->dumpGrid(1, $this->_rows, "100%", $exclude);
             }
 
         /**
@@ -619,7 +619,7 @@ class Layout extends Persistent
         * @param integer $rows Number of rows for the grid
         * @param string $width Width for the layout
         */
-            function dumpGrid($exclude=array(),$cols,$rows,$width)
+            function dumpGrid($cols,$rows,$width,$exclude=array())
             {
                     $pwidth=$this->_control->Width;
                     $pheight=$this->_control->Height;

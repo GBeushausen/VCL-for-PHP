@@ -449,7 +449,7 @@ class OracleDatabase extends CustomConnection
         }
 
 
-        function executecursor($query,&$par=array(),$cursorname)
+        function executecursor($query,$cursorname,&$par=array())
         {
           $procbind = false;
           $this->open();
@@ -1812,7 +1812,7 @@ class CustomOracleStoredProc extends CustomOracleQuery
             {
               //for cursor
               $this->Database->DoConnect();
-              $this->_rs=$this->Database->executecursor($query,$arryparam,$this->CursorName);
+              $this->_rs=$this->Database->executecursor($query,$this->CursorName,$arryparam);
                $this->_buffer=array();
               $this->MoveBy(1);
 
