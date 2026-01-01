@@ -4,169 +4,295 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VCL for PHP 2.0 is a Delphi-inspired Visual Component Library framework, originally developed by qadram software S.L. (2004-2008). It enables building web applications using a component-based paradigm similar to Delphi's VCL.
+VCL for PHP 3.0 is a Delphi-inspired Visual Component Library framework, originally developed by qadram software S.L. (2004-2008). It enables building web applications using a component-based paradigm similar to Delphi's VCL.
 
-**Branch `php84-migration`**: Modernized version compatible with PHP 7.4 - 8.4 and modern browsers.
+**Branch `php84-migration`**: Fully modernized version for **PHP 8.4+ only**, featuring:
+- Composer with PSR-4 autoloading
+- PHP 8.4 Property Hooks (native getters/setters)
+- Enums for type-safe constants
+- Full backwards compatibility with legacy code
 
 ## Development Environment
 
 ### Using DDEV (Recommended)
 ```bash
-ddev start              # Start containers (PHP 8.4 supported)
+ddev start              # Start containers (PHP 8.4)
 ddev ssh                # Shell into web container
 ddev xdebug on          # Enable debugging
 ddev stop               # Stop containers
 ```
 Access at: `http://vcl.ddev.site`
 
-## Running Tests
-
-Tests use PHPUnit and are located in `tests/testsource/`:
+### Composer
 ```bash
-# From within ddev container
-cd tests
-php run_php_tests.bat   # Windows batch wrapper
+composer install        # Install dependencies
+composer dump-autoload  # Regenerate autoloader
+composer test           # Run PHPUnit tests
+composer analyse        # Run PHPStan
 ```
 
-Test configuration files:
-- `tests/mysqlcfg.inc.php` - MySQL connection settings
-- `tests/interbasecfg.inc.php` - InterBase connection settings
+## Project Structure
 
-## Architecture
-
-### Class Hierarchy
+### Modern Structure (src/)
 ```
-VCLObject (system.inc.php)  # Note: Named "Object" in legacy code, renamed for PHP 7.2+
-  └── Persistent (classes.inc.php) - Session serialization
-      └── Component (classes.inc.php) - Parent/child relationships
-          ├── Control (controls.inc.php) - Visual elements
-          │   └── FocusControl (forms.inc.php)
-          │       └── CustomPage → Page, DataModule
-          ├── CustomConnection (db.inc.php) - Database base
-          │   └── MySQLDatabase, OracleDatabase, InterbaseDatabase
-          └── DataSet (db.inc.php) - Query results
+src/VCL/
+├── Core/
+│   ├── VCLObject.php              # Base class for all objects
+│   ├── Component.php              # Component with Property Hooks
+│   ├── Input.php                  # Type-safe request handling
+│   ├── InputParam.php             # Parameter with sanitization
+│   ├── InputSource.php            # Enum: GET/POST/COOKIES/SERVER
+│   ├── LegacyConstants.php        # sGET, sPOST etc. for compatibility
+│   ├── LegacyAliases.php          # class_alias() mappings
+│   └── Exception/
+│       └── PropertyNotFoundException.php
+└── UI/
+    ├── Control.php                # Visual control base (Property Hooks)
+    ├── StdCtrls/
+    │   └── Button.php             # Example control
+    └── Enums/
+        ├── Alignment.php          # alNone, alTop, alClient...
+        ├── Anchors.php            # agLeft, agCenter, agRight
+        ├── BorderStyle.php        # bsNone, bsSingle, bsRaised...
+        ├── ButtonType.php         # btSubmit, btReset, btNormal
+        ├── CharCase.php           # ecNormal, ecUpperCase...
+        ├── Cursor.php             # crPointer, crWait...
+        └── LegacyConstants.php    # Legacy constant definitions
 ```
 
-### Core Files Dependency Order
-1. **vcl.inc.php** - Entry point, path calculation, `use_unit()` loader
-2. **system.inc.php** - `Object` base class, `Input`/`InputParam` for request handling
-3. **rtl.inc.php** - Utility functions (`boolToStr`, `textToHtml`, `redirect`)
-4. **classes.inc.php** - `Component`, `Persistent`, `Collection`, XML `Filer`/`Reader`
-5. **graphics.inc.php** - `Font`, `Brush`, `Pen`, `Canvas`
-6. **controls.inc.php** - `Control` base with layout, events, styling
-7. **forms.inc.php** - `Application`, `Page`, `Window`, `DataModule`
+### Legacy Structure (root)
+Original `.inc.php` files remain for backwards compatibility:
+- `vcl.inc.php`, `system.inc.php` → Now wrappers loading modern classes
+- `classes.inc.php`, `controls.inc.php`, `forms.inc.php` → Original code
+- `legacy/` → Backup of original wrapper files
 
-### Control Libraries
-| File | Content |
-|------|---------|
-| stdctrls.inc.php | Edit, Button, Label, ListBox, ComboBox, CheckBox, Memo |
-| extctrls.inc.php | Panel, GroupBox, Image, Shape, FlashObject |
-| comctrls.inc.php | StringGrid, PageControl, Toolbar, TreeView, StatusBar |
-| buttons.inc.php | BitBtn, SpeedButton variants |
-| dbctrls.inc.php | DBEdit, DBCheckBox, DBComboBox, DBMemo |
-| dbgrids.inc.php | DBGrid, DBStringGrid |
-| menus.inc.php | MainMenu, PopupMenu, MenuItem |
+## Usage
 
-### Database Drivers
-| File | Classes |
-|------|---------|
-| mysql.inc.php | MySQLDatabase, MySQLTable, MySQLQuery, MySQLStoredProc |
-| oracle.inc.php | OracleDatabase, OracleTable, OracleQuery |
-| interbase.inc.php | InterbaseDatabase, InterbaseTable, InterbaseQuery |
-
-## Key Patterns
-
-### Property Magic Methods
-Properties use `__get`/`__set` magic methods:
+### Modern Way (Recommended)
 ```php
-// Looks for getCaption()/setCaption(), then readCaption()/writeCaption()
-$control->Caption = "Text";
-$value = $control->Caption;
+<?php
+require_once 'vendor/autoload.php';
+
+use VCL\Core\Component;
+use VCL\UI\Control;
+use VCL\UI\StdCtrls\Button;
+use VCL\UI\Enums\Alignment;
+
+$btn = new Button();
+$btn->Name = 'Button1';
+$btn->Caption = 'Click Me';
+$btn->Left = 50;
+$btn->Top = 100;
+$btn->Align = Alignment::Top;
+$btn->OnClick = fn($sender) => print("Clicked!");
+
+echo $btn->render();
 ```
 
-### Component Creation (Programmatic)
-For programmatically created pages (without XML resource files), you **must** call `preinit()` and `init()` before `show()`:
-
+### Legacy Way (Still Supported)
 ```php
+<?php
 require_once("vcl.inc.php");
 use_unit("forms.inc.php");
 use_unit("stdctrls.inc.php");
 
-class MyPage extends Page {
-    public $Button1 = null;
+// Old code continues to work
+$btn = new Button($this);
+$btn->Caption = "Click Me";
+```
 
-    function __construct($aowner = null) {
-        parent::__construct($aowner);
-        $this->Name = "MyPage";  // Required! Prevents JS errors
+## PHP 8.4 Features
 
-        $this->Button1 = new Button($this);
-        $this->Button1->Name = "Button1";
-        $this->Button1->Parent = $this;
-        $this->Button1->OnClick = "Button1Click";
+### Property Hooks (Replaces __get/__set)
+```php
+class Control extends Component
+{
+    private string $_caption = '';
+
+    // Native getter/setter syntax
+    public string $Caption {
+        get => $this->_caption;
+        set => $this->_caption = $value;
     }
 
-    function Button1Click($sender, $params) {
-        // Event handler
+    // Computed/read-only property
+    public int $Right {
+        get => $this->_left + ($this->_width ?? 0);
+    }
+
+    // Setter with validation
+    public int $Width {
+        get => $this->_width;
+        set {
+            if ($value < 0) $value = 0;
+            $this->_width = $value;
+        }
     }
 }
+```
 
-global $application;
+### Enums (Replaces Constants)
+```php
+// Old way
+define('alTop', 'alTop');
+$ctrl->Align = alTop;
+
+// New way
+use VCL\UI\Enums\Alignment;
+$ctrl->Align = Alignment::Top;
+
+// Enums have methods
+echo Alignment::Top->toCss();  // "absolute; top: 0; left: 0; right: 0"
+```
+
+### Available Enums
+| Enum | Values | Methods |
+|------|--------|---------|
+| `Alignment` | None, Top, Bottom, Left, Right, Client, Custom | `toCss()` |
+| `Anchors` | None, Left, Center, Right | `toCss()` |
+| `BorderStyle` | None, Single, Box, Frame, Lowered, Raised... | `toCss()` |
+| `ButtonType` | Submit, Reset, Normal | `toHtml()` |
+| `CharCase` | Normal, LowerCase, UpperCase | `toCss()`, `transform()` |
+| `Cursor` | Pointer, CrossHair, Wait, Help... | `toCss()` |
+| `InputSource` | GET, POST, REQUEST, COOKIES, SERVER | `getArray()` |
+
+## Architecture
+
+### Modern Class Hierarchy
+```
+VCL\Core\VCLObject
+  └── VCL\Core\Component (Property Hooks)
+      └── VCL\UI\Control (Property Hooks)
+          └── VCL\UI\StdCtrls\Button
+```
+
+### Legacy Class Hierarchy
+```
+VCLObject (system.inc.php)
+  └── Persistent (classes.inc.php)
+      └── Component (classes.inc.php)
+          ├── Control (controls.inc.php)
+          │   └── FocusControl → Page, DataModule
+          ├── CustomConnection (db.inc.php)
+          │   └── MySQLDatabase, OracleDatabase
+          └── DataSet (db.inc.php)
+```
+
+## Key Patterns
+
+### Property Access
+```php
+// Modern (Property Hooks) - IDE autocomplete works!
+$ctrl->Caption = "Text";
+$ctrl->Align = Alignment::Top;
+
+// Legacy (Magic Methods) - still works
+$ctrl->Caption = "Text";  // Calls __set → setCaption()
+```
+
+### Component Creation
+```php
+// Modern
+$btn = new Button();
+$btn->Name = 'Button1';
+$btn->Parent = $panel;
+
+// Legacy (with preinit/init cycle)
 $page = new MyPage($application);
-$page->preinit();  // Reads form values from POST
-$page->init();     // Processes events, calls event handlers
+$page->preinit();
+$page->init();
 $page->show();
 ```
 
-**Critical**: Without `preinit()` and `init()`, form values won't be read and events won't fire!
+### Input Handling
+```php
+// Modern
+use VCL\Core\Input;
+$input = new Input();
+$name = $input->username?->asString() ?? 'Guest';
+$id = $input->post('id')?->asInteger() ?? 0;
 
-### Session Persistence
-Components automatically serialize changed properties to `$_SESSION` at shutdown and restore them on subsequent requests. Only properties that differ from defaults are stored.
-
-### XML Component Definitions
-Components can be defined in XML:
-```xml
-<OBJECT CLASS="Button" NAME="Button1">
-  <PROPERTY NAME="Caption">Click Me</PROPERTY>
-  <PROPERTY NAME="Left">10</PROPERTY>
-</OBJECT>
+// Legacy
+global $input;
+$action = $input->action;
+if (is_object($action)) {
+    $value = $action->asString();
+}
 ```
 
-## Package System
+## Running Tests
 
-Component registration in `packages/`:
-- **standard.package.php** - Core UI components
-- **mysql.package.php** - MySQL database components
-- **oracle.package.php** - Oracle database components
-- **database.package.php** - All database components
+```bash
+# PHPUnit tests
+composer test
 
-External library assets in: `qooxdoo/`, `dynapi/`, `xajax/`, `smarty/`, `libchart/`
+# Or manually
+cd tests
+php run_php_tests.bat
+```
 
-## Important Conventions
+Test configuration:
+- `tests/mysqlcfg.inc.php` - MySQL settings
+- `tests/interbasecfg.inc.php` - InterBase settings
 
-- All include files use `.inc.php` extension
-- Use `use_unit()` instead of `require_once` for VCL modules
-- Component names must match their class names for serialization
-- Events are JavaScript-based (OnClick, OnChange, etc.) and generate client-side code
-- Database connections trigger OnBeforeConnect/OnAfterConnect events
-- Layout uses alignment constants: alNone, alTop, alBottom, alLeft, alRight, alClient
+## Migration from Legacy
 
-## PHP 8.4 Migration Notes (Branch: php84-migration)
+### Step 1: Use Composer Autoloading
+```php
+// Instead of
+require_once("vcl.inc.php");
+use_unit("forms.inc.php");
+
+// Use
+require_once 'vendor/autoload.php';
+use VCL\UI\Control;
+```
+
+### Step 2: Use Enums
+```php
+// Instead of
+$ctrl->Align = alTop;
+$ctrl->Cursor = crPointer;
+
+// Use
+use VCL\UI\Enums\{Alignment, Cursor};
+$ctrl->Align = Alignment::Top;
+$ctrl->Cursor = Cursor::Pointer;
+```
+
+### Step 3: Use New Classes
+```php
+// Instead of legacy Control from controls.inc.php
+// Use VCL\UI\Control with Property Hooks
+use VCL\UI\StdCtrls\Button;
+
+$btn = new Button();
+$btn->Caption = 'Click';  // Property Hook, not magic method
+```
+
+## Legacy Compatibility
+
+All legacy code continues to work:
+- `use_unit()` loads modern classes when available, falls back to legacy
+- Old constant names (`alTop`, `sGET`, etc.) are still defined
+- Class aliases map old names to new namespaced classes
+- Magic methods (`__get`/`__set`) still work in `VCLObject`
+
+## PHP 8.4 Migration Notes
 
 ### Completed Migrations
 | Original | Replacement | Reason |
 |----------|-------------|--------|
-| `class Object` | `class VCLObject` | "Object" is reserved in PHP 7.2+ |
-| `each($array)` | `foreach($array as $k => $v)` | Removed in PHP 8.0 |
-| `$str{0}` | `$str[0]` | Curly brace syntax removed in PHP 8.0 |
-| `mysql_*` | `mysqli_*` | mysql extension removed in PHP 7.0 |
-| `split()` | `preg_split()` or `explode()` | Removed in PHP 7.0 |
-| `utf8_decode()` | `mb_convert_encoding($s, 'ISO-8859-1', 'UTF-8')` | Deprecated in PHP 8.2 |
-| `$HTTP_SERVER_VARS` | `$_SERVER` | Removed in PHP 5.4 |
+| `class Object` | `class VCLObject` | "Object" reserved in PHP 7.2+ |
+| `each($array)` | `foreach` | Removed in PHP 8.0 |
+| `$str{0}` | `$str[0]` | Curly brace syntax removed |
+| `mysql_*` | `mysqli_*` | mysql extension removed |
+| `split()` | `preg_split()`/`explode()` | Removed in PHP 7.0 |
+| `utf8_decode()` | `mb_convert_encoding()` | Deprecated in PHP 8.2 |
+| Magic `__get/__set` | Property Hooks | PHP 8.4 native syntax |
+| `define()` constants | Enums | Type-safe, with methods |
 
-### JavaScript Fixes for Modern Browsers
-- Removed `var event = event || window.event` (causes syntax error in strict mode)
-- Removed `document.all` and `document.layers` fallbacks
+### JavaScript Fixes
+- Removed `var event = event || window.event`
+- Removed `document.all` and `document.layers`
 - Use `document.getElementById()` instead
-
-### ADOdb
-Updated from version 5.05 to 5.22.8 for PHP 8.x compatibility.
