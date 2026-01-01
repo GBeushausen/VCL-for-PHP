@@ -121,8 +121,7 @@
             function dumpJavascript()
             {
                 parent::dumpJavascript();
-                reset($this->_rules);
-                while(list($key, $val)=each($this->_rules))
+                foreach($this->_rules as $key => $val)
                 {
                     $jsevent=trim($val['OnValidate']);
                     if ($jsevent!='')
@@ -146,8 +145,7 @@
 function <?php echo $this->_name; ?>_validate()
 {
 <?php
-        reset($this->_rules);
-        while(list($key, $val)=each($this->_rules))
+        foreach($this->_rules as $key => $val)
         {
             $cname=trim($val['Control']);
             if ($cname!='')

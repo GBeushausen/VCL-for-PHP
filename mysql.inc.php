@@ -53,7 +53,7 @@ class MySQLDatabase extends CustomConnection
 
             $rs = $this->Execute(sprintf($metaColumnsSQL,$tablename));
             $result=array();
-            while ($row=mysql_fetch_row($rs))
+            while ($row=mysqli_fetch_row($rs))
             {
                 $result[$row[0]]='';
             }
@@ -220,10 +220,10 @@ class MySQLDatabase extends CustomConnection
         function execute($query,$params=array())
         {
                 $this->open();
-                $rs = @mysql_query($query,$this->_connection);
+                $rs = @mysqli_query($this->_connection,$query);
                 if ($rs===false)
                 {
-                        DatabaseError("Error executing query: $query [".mysql_error($this->_connection)."]");
+                        DatabaseError("Error executing query: $query [".mysqli_error($this->_connection)."]");
                 }
 
                 return($rs);
@@ -254,7 +254,7 @@ class MySQLDatabase extends CustomConnection
         {
             if (($this->ControlState & csDesigning)!=csDesigning)
             {
-                $this->_connection = mysql_connect($this->Host, $this->UserName, $this->UserPassword);
+                $this->_connection = mysqli_connect($this->Host, $this->UserName, $this->UserPassword);
 
                 if (!$this->_connection)
                 {
@@ -262,7 +262,7 @@ class MySQLDatabase extends CustomConnection
                 }
                 else
                 {
-                    $selected=mysql_select_db($this->DatabaseName, $this->_connection);
+                    $selected=mysqli_select_db($this->_connection, $this->DatabaseName);
                     if (!$selected)
                     {
                         DatabaseError("Cannot select database $this->DatabaseName");
@@ -275,7 +275,7 @@ class MySQLDatabase extends CustomConnection
         {
                 if ($this->_connection!=null)
                 {
-                        mysql_close($this->_connection);
+                        mysqli_close($this->_connection);
                         $this->_connection=null;
                 }
         }
@@ -299,7 +299,7 @@ class MySQLDatabase extends CustomConnection
                                 $q="select * from $this->_dictionary where dict_tablename='$table' and dict_fieldname='$field'";
                                 $r=$this->execute($q);
                                 $props=array();
-                                while ($arow=mysql_fetch_assoc($r))
+                                while ($arow=mysqli_fetch_assoc($r))
                                 {
                                         $row=array();
                                         foreach($arow as $k => $v)
@@ -352,7 +352,7 @@ class MySQLDatabase extends CustomConnection
             $indexes = array();
 
         // parse index data into array
-        while ($row = mysql_fetch_row($rs))
+        while ($row = mysqli_fetch_row($rs))
         {
                 if ($primary == FALSE AND $row[2] == 'PRIMARY') {
                         continue;
@@ -452,7 +452,7 @@ class MySQLDatabase extends CustomConnection
                 if ($rs === false) return $false;
 
                 $rr=array();
-                while ($arr = mysql_fetch_row($rs))
+                while ($arr = mysqli_fetch_row($rs))
                 {
                         $rr[]=$arr[0];
                 }
@@ -506,7 +506,7 @@ class MySQLDataSet extends DataSet
     {
         if ($this->_rs!=null)
         {
-                return(mysql_num_rows($this->_rs));
+                return(mysqli_num_rows($this->_rs));
         }
         else return(parent::readRecordCount());
     }
@@ -517,7 +517,7 @@ class MySQLDataSet extends DataSet
 
         for($i=0;$i<=$distance-1;$i++)
         {
-            $this->_eof=!($buff=mysql_fetch_assoc($this->_rs));
+            $this->_eof=!($buff=mysqli_fetch_assoc($this->_rs));
         }
         if (!$this->_eof) $this->_buffer=$buff;
     }
