@@ -1978,8 +1978,9 @@ class Control extends Component
         function readControlStyle() { return($this->_controlstyle); }
         function writeControlStyle($value)
         {
-                $pieces=split("=",$value);
-                $this->_controlstyle[$pieces[0]]=$pieces[1];
+                // PHP 7+: Use explode instead of split
+                $pieces = explode("=", $value, 2);
+                $this->_controlstyle[$pieces[0]] = $pieces[1] ?? '';
         }
 
         //Here update parent-children properties, after all have been read from the session

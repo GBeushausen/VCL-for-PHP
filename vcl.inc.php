@@ -41,12 +41,11 @@ define('VCL_VERSION',VCL_VERSION_MAJOR.'.'.VCL_VERSION_MINOR);
 
         $scriptfilename='';
 
-        if (isset($_SERVER['SCRIPT_FILENAME'])) $scriptfilename= $_SERVER['SCRIPT_FILENAME'];
-        else
-        {
-                        global $HTTP_SERVER_VARS;
-
-                        $scriptfilename=$HTTP_SERVER_VARS["SCRIPT_NAME"];
+        // PHP 8.4 compatible: Use $_SERVER directly (HTTP_SERVER_VARS removed in PHP 5.4)
+        if (isset($_SERVER['SCRIPT_FILENAME'])) {
+                $scriptfilename = $_SERVER['SCRIPT_FILENAME'];
+        } elseif (isset($_SERVER['SCRIPT_NAME'])) {
+                $scriptfilename = $_SERVER['SCRIPT_NAME'];
         }
 
         //Defines the PATH where the VCL resides

@@ -164,17 +164,18 @@ class CustomStyleSheet extends Component
                                         $pos2 = strpos($word, '#');
                                         if (($pos1 === 0) || ($pos2 === 0))
                                         {
-                                                $prefix = $word{0};
+                                                // PHP 8.4: Use [] instead of {} for string access
+                                                $prefix = $word[0];
                                                 $word = trim(substr($word, 1, strlen($word)));
-                                                $parts = split('[ .#]', $word);
-                                                reset($parts);
-                                                $part = $prefix . trim(current($parts));
+                                                // PHP 7+: Use preg_split instead of split
+                                                $parts = preg_split('/[ .#]/', $word);
+                                                $part = $prefix . trim($parts[0] ?? '');
                                         }
                                         else
                                         {
-                                                $parts = split('[ .#]', $word);
-                                                reset($parts);
-                                                $part = trim(current($parts));
+                                                // PHP 7+: Use preg_split instead of split
+                                                $parts = preg_split('/[ .#]/', $word);
+                                                $part = trim($parts[0] ?? '');
                                         }
                                 }
                                 else

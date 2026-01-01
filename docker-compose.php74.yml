@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  web:
+    image: php:7.4-apache
+    container_name: vcl-php74
+    ports:
+      - "8074:80"
+    volumes:
+      - ./:/var/www/html:rw
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    working_dir: /var/www/html
+    command: >
+      bash -c "
+        docker-php-ext-install mysqli pdo pdo_mysql &&
+        a2enmod rewrite &&
+        apache2-foreground
+      "
+
+  db:
+    image: mysql:5.7
+    container_name: vcl-mysql57
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: vcl
+      MYSQL_USER: vcl
+      MYSQL_PASSWORD: vcl
+    ports:
+      - "33074:3306"
+    volumes:
+      - vcl_mysql_data:/var/lib/mysql
+
+volumes:
+  vcl_mysql_data:
