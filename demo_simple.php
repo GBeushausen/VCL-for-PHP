@@ -81,5 +81,7 @@ class SimpleDemoPage extends Page
 // Seite erstellen und anzeigen
 global $application;
 $page = new SimpleDemoPage($application);
+$page->preinit();  // Formular-Werte lesen
+$page->init();     // Events verarbeiten
 $page->show();
 ?>
