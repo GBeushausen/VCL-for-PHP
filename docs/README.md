@@ -87,6 +87,7 @@ $page->show();     // Render HTML
 - [Edit](components/Edit.md) - Single-line text input
 - [Button](components/Button.md) - Push button
 - [CheckBox](components/CheckBox.md) - Boolean checkbox
+- [CheckListBox](components/CheckListBox.md) - List with checkboxes
 - [RadioButton](components/RadioButton.md) - Radio button selection
 - [ComboBox](components/ComboBox.md) - Dropdown selection
 - [Memo](components/Memo.md) - Multi-line text input
@@ -106,6 +107,7 @@ $page->show();     // Render HTML
 - [TrackBar](components/TrackBar.md) - Slider control
 - [DateTimePicker](components/DateTimePicker.md) - Date/time selection
 - [MonthCalendar](components/MonthCalendar.md) - Calendar control
+- [Pager](components/Pager.md) - Data pagination
 
 ### Buttons
 
@@ -138,11 +140,16 @@ $page->show();     // Render HTML
 
 - [StyleSheet](components/StyleSheet.md) - CSS stylesheet loader
 
+### Actions
+
+- [ActionList](components/ActionList.md) - URL-based action routing
+
 ### Graphics
 
 - [Font](components/Font.md) - Font properties
 - [Brush](components/Brush.md) - Fill properties
 - [Pen](components/Pen.md) - Line/outline properties
+- [ImageList](components/ImageList.md) - Image path collection
 
 ## Page Lifecycle
 

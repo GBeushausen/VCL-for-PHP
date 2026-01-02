@@ -17,10 +17,12 @@ use VCL\Forms\Application;
 use VCL\StdCtrls\Label;
 use VCL\StdCtrls\Edit;
 use VCL\StdCtrls\Button;
+use VCL\ExtCtrls\Shape;
 
 // Eigene Page-Klasse definieren
 class SimpleDemoPage extends Page
 {
+    public ?Shape $Circle1 = null;
     public ?Label $Label1 = null;
     public ?Edit $Edit1 = null;
     public ?Button $Button1 = null;
@@ -33,6 +35,18 @@ class SimpleDemoPage extends Page
         $this->Name = "SimpleDemoPage";
         $this->Caption = "VCL Simple Demo";
         $this->Color = "#f5f5f5";
+
+        $this->Circle1 = new Shape($this);
+        $this->Circle1->Name = "Circle1";
+        $this->Circle1->Parent = $this;
+        $this->Circle1->Left = 20;
+        $this->Circle1->Top = 20;
+        $this->Circle1->Width = 100;
+        $this->Circle1->Height = 100;
+        $this->Circle1->Shape = "stCircle";
+        $this->Circle1->Brush->Color = "#FF0000";
+        $this->Circle1->Pen->Color = "#000000";
+        $this->Circle1->Pen->Width = 2;
 
         // Label erstellen
         $this->Label1 = new Label($this);
