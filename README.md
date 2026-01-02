@@ -1,5 +1,7 @@
 # VCL for PHP 3.0
 
+[![CI](https://github.com/user/vcl-php/actions/workflows/ci.yml/badge.svg)](https://github.com/user/vcl-php/actions/workflows/ci.yml)
+
 A Delphi-inspired Visual Component Library for building web applications with PHP.
 
 > **Note:** This is a fun project to demonstrate how to refactor ancient legacy code to modern PHP standards. The code is **not production ready**.
@@ -100,8 +102,23 @@ This is an educational/experimental project. Key areas that have been modernized
 - [x] HTML5 output with viewport
 - [x] Modern JavaScript (no `document.all`, `document.layers`)
 - [x] mysqli instead of deprecated mysql_*
-- [ ] Full test coverage
-- [ ] Complete component migration
+- [x] Full test coverage (611 tests, 736 assertions)
+- [x] Complete component migration
+- [x] PHPStan static analysis (level 5, 0 errors)
+- [x] GitHub Actions CI
+
+## Quality Assurance
+
+```bash
+# Run tests
+composer test
+
+# Run static analysis
+composer analyse
+
+# Run both
+composer check
+```
 
 ## License
 
