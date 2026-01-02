@@ -1,4 +1,4 @@
-# VCL for PHP 2.0
+# VCL for PHP 3.0
 
 A Delphi-inspired Visual Component Library for building web applications with PHP.
 
