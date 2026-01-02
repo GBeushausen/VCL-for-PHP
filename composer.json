@@ -45,7 +45,8 @@
             "src/bootstrap.php",
             "src/VCL/Core/constants.php",
             "src/VCL/RTL/functions.php",
-            "src/VCL/Graphics/constants.php"
+            "src/VCL/Graphics/constants.php",
+            "src/VCL/Forms/constants.php"
         ]
     },
     "autoload-dev": {
