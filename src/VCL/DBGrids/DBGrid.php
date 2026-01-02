@@ -138,7 +138,6 @@ class DBGrid extends CustomDBGrid
 
         $this->_width = 400;
         $this->_height = 200;
-        $this->ControlStyle = 'csSlowRedraw=1';
     }
 
     /**

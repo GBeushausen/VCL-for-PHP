@@ -29,3 +29,6 @@ Thumbs.db
 *.tmp
 *.swp
 *~
+
+# PHPUnit
+.phpunit.cache/

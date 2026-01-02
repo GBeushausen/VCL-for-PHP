@@ -111,7 +111,7 @@ abstract class PageTemplate extends Component
      * @param string $name Variable name
      * @param mixed $value Variable value
      */
-    public function assign(string $name, mixed $value): void
+    public function assignVariable(string $name, mixed $value): void
     {
         $this->variables[$name] = $value;
     }

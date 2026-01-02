@@ -22,7 +22,7 @@ class MainMenu extends CustomMainMenu
 
     // Legacy getters/setters for published properties
     public function getAlignment(): string { return $this->readAlignment(); }
-    public function setAlignment(string $value): void { $this->writeAlignment($value); }
+    public function setAlignment(\VCL\UI\Enums\Anchors|string $value): void { $this->writeAlignment($value); }
 
     public function getVisible(): bool { return $this->readVisible(); }
     public function setVisible(bool $value): void { $this->writeVisible($value); }

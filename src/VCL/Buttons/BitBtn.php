@@ -198,7 +198,7 @@ class BitBtn extends QWidget
             echo "<input type=\"hidden\" id=\"{$hiddenFieldName}\" name=\"{$hiddenFieldName}\" value=\"\" />\n";
         }
 
-        $this->dumpJavaScript();
+        $this->dumpJavascript();
     }
 
     /**
@@ -271,7 +271,7 @@ class BitBtn extends QWidget
     /**
      * Dump JavaScript for the button.
      */
-    protected function dumpJavaScript(): void
+    public function dumpJavascript(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             return;
