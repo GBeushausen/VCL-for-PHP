@@ -21,15 +21,15 @@ class MainMenu extends CustomMainMenu
     }
 
     // Legacy getters/setters for published properties
-    public function getAlignment(): string { return $this->readAlignment(); }
-    public function setAlignment(\VCL\UI\Enums\Anchors|string $value): void { $this->writeAlignment($value); }
+    public function getAlignment(): \VCL\UI\Enums\Anchors|string { return $this->_alignment; }
+    public function setAlignment(\VCL\UI\Enums\Anchors|string $value): void { $this->Alignment = $value; }
 
-    public function getVisible(): bool { return $this->readVisible(); }
-    public function setVisible(bool $value): void { $this->writeVisible($value); }
+    public function getVisible(): bool { return $this->_visible; }
+    public function setVisible(bool $value): void { $this->Visible = $value; }
 
-    public function getOnClick(): ?string { return $this->readOnClick(); }
-    public function setOnClick(?string $value): void { $this->writeOnClick($value); }
+    public function getOnClick(): ?string { return $this->_onclick; }
+    public function setOnClick(?string $value): void { $this->_onclick = $value; }
 
-    public function getjsOnClick(): ?string { return $this->readjsOnClick(); }
-    public function setjsOnClick(?string $value): void { $this->writejsOnClick($value); }
+    public function getjsOnClick(): ?string { return $this->_jsonclick; }
+    public function setjsOnClick(?string $value): void { $this->_jsonclick = $value; }
 }

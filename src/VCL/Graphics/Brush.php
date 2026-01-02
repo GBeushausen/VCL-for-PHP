@@ -67,7 +67,6 @@ class Brush extends Persistent
     {
         if (!($dest instanceof Brush)) {
             $dest->assignError($this);
-            return;
         }
 
         $dest->Color = $this->_color;

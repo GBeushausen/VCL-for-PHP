@@ -774,6 +774,87 @@ class Control extends Component
     }
 
     // =========================================================================
+    // JAVASCRIPT WRAPPER METHODS
+    // =========================================================================
+
+    /**
+     * Get the hidden field name for JavaScript wrapper events.
+     */
+    protected function readJSWrapperHiddenFieldName(): string
+    {
+        return $this->_name . '_event';
+    }
+
+    /**
+     * Get the submit event value for JavaScript wrapper.
+     */
+    protected function readJSWrapperSubmitEventValue(?string $event): string
+    {
+        return $event ?? '';
+    }
+
+    /**
+     * Get the JavaScript wrapper function code.
+     * @param string|null $eventName Optional event name to generate function for
+     */
+    protected function getJSWrapperFunction(?string $eventName = null): string
+    {
+        if ($eventName === null) {
+            return $this->_name . '_event_wrapper';
+        }
+
+        // Generate JavaScript wrapper function code
+        $hiddenField = $this->readJSWrapperHiddenFieldName();
+        return <<<JS
+function {$eventName}(event) {
+    var hiddenField = document.getElementById('{$hiddenField}');
+    if (hiddenField) hiddenField.value = '{$eventName}';
+    document.forms[0].submit();
+}
+
+JS;
+    }
+
+    /**
+     * Read JavaScript events as HTML attributes.
+     */
+    protected function readJsEvents(): string
+    {
+        $events = [];
+
+        if ($this->_jsonclick !== null) {
+            $events[] = 'onclick="' . htmlspecialchars($this->_jsonclick) . '(event)"';
+        }
+        if ($this->_jsondblclick !== null) {
+            $events[] = 'ondblclick="' . htmlspecialchars($this->_jsondblclick) . '(event)"';
+        }
+
+        return implode(' ', $events);
+    }
+
+    /**
+     * Add JavaScript wrapper to events string.
+     */
+    protected function addJSWrapperToEvents(string &$events, ?string $phpEvent, ?string $jsEvent, string $eventName): void
+    {
+        if ($phpEvent !== null || $jsEvent !== null) {
+            $wrapper = $this->getJSWrapperFunction();
+            $events .= ' ' . $eventName . '="' . $wrapper . '(event)"';
+        }
+    }
+
+    /**
+     * Get the hint attribute for HTML elements.
+     */
+    protected function getHintAttribute(): string
+    {
+        if ($this->_showHint && $this->_hint !== '') {
+            return ' title="' . htmlspecialchars($this->_hint) . '"';
+        }
+        return '';
+    }
+
+    // =========================================================================
     // LEGACY GETTERS/SETTERS
     // =========================================================================
 

@@ -50,13 +50,7 @@ class TreeNode extends Persistent
 
     public array $Items {
         get => $this->_items;
-        set {
-            if (is_array($value)) {
-                $this->_items = $value;
-            } else {
-                $this->_items = empty($value) ? [] : [$value];
-            }
-        }
+        set => $this->_items = $value;
     }
 
     public int $Level {

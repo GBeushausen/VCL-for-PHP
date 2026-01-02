@@ -106,7 +106,7 @@ class CustomPopupMenu extends Component
         echo "}\n\n";
 
         // Submit menu event function
-        $formName = $this->_owner !== null ? $this->_owner->Name : 'document.forms[0]';
+        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
 
         echo "function {$this->_name}SubmitEvent(tag) {\n";
         echo "  var submit = true;\n";

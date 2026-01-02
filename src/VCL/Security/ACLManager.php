@@ -85,7 +85,7 @@ class ACLManager
             return $this->$method();
         }
 
-        throw new PropertyNotFoundException(static::class . '->' . $name);
+        throw new PropertyNotFoundException(static::class, $name);
     }
 
     public function __set(string $name, mixed $value): void
@@ -102,7 +102,7 @@ class ACLManager
             return;
         }
 
-        throw new PropertyNotFoundException(static::class . '->' . $name);
+        throw new PropertyNotFoundException(static::class, $name);
     }
 
     // =========================================================================

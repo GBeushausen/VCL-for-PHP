@@ -402,7 +402,7 @@ class DBPaginator extends CustomControl
      */
     protected function dumpPaginatorJS(): void
     {
-        $formName = $this->_owner !== null ? $this->_owner->Name : 'document.forms[0]';
+        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
 
         echo "<script type=\"text/javascript\">\n";
         echo "function {$this->_name}_navigate(action) {\n";

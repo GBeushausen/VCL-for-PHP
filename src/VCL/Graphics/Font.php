@@ -180,7 +180,6 @@ class Font extends Persistent
     {
         if (!($dest instanceof Font)) {
             $dest->assignError($this);
-            return;
         }
 
         $dest->startUpdate();

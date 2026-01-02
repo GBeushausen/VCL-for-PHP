@@ -49,13 +49,7 @@ class CustomCheckListBox extends FocusControl
 
     public array $Items {
         get => $this->_items;
-        set {
-            if (is_array($value)) {
-                $this->_items = $value;
-            } else {
-                $this->_items = empty($value) ? [] : [$value];
-            }
-        }
+        set => $this->_items = $value;
     }
 
     public array $Checked {
@@ -250,12 +244,7 @@ class CustomCheckListBox extends FocusControl
         }
 
         // Get the alignment of the items
-        $alignment = match ($this->_alignment ?? 0) {
-            AG_LEFT => 'align="left"',
-            AG_CENTER => 'align="center"',
-            AG_RIGHT => 'align="right"',
-            default => '',
-        };
+        $alignment = '';
 
         // Call the OnShow event if assigned
         if ($this->_onshow !== null) {
@@ -266,7 +255,7 @@ class CustomCheckListBox extends FocusControl
 
         echo '<table cellpadding="0" cellspacing="0" title="' . htmlspecialchars($hinttext) . '" ' . $style . ' ' . $class . '>';
 
-        if (is_array($this->_items) && count($this->_items) > 0) {
+        if (count($this->_items) > 0) {
             $w = $this->_width;
             $h = $this->_height;
             $index = 0;

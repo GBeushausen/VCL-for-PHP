@@ -7,7 +7,7 @@ namespace VCL\Database\MySQL;
 use VCL\Database\DataSet;
 use VCL\Database\EDatabaseError;
 use VCL\Database\Enums\DatasetState;
-use VCL\Core\Exceptions\EPropertyNotFound;
+use VCL\Core\Exception\PropertyNotFoundException;
 use mysqli_result;
 
 /**
@@ -90,12 +90,13 @@ class MySQLDataSet extends DataSet
     {
         parent::MoveBy($distance);
 
+        $buff = null;
         for ($i = 0; $i <= $distance - 1; $i++) {
             $buff = mysqli_fetch_assoc($this->_rs);
             $this->_eof = ($buff === null || $buff === false);
         }
 
-        if (!$this->_eof && is_array($buff)) {
+        if (!$this->_eof && $buff !== null && $buff !== false) {
             $this->_buffer = $buff;
         }
     }
@@ -163,7 +164,7 @@ class MySQLDataSet extends DataSet
             $this->MoveBy(1);
         }
 
-        if (!is_array($this->_buffer) || count($this->_buffer) === 0) {
+        if (count($this->_buffer) === 0) {
             if ($this->_tablename !== '') {
                 $fd = $this->_database->MetaFields($this->_tablename);
                 $this->_buffer = $fd;
@@ -216,13 +217,13 @@ class MySQLDataSet extends DataSet
     /**
      * Returns the value of a field on the dataset.
      *
-     * @throws EPropertyNotFound
+     * @throws PropertyNotFoundException
      */
     public function fieldget(string $fieldname): mixed
     {
         if ($this->_rs !== null) {
             if ($this->readActive()) {
-                if (is_array($this->_buffer) && array_key_exists($fieldname, $this->_buffer)) {
+                if (array_key_exists($fieldname, $this->_buffer)) {
                     $state = $this->_state instanceof DatasetState
                         ? $this->_state
                         : DatasetState::tryFrom($this->_state);
@@ -233,25 +234,25 @@ class MySQLDataSet extends DataSet
                         return $this->fieldbuffer[$fieldname];
                     }
                     return '';
-                } elseif (is_array($this->fieldbuffer) && array_key_exists($fieldname, $this->fieldbuffer)) {
+                } elseif (array_key_exists($fieldname, $this->fieldbuffer)) {
                     return $this->fieldbuffer[$fieldname];
                 }
             }
         }
 
-        throw new EPropertyNotFound($this->ClassName() . '->' . $fieldname);
+        throw new PropertyNotFoundException($this->ClassName(), $fieldname);
     }
 
     /**
      * Sets the value of a field on the dataset.
      *
-     * @throws EPropertyNotFound
+     * @throws PropertyNotFoundException
      */
     public function fieldset(string $fieldname, mixed $value): void
     {
         if ($this->_rs !== null) {
             if ($this->readActive()) {
-                if (is_array($this->_buffer) && array_key_exists($fieldname, $this->_buffer)) {
+                if (array_key_exists($fieldname, $this->_buffer)) {
                     $this->fieldbuffer[$fieldname] = $value;
                     $this->Modified = true;
 
@@ -267,7 +268,7 @@ class MySQLDataSet extends DataSet
             }
         }
 
-        throw new EPropertyNotFound($this->ClassName() . '->' . $fieldname);
+        throw new PropertyNotFoundException($this->ClassName(), $fieldname);
     }
 
     /**
@@ -277,9 +278,9 @@ class MySQLDataSet extends DataSet
     {
         try {
             return parent::__get($nm);
-        } catch (EPropertyNotFound $e) {
+        } catch (PropertyNotFoundException $e) {
             if ($this->_rs !== null && $this->readActive()) {
-                if (is_array($this->_buffer) && array_key_exists($nm, $this->_buffer)) {
+                if (array_key_exists($nm, $this->_buffer)) {
                     $state = $this->_state instanceof DatasetState
                         ? $this->_state
                         : DatasetState::tryFrom($this->_state);
@@ -290,7 +291,7 @@ class MySQLDataSet extends DataSet
                         return $this->fieldbuffer[$nm];
                     }
                     return '';
-                } elseif (is_array($this->fieldbuffer) && array_key_exists($nm, $this->fieldbuffer)) {
+                } elseif (array_key_exists($nm, $this->fieldbuffer)) {
                     return $this->fieldbuffer[$nm];
                 }
             }
@@ -305,9 +306,9 @@ class MySQLDataSet extends DataSet
     {
         try {
             parent::__set($nm, $val);
-        } catch (EPropertyNotFound $e) {
+        } catch (PropertyNotFoundException $e) {
             if ($this->_rs !== null && $this->readActive()) {
-                if (is_array($this->_buffer) && array_key_exists($nm, $this->_buffer)) {
+                if (array_key_exists($nm, $this->_buffer)) {
                     $this->fieldbuffer[$nm] = $val;
                     $this->Modified = true;
 

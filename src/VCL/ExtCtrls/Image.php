@@ -193,6 +193,34 @@ class Image extends FocusControl
     }
 
     /**
+     * Check if a valid data field is configured.
+     */
+    protected function hasValidDataField(): bool
+    {
+        return $this->_datafield !== '' &&
+               $this->_datasource !== null &&
+               is_object($this->_datasource) &&
+               isset($this->_datasource->DataSet);
+    }
+
+    /**
+     * Read the value from the configured data field.
+     */
+    protected function readDataFieldValue(): mixed
+    {
+        if (!$this->hasValidDataField()) {
+            return null;
+        }
+
+        $dataset = $this->_datasource->DataSet;
+        if ($dataset !== null && method_exists($dataset, 'fieldget')) {
+            return $dataset->fieldget($this->_datafield);
+        }
+
+        return null;
+    }
+
+    /**
      * Dump the graphic as binary.
      */
     public function dumpGraphic(): void

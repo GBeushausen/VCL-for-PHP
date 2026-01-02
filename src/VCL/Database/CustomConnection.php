@@ -43,7 +43,7 @@ class CustomConnection extends Component
 
     public bool $Connected {
         get => $this->readConnected();
-        set => $this->writeConnected($value);
+        set { $this->writeConnected($value); }
     }
 
     public ?string $OnAfterConnect {

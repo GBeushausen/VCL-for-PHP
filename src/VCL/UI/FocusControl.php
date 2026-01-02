@@ -159,6 +159,19 @@ class FocusControl extends Control
     }
 
     // =========================================================================
+    // JAVASCRIPT EVENTS
+    // =========================================================================
+
+    /**
+     * Dump JavaScript events for this control.
+     * Override in subclasses to add specific events.
+     */
+    public function dumpJsEvents(): void
+    {
+        // Base implementation - subclasses can override
+    }
+
+    // =========================================================================
     // LEGACY GETTERS/SETTERS
     // =========================================================================
 

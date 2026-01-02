@@ -52,7 +52,7 @@ class DBRepeater extends Panel
     {
         parent::__construct($aowner);
 
-        if (property_exists($this, '_layout') && $this->_layout !== null) {
+        if ($this->_layout !== null) {
             $this->_layout->Type = 'XY_LAYOUT';
         }
     }
@@ -90,7 +90,7 @@ class DBRepeater extends Panel
             return;
         }
 
-        $class = ($this->_style !== '') ? "class=\"{$this->_styleclass}\"" : '';
+        $class = ($this->_style !== '') ? "class=\"{$this->_style}\"" : '';
         $isHorizontal = ($this->_kind === 'rkHorizontal');
 
         echo "<table id=\"{$this->_name}_table_detail\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" {$class}>\n";

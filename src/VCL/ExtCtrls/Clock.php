@@ -43,6 +43,8 @@ class Clock extends Panel
     protected bool $_format24h = true;
     protected string $_dateformat = 'YYYY-MM-DD';
     protected string $_timeformat = '';
+    protected int $_borderstyle = BS_SINGLE;
+    protected string $_bordercolor = '#ccc';
 
     // =========================================================================
     // PROPERTY HOOKS
@@ -285,7 +287,7 @@ JS;
         $style .= $this->Font->FontString;
 
         if ($this->_borderstyle !== BS_NONE) {
-            $style .= 'border:1px solid ' . ($this->_bordercolor ?? '#ccc') . ';';
+            $style .= 'border:1px solid ' . $this->_bordercolor . ';';
         }
 
         return $style;

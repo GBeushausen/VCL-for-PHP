@@ -86,7 +86,6 @@ class Pen extends Persistent
     {
         if (!($dest instanceof Pen)) {
             $dest->assignError($this);
-            return;
         }
 
         $dest->Color = $this->_color;

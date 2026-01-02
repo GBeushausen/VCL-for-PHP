@@ -51,6 +51,9 @@ class OracleDatabase extends CustomConnection
     protected int $_dialect = 3;
     protected bool $autoCommit = true;
 
+    /** @var resource|false Prepared statement */
+    protected mixed $_preparedStatement = false;
+
     public string $NLS_DATE_FORMAT = 'YYYY-MM-DD';
 
     // =========================================================================
@@ -291,17 +294,19 @@ class OracleDatabase extends CustomConnection
     /**
      * Prepare a query for execution.
      *
+     * Note: This override stores the prepared statement internally.
+     * Use getPreparedStatement() to retrieve it.
+     *
      * @param string $query SQL query
-     * @return resource|false Prepared statement
      */
-    public function prepare(string $query)
+    public function Prepare(string $query): void
     {
         if ($this->connection === null) {
-            return false;
+            $this->_preparedStatement = false;
+            return;
         }
 
-        $stmt = @oci_parse($this->connection, $query);
-        return $stmt !== false ? $stmt : false;
+        $this->_preparedStatement = @oci_parse($this->connection, $query);
     }
 
     /**

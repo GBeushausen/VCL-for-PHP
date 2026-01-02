@@ -61,7 +61,9 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse src --level=5",
+        "test:coverage": "phpunit --coverage-html coverage/",
+        "analyse": "phpstan analyse",
+        "analyse:baseline": "phpstan analyse --generate-baseline",
         "check": [
             "@analyse",
             "@test"

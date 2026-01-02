@@ -182,7 +182,7 @@ class CustomMySQLTable extends MySQLDataSet
         if ($this->_mastersource !== null) {
             $this->MasterSource = $this->_mastersource;
             if (is_object($this->_mastersource)) {
-                if (is_array($this->_masterfields)) {
+                if (count($this->_masterfields) > 0) {
                     $this->_mastersource->DataSet->Open();
 
                     $ms = '';
@@ -263,12 +263,10 @@ class CustomMySQLTable extends MySQLDataSet
         }
 
         $output = '';
-        if (is_array($keyfields)) {
-            foreach ($keyfields as $k => $v) {
-                $avalue = $values[$v] ?? '';
-                $avalue = str_replace('"', '&quot;', (string)$avalue);
-                $output .= "<input type=\"hidden\" name=\"{$basename}[{$v}]\" value=\"{$avalue}\" />";
-            }
+        foreach ($keyfields as $k => $v) {
+            $avalue = $values[$v] ?? '';
+            $avalue = str_replace('"', '&quot;', (string)$avalue);
+            $output .= "<input type=\"hidden\" name=\"{$basename}[{$v}]\" value=\"{$avalue}\" />";
         }
 
         return $output;

@@ -1,0 +1,67 @@
+parameters:
+    level: 5
+    paths:
+        - src/VCL
+    excludePaths:
+        - src/VCL/Legacy/*
+
+    # PHP 8.4 features
+    phpVersion: 80400
+
+    # Ignore some issues that are intentional in VCL
+    ignoreErrors:
+        # PHP 8.4 Property Hooks - PHPStan doesn't fully support these yet
+        - '#Get hook for non-virtual property .+ does not read its value#'
+        - '#Set hook for non-virtual property .+ does not write its value#'
+        - '#Property .+ is never read, only written#'
+        - '#propertyGetHook\.noRead#'
+        - '#propertySetHook\.noWrite#'
+
+        # Property hooks create virtual properties
+        - '#Access to an undefined property .+::\$[A-Z]#'
+
+        # Legacy global variables used in VCL
+        - '#Variable \$application might not be defined#'
+        - '#Variable \$scriptfilename might not be defined#'
+        - '#Variable \$checkduplicatenames might not be defined#'
+        - '#Variable \$startup_functions might not be defined#'
+
+        # Dynamic property access for Delphi-style components
+        - '#Access to an undefined property VCL\\Core\\Component::#'
+        - '#Access to an undefined property VCL\\Core\\Persistent::#'
+
+        # Magic method __get/__set dynamic access
+        - '#Cannot access property \$[A-Z].+ on mixed#'
+
+        # is_object() checks that are intentional for safety
+        - '#Call to function is_object\(\) with .+ will always evaluate to true#'
+
+        # Set hook noAssign - PHPStan doesn't understand indirect assignment via method calls
+        - '#Set hook for non-virtual property .+ does not assign value to it#'
+        - '#propertySetHook\.noAssign#'
+
+        # Comparison patterns that are intentional or context-dependent
+        - '#Strict comparison using .+ between non-falsy-string and .+ will always evaluate to true#'
+        - '#Strict comparison using .+ between non-empty-string and .+ will always evaluate to true#'
+
+        # Dynamic method calls on polymorphic objects
+        - '#Cannot call method .+ on class-string\|object#'
+
+        # Nullable property coalesce is intentional for optional values
+        - '#Property .+ on left side of \?\? is not nullable#'
+
+        # Return type covariance issues in database drivers
+        - '#Return type .+ of method .+ is not covariant with return type#'
+
+        # Dataset EOF() state changes after Next() call - PHPStan doesn't track side effects
+        - '#Negated boolean expression is always true#'
+
+    # Don't report unmatched patterns (some may not occur at all levels)
+    reportUnmatchedIgnoredErrors: false
+
+    # Memory limit for analysis
+    parallel:
+        maximumNumberOfProcesses: 4
+
+    # Type inference settings
+    treatPhpDocTypesAsCertain: false

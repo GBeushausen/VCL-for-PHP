@@ -205,7 +205,7 @@ class MySQLDatabase extends CustomConnection
             return;
         }
 
-        $this->_connection = @mysqli_connect(
+        $connection = @mysqli_connect(
             $this->_host,
             $this->_username,
             $this->_userpassword,
@@ -213,10 +213,11 @@ class MySQLDatabase extends CustomConnection
             $this->_port
         );
 
-        if ($this->_connection === false) {
-            $this->_connection = null;
+        if ($connection === false) {
             throw new \VCL\Database\EDatabaseError("Cannot connect to database server: " . mysqli_connect_error());
         }
+
+        $this->_connection = $connection;
 
         // Set charset
         if ($this->_charset !== '') {

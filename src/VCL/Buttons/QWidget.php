@@ -17,6 +17,7 @@ use VCL\UI\FocusControl;
 class QWidget extends FocusControl
 {
     protected bool $_hidden = false;
+    protected int $_taborder = 0;
 
     // Property Hooks
     public bool $Hidden {
@@ -90,7 +91,7 @@ class QWidget extends FocusControl
      */
     protected function getHintAttribute(): string
     {
-        if ($this->_showhint && $this->_hint !== '') {
+        if ($this->_showHint && $this->_hint !== '') {
             return " title=\"" . htmlspecialchars($this->_hint) . "\"";
         }
         return '';

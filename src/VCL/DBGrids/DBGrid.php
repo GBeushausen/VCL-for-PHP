@@ -6,10 +6,13 @@ namespace VCL\DBGrids;
 
 use VCL\UI\CustomControl;
 
-// Alignment constants
+// Alignment constants (taCenter is already defined in Graphics/constants.php)
 if (!defined('taLeftJustify')) {
     define('taLeftJustify', 'taLeftJustify');
     define('taRightJustify', 'taRightJustify');
+}
+// Ensure taCenter is available (defined in Graphics/constants.php)
+if (!defined('taCenter')) {
     define('taCenter', 'taCenter');
 }
 
@@ -493,7 +496,7 @@ class DBGrid extends CustomDBGrid
      */
     protected function dumpGridJS(): void
     {
-        $formName = $this->_owner !== null ? $this->_owner->Name : 'document.forms[0]';
+        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
 
         echo "<script type=\"text/javascript\">\n";
 

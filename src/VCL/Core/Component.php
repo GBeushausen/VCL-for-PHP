@@ -428,7 +428,7 @@ class Component extends Persistent
      */
     public function generateAjaxEvent(string $jsEvent, string $phpEvent): string
     {
-        $ownerName = $this->owner?->Name ?? '';
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
         return " {$jsEvent}=\"xajax_ajaxProcess('{$ownerName}','{$this->_name}',null,'{$phpEvent}',xajax.getFormValues('{$ownerName}'))\" ";
     }
 
@@ -438,7 +438,7 @@ class Component extends Persistent
     public function ajaxCall(string $phpEvent, array $params = [], array $comps = []): string
     {
         $jcomps = !empty($comps) ? '["' . implode('","', $comps) . '"]' : '[]';
-        $ownerName = $this->owner?->Name ?? '';
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
         return " xajax_ajaxProcess('{$ownerName}','{$this->_name}',params,'{$phpEvent}',xajax.getFormValues('{$ownerName}'),{$jcomps});\n ";
     }
 

@@ -98,7 +98,7 @@ class DataSet extends Component
 
     public bool $Active {
         get => $this->readActive();
-        set => $this->writeActive($value);
+        set { $this->writeActive($value); }
     }
 
     /**
