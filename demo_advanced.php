@@ -81,7 +81,7 @@ class AdvancedDemoPage extends Page
         $this->TitleLabel->Top = 20;
         $this->TitleLabel->Caption = "VCL for PHP - UI Komponenten Demo";
         $this->TitleLabel->Font->Size = "24px";
-        $this->TitleLabel->Font->Style = "fsBold";
+        $this->TitleLabel->Font->Weight = "bold";
         $this->TitleLabel->Font->Color = "#333333";
     }
 
