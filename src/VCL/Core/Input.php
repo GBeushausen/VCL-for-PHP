@@ -33,18 +33,20 @@ class Input
     public function __get(string $name): ?InputParam
     {
         // Search order: GET -> POST -> REQUEST -> COOKIE -> SERVER
-        $sources = [
-            InputSource::GET => $_GET,
-            InputSource::POST => $_POST,
-            InputSource::REQUEST => $_REQUEST,
-            InputSource::COOKIES => $_COOKIE,
-            InputSource::SERVER => $_SERVER,
-        ];
-
-        foreach ($sources as $source => $array) {
-            if (isset($array[$name])) {
-                return new InputParam($name, $source);
-            }
+        if (isset($_GET[$name])) {
+            return new InputParam($name, InputSource::GET);
+        }
+        if (isset($_POST[$name])) {
+            return new InputParam($name, InputSource::POST);
+        }
+        if (isset($_REQUEST[$name])) {
+            return new InputParam($name, InputSource::REQUEST);
+        }
+        if (isset($_COOKIE[$name])) {
+            return new InputParam($name, InputSource::COOKIES);
+        }
+        if (isset($_SERVER[$name])) {
+            return new InputParam($name, InputSource::SERVER);
         }
 
         return null;
