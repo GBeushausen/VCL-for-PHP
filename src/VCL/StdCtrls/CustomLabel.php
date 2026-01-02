@@ -22,6 +22,7 @@ class CustomLabel extends GraphicControl
     protected string $_linktarget = '';
     protected bool $_wordwrap = true;
     protected string $_formatasdate = '';
+    protected bool $_htmlcontent = false;
 
     // Events
     protected ?string $_onclick = null;
@@ -68,6 +69,11 @@ class CustomLabel extends GraphicControl
         set => $this->_ondblclick = $value;
     }
 
+    public bool $HtmlContent {
+        get => $this->_htmlcontent;
+        set => $this->_htmlcontent = $value;
+    }
+
     public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
@@ -105,20 +111,20 @@ class CustomLabel extends GraphicControl
      */
     public function dumpContents(): void
     {
-        $style = '';
+        $styles = [];
 
         // Build style string
         if ($this->_style === '') {
             // Font styles
             if ($this->_font !== null) {
-                $style .= $this->Font->readFontString();
+                $styles[] = rtrim($this->Font->readFontString(), ';');
             }
 
             // Background color
             if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING && $this->_designcolor !== '') {
-                $style .= "background-color: {$this->_designcolor};";
+                $styles[] = "background-color: {$this->_designcolor}";
             } elseif ($this->Color !== '') {
-                $style .= "background-color: {$this->Color};";
+                $styles[] = "background-color: {$this->Color}";
             }
 
             // Cursor
@@ -128,27 +134,33 @@ class CustomLabel extends GraphicControl
             }
             if ($cursorValue !== '' && $cursorValue !== 'crDefault') {
                 $cursor = strtolower(substr($cursorValue, 2));
-                $style .= "cursor: {$cursor};";
+                $styles[] = "cursor: {$cursor}";
             }
         }
 
         // Size
         if (!$this->_autosize) {
             if (!$this->_adjusttolayout) {
-                $style .= "height:{$this->Height}px;width:{$this->Width}px;";
+                if ($this->Height > 0) {
+                    $styles[] = "height: {$this->Height}px";
+                }
+                if ($this->Width > 0) {
+                    $styles[] = "width: {$this->Width}px";
+                }
             } else {
-                $style .= "height:100%;width:100%;";
+                $styles[] = "height: 100%";
+                $styles[] = "width: 100%";
             }
         }
 
         // Word wrap
         if (!$this->_wordwrap) {
-            $style .= "white-space: nowrap;";
+            $styles[] = "white-space: nowrap";
         }
 
         // Visibility
         if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
-            $style .= "visibility:hidden;";
+            $styles[] = "visibility: hidden";
         }
 
         // Build alignment attribute
@@ -170,6 +182,7 @@ class CustomLabel extends GraphicControl
         $classAttr = $class !== '' ? " class=\"{$class}\"" : '';
 
         // Build style attribute
+        $style = implode('; ', $styles);
         $styleAttr = $style !== '' ? " style=\"{$style}\"" : '';
 
         // Build events
@@ -185,10 +198,13 @@ class CustomLabel extends GraphicControl
                 '<a href="%s"%s>%s</a>',
                 htmlspecialchars($this->_link),
                 $target,
-                htmlspecialchars($caption)
+                $this->_htmlcontent ? $caption : htmlspecialchars($caption)
             );
         } else {
-            $caption = htmlspecialchars($caption);
+            // Only escape if not HTML content
+            if (!$this->_htmlcontent) {
+                $caption = htmlspecialchars($caption);
+            }
         }
 
         echo sprintf(
@@ -235,4 +251,8 @@ class CustomLabel extends GraphicControl
     public function readFormatAsDate(): string { return $this->_formatasdate; }
     public function writeFormatAsDate(string $value): void { $this->FormatAsDate = $value; }
     public function defaultFormatAsDate(): string { return ''; }
+
+    public function getHtmlContent(): bool { return $this->_htmlcontent; }
+    public function setHtmlContent(bool $value): void { $this->HtmlContent = $value; }
+    public function defaultHtmlContent(): bool { return false; }
 }

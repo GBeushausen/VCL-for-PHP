@@ -47,7 +47,13 @@ class CustomCheckBox extends ButtonControl
      */
     public function dumpContents(): void
     {
-        $style = $this->getButtonStyles();
+        $style = "";
+        $style .= $this->getButtonStyles();
+
+        // Size
+        if ($this->Width > 0) {
+            $style .= "width: {$this->Width}px;";
+        }
 
         // Hidden
         if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
@@ -63,15 +69,17 @@ class CustomCheckBox extends ButtonControl
         $classAttr = $class !== '' ? sprintf(' class="%s"', htmlspecialchars($class)) : '';
 
         echo sprintf(
-            '<label for="%s"%s%s>' .
-            '<input type="checkbox" id="%s" name="%s" value="on" %s />%s' .
-            '</label>',
+            '<span id="%s_wrapper"%s%s>' .
+            '<input type="checkbox" id="%s" name="%s" value="on" %s />' .
+            '<label for="%s">%s</label>' .
+            '</span>',
             $name,
             $styleAttr,
             $classAttr,
             $name,
             $name,
             $attrs,
+            $name,
             $caption
         );
     }

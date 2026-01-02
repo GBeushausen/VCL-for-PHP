@@ -107,19 +107,27 @@ class ComboBox extends FocusControl
     protected function buildComboStyle(): string
     {
         $styles = [];
-        $styles[] = "width: {$this->_width}px";
-        $styles[] = "height: {$this->_height}px";
+        $styles[] = "width: 100%";
+        $styles[] = "height: 100%";
         $styles[] = "padding: 4px";
         $styles[] = "border: 1px solid #ccc";
         $styles[] = "border-radius: 3px";
         $styles[] = "font-family: inherit";
         $styles[] = "font-size: inherit";
         $styles[] = "background: white";
-
-        if ($this->_left > 0) $styles[] = "position: absolute; left: {$this->_left}px";
-        if ($this->_top > 0) $styles[] = "top: {$this->_top}px";
+        $styles[] = "box-sizing: border-box";
 
         return implode('; ', $styles);
+    }
+
+    /**
+     * Override render to use dumpContents.
+     */
+    public function render(): string
+    {
+        ob_start();
+        $this->dumpContents();
+        return ob_get_clean();
     }
 
     /**

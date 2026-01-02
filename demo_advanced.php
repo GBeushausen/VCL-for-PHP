@@ -234,6 +234,7 @@ class AdvancedDemoPage extends Page
         $this->ResultLabel->Caption = "";
         $this->ResultLabel->Font->Size = "12px";
         $this->ResultLabel->Font->Color = "#006600";
+        $this->ResultLabel->HtmlContent = true;
     }
 
     // Event-Handler für Submit
