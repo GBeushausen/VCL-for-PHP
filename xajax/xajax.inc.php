@@ -1267,7 +1267,8 @@ class xajax
 			}
 			else if ($this->sEncoding == "ISO-8859-1")
 			{
-				$sFuncToUse = "utf8_decode";
+				// PHP 8.2+: Use mb_convert_encoding instead of deprecated utf8_decode
+				$sFuncToUse = "mb_convert_encoding";
 			}
 			else
 			{
@@ -1288,7 +1289,8 @@ class xajax
 					}
 					else
 					{
-						$sValue = utf8_decode($sValue);
+						// PHP 8.2+: utf8_decode is deprecated, use mb_convert_encoding
+						$sValue = mb_convert_encoding($sValue, 'ISO-8859-1', 'UTF-8');
 					}
 				}
 			}

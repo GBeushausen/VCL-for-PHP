@@ -6,27 +6,47 @@
  * Aufruf: http://vcl.ddev.site/demo_simple.php
  */
 
-// Framework einbinden
-require_once("vcl.inc.php");
+declare(strict_types=1);
 
-// Benötigte Units laden
-use_unit("forms.inc.php");
-use_unit("stdctrls.inc.php");
+// Composer Autoloader einbinden
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Namespaces importieren
+use VCL\Forms\Page;
+use VCL\Forms\Application;
+use VCL\StdCtrls\Label;
+use VCL\StdCtrls\Edit;
+use VCL\StdCtrls\Button;
+use VCL\ExtCtrls\Shape;
 
 // Eigene Page-Klasse definieren
 class SimpleDemoPage extends Page
 {
-    public $Label1 = null;
-    public $Edit1 = null;
-    public $Button1 = null;
-    public $OutputLabel = null;
+    public ?Shape $Circle1 = null;
+    public ?Label $Label1 = null;
+    public ?Edit $Edit1 = null;
+    public ?Button $Button1 = null;
+    public ?Label $OutputLabel = null;
 
-    function __construct($aowner = null)
+    public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
 
+        $this->Name = "SimpleDemoPage";
         $this->Caption = "VCL Simple Demo";
         $this->Color = "#f5f5f5";
+
+        $this->Circle1 = new Shape($this);
+        $this->Circle1->Name = "Circle1";
+        $this->Circle1->Parent = $this;
+        $this->Circle1->Left = 20;
+        $this->Circle1->Top = 20;
+        $this->Circle1->Width = 100;
+        $this->Circle1->Height = 100;
+        $this->Circle1->Shape = "stCircle";
+        $this->Circle1->Brush->Color = "#FF0000";
+        $this->Circle1->Pen->Color = "#000000";
+        $this->Circle1->Pen->Width = 2;
 
         // Label erstellen
         $this->Label1 = new Label($this);
@@ -66,7 +86,7 @@ class SimpleDemoPage extends Page
     }
 
     // Event-Handler für den Button-Click
-    function Button1Click($sender, $params)
+    public function Button1Click(object $sender, array $params): void
     {
         $name = $this->Edit1->Text;
         if (!empty($name)) {
@@ -78,7 +98,8 @@ class SimpleDemoPage extends Page
 }
 
 // Seite erstellen und anzeigen
-global $application;
+$application = Application::getInstance();
 $page = new SimpleDemoPage($application);
+$page->preinit();  // Formular-Werte lesen
+$page->init();     // Events verarbeiten
 $page->show();
-?>

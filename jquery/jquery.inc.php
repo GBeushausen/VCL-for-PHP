@@ -163,8 +163,7 @@ img {
             <?php
                 if (count($this->_lines)>=1)
                 {
-                    reset($this->_lines);
-                    while(list($key, $val)=each($this->_lines))
+                    foreach($this->_lines as $key => $val)
                     {
                     ?>
                 <div class="item fl"><div style="<?php echo $this->Font->readFontString(); ?>"><?php echo $val; ?></div></div>

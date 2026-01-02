@@ -55,8 +55,7 @@ class Database extends CustomConnection
         {
             $fd=$this->_connection->MetaColumns($tablename);
             $result=array();
-            reset($fd);
-            while(list($key, $val)=each($fd))
+            foreach($fd as $key => $val)
             {
 
                 $result[$val->name]='';
@@ -323,8 +322,7 @@ class Database extends CustomConnection
                                 while ($r->fetchInto($arow))
                                 {
                                         $row=array();
-                                        reset($arow);
-                                        while (list($k,$v)=each($arow))
+                                        foreach($arow as $k => $v)
                                         {
                                                 $row[strtolower($k)]=$v;
                                         }
@@ -768,8 +766,7 @@ class CustomTable extends DBDataSet
         function InternalDelete()
         {
                 $where='';
-                reset($this->_keyfields);
-                while(list($key, $fname)=each($this->_keyfields))
+                foreach($this->_keyfields as $key => $fname)
                 {
                     $val=$this->fieldbuffer[$fname];
                     if (trim($val)=='') continue;
@@ -806,8 +803,7 @@ class CustomTable extends DBDataSet
             {
                 $where='';
                 $buffer=$this->fieldbuffer;
-                reset($this->_keyfields);
-                while(list($key, $fname)=each($this->_keyfields))
+                foreach($this->_keyfields as $key => $fname)
                 {
                     $val=$this->fieldbuffer[$fname];
                     unset($buffer[$fname]);
@@ -837,8 +833,7 @@ class CustomTable extends DBDataSet
                 {
                   if (is_array($this->_keyfields))
                   {
-                      reset($this->_keyfields);
-                      while(list($key, $fname)=each($this->_keyfields))
+                      foreach($this->_keyfields as $key => $fname)
                       {
                           unset($this->fieldbuffer[$fname]);
                       }
@@ -886,9 +881,8 @@ class CustomTable extends DBDataSet
                             $this->_mastersource->DataSet->open();
 
                             $ms="";
-                            reset($this->_masterfields);
 
-                            while(list($key, $val)=each($this->_masterfields))
+                            foreach($this->_masterfields as $key => $val)
                             {
                                 $thisfield=$key;
                                 $msfield=$val;
@@ -947,12 +941,12 @@ class CustomTable extends DBDataSet
 
                 if (is_array($indexes))
                 {
-                    list(,$primary)=each($indexes);
+                    $primary=reset($indexes);
 
                     $result=$primary['columns'];
                     if (is_array($result))
                     {
-                        while (list($k,$v)=each($result))
+                        foreach($result as $k => $v)
                         {
                                 $result[$k]=trim($v);
                         }
@@ -979,8 +973,7 @@ class CustomTable extends DBDataSet
 
                 if (is_array($keyfields))
                 {
-                    reset($keyfields);
-                    while (list($k,$v)=each($keyfields))
+                    foreach($keyfields as $k => $v)
                     {
                                 $avalue=$values[$v];
                                 $avalue=str_replace('"','&quot;',$avalue);
@@ -1111,7 +1104,7 @@ class Table extends CustomTable
  *
  * Query components are useful because they can:
  *
- * Access more than one table at a time (called a “join” in SQL).
+ * Access more than one table at a time (called a ï¿½joinï¿½ in SQL).
  *
  * Automatically access a subset of rows and columns in its underlying table(s),
  * rather than always returning all rows and columns.
@@ -1129,7 +1122,7 @@ class CustomQuery extends CustomTable
          * edited by invoking the String List editor in the Object Inspector.
          *
          * The SQL property may contain only one complete SQL statement at a time.
-         * In general, multiple “batch” statements are not allowed unless a particular
+         * In general, multiple ï¿½batchï¿½ statements are not allowed unless a particular
          * server supports them.
          *
          * @return array
@@ -1175,7 +1168,7 @@ class CustomQuery extends CustomTable
         }
 
         /**
-         * Contains the parameters for a query’s SQL statement.
+         * Contains the parameters for a queryï¿½s SQL statement.
          *
          * Access Params at runtime to view and set parameter names and values
          * dynamically (at design time use the editor for the Params property to
@@ -1231,7 +1224,7 @@ class CustomQuery extends CustomTable
  *
  * Query components are useful because they can:
  *
- * Access more than one table at a time (called a “join” in SQL).
+ * Access more than one table at a time (called a ï¿½joinï¿½ in SQL).
  *
  * Automatically access a subset of rows and columns in its underlying table(s),
  * rather than always returning all rows and columns.
@@ -1268,11 +1261,11 @@ class Query extends CustomQuery
  * StoredProc encapsulates a stored procedure in an application.
  *
  * Use a StoredProc object in applications to use a stored procedure on a database server.
- * A stored procedure is a grouped set of statements, stored as part of a database server’s
+ * A stored procedure is a grouped set of statements, stored as part of a database serverï¿½s
  * metadata (just like tables, indexes, and domains), that performs a frequently repeated,
  * database-related task on the server and passes results to the client.
  *
- * Note:   Not all database servers support stored procedures. See a specific server’s
+ * Note:   Not all database servers support stored procedures. See a specific serverï¿½s
  * documentation to determine if it supports stored procedures.
  *
  * Many stored procedures require a series of input arguments, or parameters, that are used
@@ -1378,8 +1371,7 @@ class StoredProc extends CustomQuery
             {
                     $pars="";
 
-                    reset($this->_params);
-                    while(list($key, $val)=each($this->_params))
+                    foreach($this->_params as $key => $val)
                     {
                         if ($pars!="") $pars.=', ';
                         $pars.="'$val'";

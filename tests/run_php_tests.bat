@@ -1,1 +1,0 @@
-@if "%1"=="" (@FOR %%f IN (testsource\test_*) DO @call helper.bat ..\%%f) else (call helper.bat %1)
