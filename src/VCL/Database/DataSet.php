@@ -94,6 +94,59 @@ class DataSet extends Component
         set => $this->_reckey = $value;
     }
 
+    protected bool $_fstreamedactive = false;
+
+    public bool $Active {
+        get => $this->readActive();
+        set => $this->writeActive($value);
+    }
+
+    /**
+     * Read active state.
+     */
+    public function readActive(): bool
+    {
+        $state = $this->_state instanceof DatasetState
+            ? $this->_state
+            : DatasetState::tryFrom($this->_state);
+
+        if ($state === DatasetState::Inactive || $state === DatasetState::Opening) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Write active state.
+     */
+    public function writeActive(bool $value): void
+    {
+        if (($this->ControlState & CS_LOADING) === CS_LOADING) {
+            $this->_fstreamedactive = $value;
+            return;
+        }
+
+        if ($this->readActive() !== $value) {
+            if ($value) {
+                $this->Open();
+            } else {
+                $this->Close();
+            }
+        }
+    }
+
+    /**
+     * Called when component is loaded.
+     */
+    public function loaded(): void
+    {
+        parent::loaded();
+        $this->MasterSource = $this->_mastersource;
+        if ($this->_fstreamedactive) {
+            $this->Active = true;
+        }
+    }
+
     /**
      * Internal close implementation.
      */
