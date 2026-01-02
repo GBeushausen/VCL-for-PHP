@@ -22,11 +22,6 @@ use VCL\StdCtrls\RadioButton;
 use VCL\StdCtrls\ComboBox;
 use VCL\StdCtrls\Memo;
 
-// Button type constant
-if (!defined('btReset')) {
-    define('btReset', 'btReset');
-}
-
 // Erweiterte Demo-Page
 class AdvancedDemoPage extends Page
 {

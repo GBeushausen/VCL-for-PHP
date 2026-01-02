@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace VCL\StdCtrls;
 
+// Button type constants
+if (!defined('btSubmit')) {
+    define('btSubmit', 'btSubmit');
+    define('btReset', 'btReset');
+    define('btButton', 'btButton');
+}
+
 /**
  * Button is a standard push button control.
  *
@@ -16,6 +23,7 @@ class Button extends ButtonControl
 {
     protected bool $_default = false;
     protected bool $_cancel = false;
+    protected string $_buttontype = 'btSubmit';
 
     // Property Hooks
     public bool $Default {
@@ -28,12 +36,29 @@ class Button extends ButtonControl
         set => $this->_cancel = $value;
     }
 
+    public string $ButtonType {
+        get => $this->_buttontype;
+        set => $this->_buttontype = $value;
+    }
+
+    /**
+     * Get the HTML input type for this button.
+     */
+    protected function getInputType(): string
+    {
+        return match ($this->_buttontype) {
+            'btReset' => 'reset',
+            'btButton' => 'button',
+            default => 'submit',
+        };
+    }
+
     /**
      * Render the button.
      */
     public function dumpContents(): void
     {
-        $this->dumpContentsButtonControl('submit', $this->Name);
+        $this->dumpContentsButtonControl($this->getInputType(), $this->Name);
     }
 
     /**
@@ -54,4 +79,8 @@ class Button extends ButtonControl
     public function getCancel(): bool { return $this->_cancel; }
     public function setCancel(bool $value): void { $this->Cancel = $value; }
     public function defaultCancel(): int { return 0; }
+
+    public function getButtonType(): string { return $this->_buttontype; }
+    public function setButtonType(string $value): void { $this->ButtonType = $value; }
+    public function defaultButtonType(): string { return 'btSubmit'; }
 }
