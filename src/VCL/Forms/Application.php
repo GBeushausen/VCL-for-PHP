@@ -16,7 +16,19 @@ use VCL\Core\Component;
  */
 class Application extends Component
 {
+    protected static ?Application $_instance = null;
     protected string $_language = '';
+
+    /**
+     * Get the singleton instance of Application.
+     */
+    public static function getInstance(): Application
+    {
+        if (self::$_instance === null) {
+            self::$_instance = new self(null);
+        }
+        return self::$_instance;
+    }
 
     // Property Hooks
     public string $Language {
