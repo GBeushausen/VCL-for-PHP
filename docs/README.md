@@ -160,4 +160,7 @@ $page->show();     // Render HTML
 
 LGPL v2.1 - GNU Lesser General Public License
 
-Copyright (c) 2004-2008 qadram software S.L.
+## Copyright
+
+- Original: Copyright (c) 2004-2008 qadram software S.L.
+- Modernization: Copyright (c) 2026 Gunnar Beushausen

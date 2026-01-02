@@ -15,7 +15,11 @@
         {
             "name": "qadram software S.L.",
             "email": "support@qadram.com",
-            "role": "Original Developer"
+            "role": "Original Developer (2004-2008)"
+        },
+        {
+            "name": "Gunnar Beushausen",
+            "role": "PHP 8.4 Modernization (2026)"
         }
     ],
     "homepage": "https://github.com/user/vcl-php",
