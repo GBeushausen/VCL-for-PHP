@@ -48,8 +48,8 @@ class Page extends CustomPage
     protected string $_formencoding = '';
 
     // Document
-    protected DocType|string $_doctype = DocType::None;
-    protected string $_encoding = 'Western European (ISO)|iso-8859-1';
+    protected DocType|string $_doctype = DocType::HTML5;
+    protected string $_encoding = 'UTF-8|utf-8';
     protected Directionality|string $_directionality = Directionality::LeftToRight;
 
     // Appearance
@@ -284,35 +284,76 @@ class Page extends CustomPage
     {
         $doctype = $this->_doctype instanceof DocType ? $this->_doctype : DocType::from($this->_doctype);
         $dtd = $doctype->toDeclaration();
-        $extra = $doctype->toHtmlAttributes();
 
         $dir = $this->_directionality instanceof Directionality
             ? $this->_directionality
             : Directionality::from($this->_directionality);
-        $extra .= ' dir="' . $dir->toHtmlDir() . '"';
 
+        // Output DOCTYPE
         if ($dtd !== '') {
             echo $dtd . "\n";
         }
 
-        echo "<html" . ($extra !== '' ? ' ' . trim($extra) : '') . ">\n";
+        // Build HTML tag attributes
+        $htmlAttrs = [];
+        $htmlAttrs[] = 'lang="' . $this->getLanguageCode() . '"';
+        $htmlAttrs[] = 'dir="' . $dir->toHtmlDir() . '"';
+
+        // Add XHTML namespace if needed
+        $extra = $doctype->toHtmlAttributes();
+        if ($extra !== '') {
+            $htmlAttrs[] = $extra;
+        }
+
+        echo '<html ' . implode(' ', $htmlAttrs) . ">\n";
         echo "<head>\n";
 
+        // HTML5: charset meta tag first
+        $charset = $this->getCharset();
+        if ($doctype === DocType::HTML5) {
+            echo sprintf('<meta charset="%s">' . "\n", $charset);
+        } else {
+            echo sprintf('<meta http-equiv="Content-Type" content="text/html; charset=%s">' . "\n", $charset);
+        }
+
+        // HTML5: Viewport for responsive/autoscale
+        if ($doctype === DocType::HTML5) {
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n";
+        }
+
+        echo sprintf("<title>%s</title>\n", htmlspecialchars($this->Caption));
+
+        // Favicon
         if ($this->_icon !== '') {
-            echo sprintf('<link rel="shortcut icon" href="%s" type="image/x-icon" />' . "\n",
-                htmlspecialchars($this->_icon));
+            echo sprintf('<link rel="icon" href="%s">' . "\n", htmlspecialchars($this->_icon));
         }
 
         $this->callEvent('onshowheader', []);
-
-        echo sprintf("<title>%s</title>\n", htmlspecialchars($this->Caption));
-        echo sprintf('<meta http-equiv="Content-Type" content="text/html; charset=%s">' . "\n",
-            $this->getCharset());
 
         $this->dumpHeaderJavascript();
         $this->dumpChildrenHeaderCode();
 
         echo "</head>\n";
+    }
+
+    /**
+     * Get the language code for the HTML lang attribute.
+     */
+    public function getLanguageCode(): string
+    {
+        if ($this->_language === '(default)' || $this->_language === '') {
+            return 'de';
+        }
+        // Extract language code from full language name if needed
+        $lang = strtolower($this->_language);
+        return match(true) {
+            str_contains($lang, 'german') || str_contains($lang, 'deutsch') => 'de',
+            str_contains($lang, 'english') => 'en',
+            str_contains($lang, 'french') || str_contains($lang, 'français') => 'fr',
+            str_contains($lang, 'spanish') || str_contains($lang, 'español') => 'es',
+            str_contains($lang, 'italian') || str_contains($lang, 'italiano') => 'it',
+            default => substr($lang, 0, 2),
+        };
     }
 
     /**
@@ -345,6 +386,7 @@ class Page extends CustomPage
         $attrs = [];
         $styles = [];
 
+        // Margins via CSS
         if ($this->_leftmargin > 0) {
             $styles[] = "margin-left: {$this->_leftmargin}px";
         }
@@ -358,18 +400,23 @@ class Page extends CustomPage
             $styles[] = "margin-bottom: {$this->_bottommargin}px";
         }
 
+        // Background color via CSS (HTML5 compliant)
+        if ($this->Color !== '') {
+            $styles[] = sprintf('background-color: %s', htmlspecialchars($this->Color));
+        }
+
+        // Background image via CSS (HTML5 compliant)
+        if ($this->_background !== '') {
+            $styles[] = sprintf('background-image: url(%s)', htmlspecialchars($this->_background));
+            $styles[] = 'background-repeat: no-repeat';
+            $styles[] = 'background-size: cover';
+        }
+
         if (!empty($styles)) {
             $attrs[] = 'style="' . implode('; ', $styles) . '"';
         }
 
-        if ($this->Color !== '') {
-            $attrs[] = sprintf('bgcolor="%s"', htmlspecialchars($this->Color));
-        }
-
-        if ($this->_background !== '') {
-            $attrs[] = sprintf('background="%s"', htmlspecialchars($this->_background));
-        }
-
+        // Event handlers
         if ($this->_jsonload !== null) {
             $attrs[] = sprintf('onload="return %s(event)"', htmlspecialchars($this->_jsonload));
         }
@@ -378,7 +425,8 @@ class Page extends CustomPage
             $attrs[] = sprintf('onunload="return %s(event)"', htmlspecialchars($this->_jsonunload));
         }
 
-        echo '<body ' . implode(' ', $attrs) . ">\n";
+        $attrStr = !empty($attrs) ? ' ' . implode(' ', $attrs) : '';
+        echo "<body{$attrStr}>\n";
     }
 
     /**
@@ -461,28 +509,36 @@ class Page extends CustomPage
     public function dumpChildren(): void
     {
         $layout = $this->Layout;
-        $layoutType = $layout->Type;
 
-        $useTable = ($layoutType === LayoutType::GridBag ||
-                     $layoutType === LayoutType::Row ||
-                     $layoutType === LayoutType::Col);
+        // Build container styles
+        $styles = [];
+        $styles[] = 'position: relative';
 
-        $width = $useTable ? '100%' : ($this->Width > 0 ? $this->Width . 'px' : '');
-        $height = $this->Height > 0 ? $this->Height . 'px' : '';
-        $color = $this->Color !== '' ? sprintf(' bgcolor="%s"', htmlspecialchars($this->Color)) : '';
+        if ($this->Width > 0) {
+            $styles[] = "width: {$this->Width}px";
+        } else {
+            $styles[] = 'width: 100%';
+        }
 
-        echo sprintf(
-            "\n<table width=\"%s\" height=\"%s\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"%s><tr><td valign=\"top\">\n",
-            $width,
-            $height,
-            $color
-        );
+        if ($this->Height > 0) {
+            $styles[] = "height: {$this->Height}px";
+        } else {
+            $styles[] = 'min-height: 100vh';
+        }
+
+        if ($this->Color !== '') {
+            $styles[] = sprintf('background-color: %s', htmlspecialchars($this->Color));
+        }
+
+        $styleStr = implode('; ', $styles);
+
+        echo sprintf("\n<div class=\"vcl-container\" style=\"%s\">\n", $styleStr);
 
         if (($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
             $layout->dumpLayoutContents(['Frame', 'Frameset']);
         }
 
-        echo "</td></tr></table>\n";
+        echo "</div>\n";
 
         // Dump layer controls
         foreach ($this->controls->items as $v) {
@@ -566,11 +622,11 @@ class Page extends CustomPage
 
     public function getDocType(): DocType|string { return $this->_doctype; }
     public function setDocType(DocType|string $value): void { $this->DocType = $value; }
-    public function defaultDocType(): string { return 'dtNone'; }
+    public function defaultDocType(): string { return 'dtHTML5'; }
 
     public function getEncoding(): string { return $this->_encoding; }
     public function setEncoding(string $value): void { $this->Encoding = $value; }
-    public function defaultEncoding(): string { return 'Western European (ISO)|iso-8859-1'; }
+    public function defaultEncoding(): string { return 'UTF-8|utf-8'; }
 
     public function readFormEncoding(): string { return $this->_formencoding; }
     public function writeFormEncoding(string $value): void { $this->FormEncoding = $value; }
