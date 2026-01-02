@@ -6,22 +6,27 @@
  * Aufruf: http://vcl.ddev.site/demo_simple.php
  */
 
-// Framework einbinden
-require_once("vcl.inc.php");
+declare(strict_types=1);
 
-// Benötigte Units laden
-use_unit("forms.inc.php");
-use_unit("stdctrls.inc.php");
+// Composer Autoloader einbinden
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Namespaces importieren
+use VCL\Forms\Page;
+use VCL\Forms\Application;
+use VCL\StdCtrls\Label;
+use VCL\StdCtrls\Edit;
+use VCL\StdCtrls\Button;
 
 // Eigene Page-Klasse definieren
 class SimpleDemoPage extends Page
 {
-    public $Label1 = null;
-    public $Edit1 = null;
-    public $Button1 = null;
-    public $OutputLabel = null;
+    public ?Label $Label1 = null;
+    public ?Edit $Edit1 = null;
+    public ?Button $Button1 = null;
+    public ?Label $OutputLabel = null;
 
-    function __construct($aowner = null)
+    public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
 
@@ -67,7 +72,7 @@ class SimpleDemoPage extends Page
     }
 
     // Event-Handler für den Button-Click
-    function Button1Click($sender, $params)
+    public function Button1Click(object $sender, array $params): void
     {
         $name = $this->Edit1->Text;
         if (!empty($name)) {
@@ -79,9 +84,8 @@ class SimpleDemoPage extends Page
 }
 
 // Seite erstellen und anzeigen
-global $application;
+$application = Application::getInstance();
 $page = new SimpleDemoPage($application);
 $page->preinit();  // Formular-Werte lesen
 $page->init();     // Events verarbeiten
 $page->show();
-?>

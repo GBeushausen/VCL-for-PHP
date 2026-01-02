@@ -6,48 +6,58 @@
  * Aufruf: http://vcl.ddev.site/demo_advanced.php
  */
 
-// Framework einbinden
-require_once("vcl.inc.php");
+declare(strict_types=1);
 
-// Benötigte Units laden
-use_unit("forms.inc.php");
-use_unit("stdctrls.inc.php");
-use_unit("extctrls.inc.php");
-use_unit("comctrls.inc.php");
+// Composer Autoloader einbinden
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Namespaces importieren
+use VCL\Forms\Page;
+use VCL\Forms\Application;
+use VCL\StdCtrls\Label;
+use VCL\StdCtrls\Edit;
+use VCL\StdCtrls\Button;
+use VCL\StdCtrls\CheckBox;
+use VCL\StdCtrls\RadioButton;
+use VCL\StdCtrls\ComboBox;
+use VCL\StdCtrls\Memo;
+
+// Button type constant
+if (!defined('btReset')) {
+    define('btReset', 'btReset');
+}
 
 // Erweiterte Demo-Page
 class AdvancedDemoPage extends Page
 {
     // UI-Komponenten
-    public $MainPanel = null;
-    public $TitleLabel = null;
+    public ?Label $TitleLabel = null;
 
     // Formular-Bereich
-    public $NameLabel = null;
-    public $NameEdit = null;
-    public $EmailLabel = null;
-    public $EmailEdit = null;
-    public $CountryLabel = null;
-    public $CountryCombo = null;
-    public $NewsletterCheck = null;
-    public $CommentLabel = null;
-    public $CommentMemo = null;
+    public ?Label $NameLabel = null;
+    public ?Edit $NameEdit = null;
+    public ?Label $EmailLabel = null;
+    public ?Edit $EmailEdit = null;
+    public ?Label $CountryLabel = null;
+    public ?ComboBox $CountryCombo = null;
+    public ?CheckBox $NewsletterCheck = null;
+    public ?Label $CommentLabel = null;
+    public ?Memo $CommentMemo = null;
 
     // Buttons
-    public $SubmitButton = null;
-    public $ResetButton = null;
+    public ?Button $SubmitButton = null;
+    public ?Button $ResetButton = null;
 
     // Ausgabe
-    public $ResultLabel = null;
-    public $StatusBar = null;
+    public ?Label $ResultLabel = null;
 
     // RadioGroup für Anrede
-    public $GenderLabel = null;
-    public $GenderMale = null;
-    public $GenderFemale = null;
-    public $GenderOther = null;
+    public ?Label $GenderLabel = null;
+    public ?RadioButton $GenderMale = null;
+    public ?RadioButton $GenderFemale = null;
+    public ?RadioButton $GenderOther = null;
 
-    function __construct($aowner = null)
+    public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
 
@@ -61,7 +71,7 @@ class AdvancedDemoPage extends Page
         $this->createOutputSection();
     }
 
-    function createTitleSection()
+    public function createTitleSection(): void
     {
         // Haupt-Titel
         $this->TitleLabel = new Label($this);
@@ -75,7 +85,7 @@ class AdvancedDemoPage extends Page
         $this->TitleLabel->Font->Color = "#333333";
     }
 
-    function createFormSection()
+    public function createFormSection(): void
     {
         $baseTop = 70;
         $labelWidth = 120;
@@ -158,13 +168,13 @@ class AdvancedDemoPage extends Page
         $this->CountryCombo->Left = $inputLeft;
         $this->CountryCombo->Top = $baseTop + $rowHeight * 3 - 3;
         $this->CountryCombo->Width = 250;
-        $this->CountryCombo->Items = array(
+        $this->CountryCombo->Items = [
             "Deutschland",
             "Oesterreich",
             "Schweiz",
             "Liechtenstein",
             "Luxemburg"
-        );
+        ];
 
         // Newsletter Checkbox
         $this->NewsletterCheck = new CheckBox($this);
@@ -192,7 +202,7 @@ class AdvancedDemoPage extends Page
         $this->CommentMemo->Height = 100;
     }
 
-    function createButtonSection()
+    public function createButtonSection(): void
     {
         $buttonTop = 350;
 
@@ -217,7 +227,7 @@ class AdvancedDemoPage extends Page
         $this->ResetButton->ButtonType = btReset;
     }
 
-    function createOutputSection()
+    public function createOutputSection(): void
     {
         // Ergebnis-Anzeige
         $this->ResultLabel = new Label($this);
@@ -231,8 +241,8 @@ class AdvancedDemoPage extends Page
         $this->ResultLabel->Font->Color = "#006600";
     }
 
-    // Event-Handler fuer Submit
-    function SubmitButtonClick($sender, $params)
+    // Event-Handler für Submit
+    public function SubmitButtonClick(object $sender, array $params): void
     {
         $output = "<strong>Formulardaten empfangen:</strong><br/>";
 
@@ -276,9 +286,8 @@ class AdvancedDemoPage extends Page
 }
 
 // Seite erstellen und anzeigen
-global $application;
+$application = Application::getInstance();
 $page = new AdvancedDemoPage($application);
 $page->preinit();  // Formular-Werte lesen
 $page->init();     // Events verarbeiten
 $page->show();
-?>
