@@ -82,7 +82,8 @@
 
    registerAsset(array("BitBtn","StringGrid","SpeedButton"),array("qooxdoo"));
    registerAsset(array("SimpleChart"),array("libchart"));
-   registerAsset(array("Shape","Bevel","PaintBox"),array("walterzorn"));
+   // vcl-canvas.js is loaded directly by Canvas.php - no separate asset folder needed
+   // registerAsset(array("Shape","Bevel","PaintBox"),array("walterzorn")); // Legacy - removed
 
    //Property editors
    registerPropertyEditor("Control","Color","TSamplePropertyEditor","native");

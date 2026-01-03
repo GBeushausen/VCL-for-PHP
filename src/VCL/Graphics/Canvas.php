@@ -101,7 +101,7 @@ class Canvas extends Persistent
         }
 
         if (!defined('JSCANVAS')) {
-            echo "<script type=\"text/javascript\" src=\"" . (defined('VCL_HTTP_PATH') ? VCL_HTTP_PATH : '') . "/walterzorn/wz_jsgraphics.js\"></script>\n";
+            echo "<script type=\"text/javascript\" src=\"" . (defined('VCL_HTTP_PATH') ? VCL_HTTP_PATH : '') . "/src/VCL/Assets/js/vcl-canvas.js\"></script>\n";
             define('JSCANVAS', 1);
         }
 
