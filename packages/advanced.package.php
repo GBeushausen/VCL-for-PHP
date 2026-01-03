@@ -38,9 +38,9 @@
    //Folders required by components using this package
    registerAsset(array("RichEdit"),array("resources\xinha"));
    registerAsset(array("TrackBar"),array("jssliderbar"));
-   registerAsset(array("DateTimePicker","MonthCalendar"),array("jscalendar"));
+   // DateTimePicker and MonthCalendar now use HTML5 native date inputs - no external JS needed
    registerAsset(array("ButtonView","ColorSelector","LabeledEdit","ListView","TreeView","PageControl","TextField","ToolBar","UpDown"),array("qooxdoo"));
-   registerAsset(array("ProgressBar"),array("dynapi"));
+   // ProgressBar now uses HTML5 <progress> element - no external JS needed
 
    registerPropertyValues("CustomButtonView","Position",array('btTop','btBottom',"btRight","btLeft"));
    registerPropertyEditor("CustomButtonView","Items","TItemsPropertyEditor","native");

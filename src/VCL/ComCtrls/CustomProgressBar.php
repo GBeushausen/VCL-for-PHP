@@ -95,35 +95,6 @@ class CustomProgressBar extends FocusControl
     }
 
     /**
-     * Dump header code.
-     */
-    public function dumpHeaderCode(): void
-    {
-        $left = ($this->ControlState & CS_DESIGNING) === CS_DESIGNING ? 0 : $this->Left;
-        $top = ($this->ControlState & CS_DESIGNING) === CS_DESIGNING ? 0 : $this->Top;
-
-        if ($this->owner !== null && isset($this->owner->Layout)) {
-            $layout = $this->owner->Layout;
-            if ($layout->Type === ABS_XY_LAYOUT) {
-                $left = 0;
-                $top = 0;
-            }
-        }
-
-        $orient = $this->_orientation === ProgressBarOrientation::Horizontal ||
-                  $this->_orientation->value === 'pbHorizontal' ? 'horz' : 'vert';
-
-        $name = htmlspecialchars($this->Name);
-
-        echo "<script type=\"text/javascript\">\n";
-        echo "  var {$name} = new ProgressBar('{$orient}', {$left}, {$top}, {$this->_width}, {$this->_height}, {$this->_position});\n";
-        echo "  {$name}.setRange({$this->_min}, {$this->_max});\n";
-        echo "  {$name}.setValue({$this->_position});\n";
-        echo "  dynapi.document.addChild({$name});\n";
-        echo "</script>\n";
-    }
-
-    /**
      * Render the progress bar using HTML5 progress element.
      */
     public function dumpContents(): void
