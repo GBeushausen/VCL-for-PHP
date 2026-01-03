@@ -1,7 +1,7 @@
 {
   "name": "vcl",
   "version": "1.0.0",
-  "description": "[![CI](https://github.com/user/vcl-php/actions/workflows/ci.yml/badge.svg)](https://github.com/user/vcl-php/actions/workflows/ci.yml)",
+  "description": "Visual Component Library for PHP",
   "main": "index.js",
   "directories": {
     "doc": "docs",

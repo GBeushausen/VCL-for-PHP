@@ -222,12 +222,12 @@ class FocusControl extends Control
         // Include all form values
         $attrs[] = sprintf('hx-include="#%s_form"', htmlspecialchars($ownerName));
 
-        // Add VCL metadata
+        // Add VCL metadata (use JSON_HEX flags for safe HTML attribute escaping)
         $vclVals = json_encode([
             '_vcl_form' => $ownerName,
             '_vcl_control' => $this->Name,
             '_vcl_event' => $eventName,
-        ]);
+        ], JSON_HEX_APOS | JSON_HEX_QUOT);
         $attrs[] = sprintf("hx-vals='%s'", $vclVals);
 
         return implode(' ', $attrs);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VCL\Forms;
 
+use VCL\Ajax\HtmxHandler;
 use VCL\Core\Component;
 
 /**
@@ -110,7 +111,7 @@ class Application extends Component
      */
     public static function isHtmxRequest(): bool
     {
-        return isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'] === 'true';
+        return HtmxHandler::isHtmxRequest();
     }
 
     /**

@@ -29,7 +29,14 @@ class HtmxHandlerTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->setUp();
+        // Clean up server variables and POST data
+        unset($_SERVER['HTTP_HX_REQUEST']);
+        unset($_SERVER['HTTP_HX_BOOSTED']);
+        unset($_SERVER['HTTP_HX_TRIGGER']);
+        unset($_SERVER['HTTP_HX_TRIGGER_NAME']);
+        unset($_SERVER['HTTP_HX_TARGET']);
+        unset($_SERVER['HTTP_HX_CURRENT_URL']);
+        $_POST = [];
     }
 
     public function testIsHtmxRequestReturnsFalseByDefault(): void
@@ -296,5 +303,37 @@ class HtmxHandlerTest extends TestCase
 
         // Should pass validation
         $this->assertTrue($result);
+    }
+
+    // Note: The following methods set HTTP headers which cannot be fully tested in CLI mode.
+    // These tests verify the methods exist and can be called without errors.
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testSendHtmlOutputsContent(): void
+    {
+        $handler = new HtmxHandler();
+
+        ob_start();
+        $handler->sendHtml('<div>Test</div>');
+        $output = ob_get_clean();
+
+        $this->assertSame('<div>Test</div>', $output);
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testSendErrorOutputsErrorMessage(): void
+    {
+        $handler = new HtmxHandler();
+
+        ob_start();
+        $handler->sendError('Test error');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Test error', $output);
+        $this->assertStringContainsString('vcl-htmx-error', $output);
     }
 }

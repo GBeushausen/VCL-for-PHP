@@ -482,12 +482,12 @@ class Component extends Persistent
         // Include form values
         $attrs[] = sprintf('hx-include="[name^=\'%s\']"', htmlspecialchars($ownerName));
 
-        // Add VCL metadata as hidden values
+        // Add VCL metadata (use JSON_HEX flags for safe HTML attribute escaping)
         $attrs[] = sprintf('hx-vals=\'%s\'', json_encode([
             '_vcl_form' => $ownerName,
             '_vcl_control' => $this->_name,
             '_vcl_event' => $phpEvent,
-        ]));
+        ], JSON_HEX_APOS | JSON_HEX_QUOT));
 
         return ' ' . implode(' ', $attrs) . ' ';
     }

@@ -370,10 +370,11 @@ class Page extends CustomPage
         $vclHtmxFilePath = $basePath . 'src/VCL/Assets/js/vcl-htmx.js';
 
         // Determine URL for htmx: local file if available, otherwise CDN
+        // CDN version should match package.json (htmx.org ^2.0.8) - updated 2025-01
         if (file_exists($htmxFilePath)) {
             $htmxUrl = $this->pathToUrl($htmxFilePath);
         } else {
-            $htmxUrl = 'https://unpkg.com/htmx.org@2.0.8';
+            $htmxUrl = 'https://unpkg.com/htmx.org@2';
         }
 
         echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($htmxUrl, ENT_QUOTES, 'UTF-8'));
