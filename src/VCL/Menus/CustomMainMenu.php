@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\Menus;
 
 use VCL\Buttons\QWidget;
+use VCL\Security\Escaper;
 
 /**
  * CustomMainMenu is the base class for MainMenu.
@@ -68,8 +69,9 @@ class CustomMainMenu extends QWidget
     public function dumpContents(): void
     {
         $style = $this->buildMenuStyle();
+        $htmlName = Escaper::attr($this->_name);
 
-        echo "<nav id=\"{$this->_name}\" class=\"vcl-mainmenu\" style=\"{$style}\">\n";
+        echo "<nav id=\"{$htmlName}\" class=\"vcl-mainmenu\" style=\"{$style}\">\n";
         echo "<ul class=\"vcl-menu-bar\">\n";
 
         $this->dumpMenuItems($this->_items, 0);
@@ -78,7 +80,7 @@ class CustomMainMenu extends QWidget
         echo "</nav>\n";
 
         // Hidden field for event handling
-        echo "<input type=\"hidden\" id=\"{$this->_name}_state\" name=\"{$this->_name}_state\" value=\"\" />\n";
+        echo "<input type=\"hidden\" id=\"{$htmlName}_state\" name=\"{$htmlName}_state\" value=\"\" />\n";
 
         $this->dumpMenuCSS();
         $this->dumpMenuJavaScript();
@@ -105,12 +107,20 @@ class CustomMainMenu extends QWidget
 
             echo "<li class=\"{$itemClass}\">\n";
 
-            $escapedCaption = htmlspecialchars($caption);
+            $escapedCaption = Escaper::html($caption);
             $image = $this->getItemImage($imageIndex);
 
-            echo "<a href=\"#\" data-tag=\"{$tag}\" onclick=\"{$this->_name}_click(event, {$tag}); return false;\">";
+            // Escape values for HTML and JS contexts
+            $safeName = Escaper::id($this->_name);
+            $safeTag = (int) $tag;  // Force integer for tag values
+
+            echo "<a href=\"#\" data-tag=\"{$safeTag}\" onclick=\"{$safeName}_click(event, {$safeTag}); return false;\">";
             if ($image !== '') {
-                echo "<img src=\"{$image}\" alt=\"\" class=\"vcl-menu-icon\" />";
+                // Validate image path - only allow relative paths and http(s) URLs
+                $safeImage = Escaper::urlAttr($image);
+                if ($safeImage !== '#') {
+                    echo "<img src=\"{$safeImage}\" alt=\"\" class=\"vcl-menu-icon\" />";
+                }
             }
             echo "<span>{$escapedCaption}</span>";
             if ($hasSubItems) {
@@ -208,21 +218,32 @@ class CustomMainMenu extends QWidget
             return;
         }
 
-        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
+        // Escape names for use as JS identifiers and strings
+        $safeName = Escaper::id($this->_name);
+        $jsNameString = Escaper::jsString($this->_name);
+        $formName = $this->owner !== null ? Escaper::id($this->owner->Name) : '';
 
         echo "<script type=\"text/javascript\">\n";
-        echo "function {$this->_name}_click(event, tag) {\n";
+        echo "function {$safeName}_click(event, tag) {\n";
         echo "  event.preventDefault();\n";
         echo "  var submit = true;\n";
 
         if ($this->_jsonclick !== null) {
-            echo "  submit = {$this->_jsonclick}(event);\n";
+            // jsonclick should be a valid JS function name
+            $safeCallback = Escaper::id($this->_jsonclick);
+            echo "  submit = {$safeCallback}(event);\n";
         }
 
         echo "  if (tag !== 0 && submit) {\n";
-        echo "    var hid = document.getElementById('{$this->_name}_state');\n";
+        echo "    var hid = document.getElementById('{$jsNameString}_state');\n";
         echo "    if (hid) hid.value = tag;\n";
-        echo "    var form = document.{$formName};\n";
+
+        if ($formName !== '') {
+            echo "    var form = document.{$formName};\n";
+        } else {
+            echo "    var form = document.forms[0];\n";
+        }
+
         echo "    if (form && form.submit) form.submit();\n";
         echo "  }\n";
         echo "}\n";

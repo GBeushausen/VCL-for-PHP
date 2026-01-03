@@ -23,10 +23,10 @@ class CustomMySQLQuery extends CustomMySQLTable
         get => $this->_sql;
         set {
             if (!is_array($value)) {
-                // Check for a serialized array
-                $clean = @unserialize($value);
-                if ($clean !== false) {
-                    $this->_sql = $clean;
+                // Check for a JSON-encoded array (safe alternative to unserialize)
+                $decoded = @json_decode($value, true);
+                if (is_array($decoded)) {
+                    $this->_sql = $decoded;
                 } else {
                     $this->_sql = $value;
                 }

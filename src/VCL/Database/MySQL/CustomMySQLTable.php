@@ -21,6 +21,46 @@ class CustomMySQLTable extends MySQLDataSet
 {
     protected string $_orderfield = '';
     protected string $_order = 'asc';
+    protected mixed $_mastersource = null;
+    protected array $_masterfields = [];
+
+    /**
+     * Validate column name to prevent SQL injection.
+     *
+     * Column names must start with a letter or underscore and contain only
+     * alphanumeric characters and underscores.
+     */
+    protected function isValidColumnName(string $name): bool
+    {
+        return (bool) preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name);
+    }
+
+    /**
+     * Get properly escaped table name with backticks.
+     *
+     * @throws EDatabaseError if table name is invalid
+     */
+    protected function getEscapedTableName(): string
+    {
+        $tableName = trim($this->_tablename);
+
+        if ($tableName === '') {
+            throw new EDatabaseError("Table name is empty");
+        }
+
+        // Validate table name (alphanumeric, underscore, dot for schema.table)
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)?$/', $tableName)) {
+            throw new EDatabaseError("Invalid table name: {$tableName}");
+        }
+
+        // Handle schema.table notation
+        if (str_contains($tableName, '.')) {
+            $parts = explode('.', $tableName, 2);
+            return "`{$parts[0]}`.`{$parts[1]}`";
+        }
+
+        return "`{$tableName}`";
+    }
 
     // Property Hooks
     public string $TableName {
@@ -40,24 +80,35 @@ class CustomMySQLTable extends MySQLDataSet
 
     /**
      * Internal delete implementation.
+     *
+     * Uses prepared statements for security.
      */
     protected function internalDelete(): void
     {
-        $where = '';
+        $whereParts = [];
+        $params = [];
+
         foreach ($this->_keyfields as $key => $fname) {
             $val = $this->fieldbuffer[$fname] ?? '';
             if (trim((string)$val) === '') {
                 continue;
             }
-            if ($where !== '') {
-                $where .= ' and ';
+
+            // Validate column name (alphanumeric and underscore only)
+            if (!$this->isValidColumnName($fname)) {
+                throw new EDatabaseError("Invalid column name: {$fname}");
             }
-            $where .= " {$fname} = " . $this->_database->QuoteStr((string)$val);
+
+            $whereParts[] = "`{$fname}` = ?";
+            $params[] = $val;
         }
 
-        if ($where !== '') {
-            $query = "DELETE FROM {$this->_tablename} WHERE {$where}";
-            $this->_database->Execute($query);
+        if (!empty($whereParts)) {
+            // Validate table name
+            $tableName = $this->getEscapedTableName();
+
+            $query = "DELETE FROM {$tableName} WHERE " . implode(' AND ', $whereParts);
+            $this->_database->Execute($query, $params);
         }
     }
 
@@ -83,6 +134,8 @@ class CustomMySQLTable extends MySQLDataSet
 
     /**
      * Internal post implementation.
+     *
+     * Uses prepared statements for security.
      */
     protected function internalPost(): void
     {
@@ -90,53 +143,75 @@ class CustomMySQLTable extends MySQLDataSet
             ? $this->_state
             : DatasetState::tryFrom($this->_state);
 
+        $tableName = $this->getEscapedTableName();
+
         if ($state === DatasetState::Edit) {
             // Update existing record
-            $where = '';
+            $whereParts = [];
+            $whereParams = [];
             $buffer = $this->fieldbuffer;
 
+            // Build WHERE clause from key fields
             foreach ($this->_keyfields as $key => $fname) {
                 $val = $this->fieldbuffer[$fname] ?? '';
                 unset($buffer[$fname]);
                 if (trim((string)$val) === '') {
                     continue;
                 }
-                if ($where !== '') {
-                    $where .= ' and ';
+
+                if (!$this->isValidColumnName($fname)) {
+                    throw new EDatabaseError("Invalid column name: {$fname}");
                 }
-                $where .= " {$fname} = " . $this->_database->QuoteStr((string)$val);
+
+                $whereParts[] = "`{$fname}` = ?";
+                $whereParams[] = $val;
             }
 
-            $set = '';
-            foreach ($buffer as $key => $fname) {
-                if ($set !== '') {
-                    $set .= ', ';
+            // Build SET clause
+            $setParts = [];
+            $setParams = [];
+
+            foreach ($buffer as $columnName => $value) {
+                if (!$this->isValidColumnName($columnName)) {
+                    throw new EDatabaseError("Invalid column name: {$columnName}");
                 }
-                $set .= " {$key} = '{$fname}' ";
+
+                $setParts[] = "`{$columnName}` = ?";
+                $setParams[] = $value;
             }
 
-            $updateSQL = "UPDATE {$this->_tablename} SET {$set} WHERE {$where}";
-            $this->_database->Execute($updateSQL);
+            if (!empty($setParts) && !empty($whereParts)) {
+                $updateSQL = "UPDATE {$tableName} SET " . implode(', ', $setParts) .
+                             " WHERE " . implode(' AND ', $whereParts);
+
+                // Combine params: SET params first, then WHERE params
+                $params = array_merge($setParams, $whereParams);
+                $this->_database->Execute($updateSQL, $params);
+            }
+
             $this->_buffer = array_merge($this->_buffer, $this->fieldbuffer);
         } else {
             // Insert new record
-            $fields = '';
-            $values = '';
+            $columns = [];
+            $placeholders = [];
+            $params = [];
 
-            foreach ($this->fieldbuffer as $key => $val) {
-                if ($fields !== '') {
-                    $fields .= ',';
+            foreach ($this->fieldbuffer as $columnName => $val) {
+                if (!$this->isValidColumnName($columnName)) {
+                    throw new EDatabaseError("Invalid column name: {$columnName}");
                 }
-                $fields .= $key;
 
-                if ($values !== '') {
-                    $values .= ',';
-                }
-                $values .= $this->_database->QuoteStr((string)$val);
+                $columns[] = "`{$columnName}`";
+                $placeholders[] = '?';
+                $params[] = $val;
             }
 
-            $insertSQL = "INSERT INTO {$this->_tablename}({$fields}) VALUES ({$values})";
-            $this->_database->Execute($insertSQL);
+            if (!empty($columns)) {
+                $insertSQL = "INSERT INTO {$tableName} (" . implode(', ', $columns) .
+                             ") VALUES (" . implode(', ', $placeholders) . ")";
+                $this->_database->Execute($insertSQL, $params);
+            }
+
             $this->_buffer = array_merge($this->_buffer, $this->fieldbuffer);
         }
     }
@@ -152,6 +227,9 @@ class CustomMySQLTable extends MySQLDataSet
 
     /**
      * Build the query to send to the server.
+     *
+     * Uses prepared statement placeholders for master-detail values.
+     * The parameters are stored in $this->_params for binding.
      */
     protected function buildQuery(): string
     {
@@ -166,49 +244,69 @@ class CustomMySQLTable extends MySQLDataSet
             return '';
         }
 
-        $qu = "SELECT * FROM {$this->_tablename}";
+        // Reset params for this query
+        $this->_params = [];
 
+        // Use validated/escaped table name
+        $tableName = $this->getEscapedTableName();
+        $qu = "SELECT * FROM {$tableName}";
+
+        // Validate and build ORDER BY clause
         $order = '';
         if ($this->_orderfield !== '') {
-            $order = "ORDER BY {$this->_orderfield} {$this->_order}";
+            if (!$this->isValidColumnName($this->_orderfield)) {
+                throw new EDatabaseError("Invalid order field: {$this->_orderfield}");
+            }
+
+            // Validate order direction
+            $orderDir = strtolower($this->_order);
+            if (!in_array($orderDir, ['asc', 'desc'], true)) {
+                $orderDir = 'asc';
+            }
+
+            $order = "ORDER BY `{$this->_orderfield}` {$orderDir}";
         }
 
-        $where = '';
+        $whereParts = [];
+
+        // Note: _filter is expected to be safe (set by developer, not user input)
+        // For user-provided filters, use prepared statements separately
         if ($this->_filter !== '') {
-            $where .= " {$this->_filter} ";
+            $whereParts[] = $this->_filter;
         }
 
-        // Handle master-detail relationship
+        // Handle master-detail relationship with prepared statements
         if ($this->_mastersource !== null) {
             $this->MasterSource = $this->_mastersource;
             if (is_object($this->_mastersource)) {
                 if (count($this->_masterfields) > 0) {
                     $this->_mastersource->DataSet->Open();
 
-                    $ms = '';
+                    $masterConditions = [];
                     foreach ($this->_masterfields as $thisfield => $msfield) {
-                        if ($ms !== '') {
-                            $ms .= ' and ';
+                        // Validate column names
+                        if (!$this->isValidColumnName($thisfield)) {
+                            throw new EDatabaseError("Invalid master field name: {$thisfield}");
                         }
+
                         $msValue = $this->_mastersource->DataSet->$msfield ?? '';
-                        $ms .= " {$thisfield}=" . $this->_database->QuoteStr((string)$msValue) . " ";
+                        $masterConditions[] = "`{$thisfield}` = ?";
+                        $this->_params[] = (string) $msValue;
                     }
 
-                    if ($ms !== '') {
-                        if ($where !== '') {
-                            $where .= ' and ';
-                        }
-                        $where .= " ({$ms}) ";
+                    if (!empty($masterConditions)) {
+                        $whereParts[] = '(' . implode(' AND ', $masterConditions) . ')';
                     }
                 }
             }
         }
 
-        if ($where !== '') {
-            $where = " WHERE {$where} ";
+        $where = '';
+        if (!empty($whereParts)) {
+            $where = " WHERE " . implode(' AND ', $whereParts);
         }
 
-        $result = "{$qu} {$where} {$order}";
+        $result = "{$qu}{$where} {$order}";
         $this->_lastquery = $result;
 
         return $result;
@@ -253,6 +351,8 @@ class CustomMySQLTable extends MySQLDataSet
 
     /**
      * Dump hidden key fields for form submission.
+     *
+     * Uses proper HTML escaping to prevent XSS.
      */
     public function dumpHiddenKeyFields(string $basename, array $values = []): string
     {
@@ -265,8 +365,11 @@ class CustomMySQLTable extends MySQLDataSet
         $output = '';
         foreach ($keyfields as $k => $v) {
             $avalue = $values[$v] ?? '';
-            $avalue = str_replace('"', '&quot;', (string)$avalue);
-            $output .= "<input type=\"hidden\" name=\"{$basename}[{$v}]\" value=\"{$avalue}\" />";
+            // Properly escape all HTML attributes to prevent XSS
+            $escapedBasename = htmlspecialchars($basename, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $escapedV = htmlspecialchars($v, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $escapedValue = htmlspecialchars((string) $avalue, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $output .= "<input type=\"hidden\" name=\"{$escapedBasename}[{$escapedV}]\" value=\"{$escapedValue}\" />";
         }
 
         return $output;

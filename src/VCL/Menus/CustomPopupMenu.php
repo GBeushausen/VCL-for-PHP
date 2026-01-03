@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\Menus;
 
 use VCL\Core\Component;
+use VCL\Security\Escaper;
 
 /**
  * CustomPopupMenu is the base class for PopupMenu.
@@ -60,7 +61,8 @@ class CustomPopupMenu extends Component
      */
     public function dumpFormItems(): void
     {
-        echo "<input type=\"hidden\" id=\"{$this->_name}_state\" name=\"{$this->_name}_state\" value=\"\" />\n";
+        $htmlName = Escaper::attr($this->_name);
+        echo "<input type=\"hidden\" id=\"{$htmlName}_state\" name=\"{$htmlName}_state\" value=\"\" />\n";
     }
 
     /**
@@ -82,52 +84,63 @@ class CustomPopupMenu extends Component
 
         $this->dumpPopupMenuCSS();
 
+        // Escape names for use as JS identifiers and strings
+        $safeName = Escaper::id($this->_name);
+        $jsNameString = Escaper::jsString($this->_name);
+
         echo "<script type=\"text/javascript\">\n";
 
         // Create menu function
-        echo "var {$this->_name};\n";
-        echo "function {$this->_name}CreateMenu() {\n";
-        echo "  if (typeof {$this->_name} !== 'undefined' && {$this->_name} !== null) return;\n";
+        echo "var {$safeName};\n";
+        echo "function {$safeName}CreateMenu() {\n";
+        echo "  if (typeof {$safeName} !== 'undefined' && {$safeName} !== null) return;\n";
         echo "  var menu = document.createElement('div');\n";
-        echo "  menu.id = '{$this->_name}_popup';\n";
+        echo "  menu.id = '{$jsNameString}_popup';\n";
         echo "  menu.className = 'vcl-popup-menu';\n";
         echo "  menu.style.display = 'none';\n";
         echo "  menu.innerHTML = " . json_encode($this->buildMenuHTML($this->_items)) . ";\n";
         echo "  document.body.appendChild(menu);\n";
-        echo "  {$this->_name} = menu;\n";
+        echo "  {$safeName} = menu;\n";
 
         // Add click handler to hide menu when clicking outside
         echo "  document.addEventListener('click', function(e) {\n";
-        echo "    if ({$this->_name} && !{$this->_name}.contains(e.target)) {\n";
-        echo "      {$this->_name}.style.display = 'none';\n";
+        echo "    if ({$safeName} && !{$safeName}.contains(e.target)) {\n";
+        echo "      {$safeName}.style.display = 'none';\n";
         echo "    }\n";
         echo "  });\n";
 
         echo "}\n\n";
 
         // Submit menu event function
-        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
+        $formName = $this->owner !== null ? Escaper::id($this->owner->Name) : '';
 
-        echo "function {$this->_name}SubmitEvent(tag) {\n";
+        echo "function {$safeName}SubmitEvent(tag) {\n";
         echo "  var submit = true;\n";
 
         if ($this->_jsonclick !== null) {
-            echo "  submit = {$this->_jsonclick}({tag: tag});\n";
+            $safeCallback = Escaper::id($this->_jsonclick);
+            echo "  submit = {$safeCallback}({tag: tag});\n";
         }
 
         echo "  if (tag !== 0 && submit) {\n";
-        echo "    var hid = document.getElementById('{$this->_name}_state');\n";
+        echo "    var hid = document.getElementById('{$jsNameString}_state');\n";
         echo "    if (hid) hid.value = tag;\n";
-        echo "    var form = document.{$formName};\n";
+
+        if ($formName !== '') {
+            echo "    var form = document.{$formName};\n";
+        } else {
+            echo "    var form = document.forms[0];\n";
+        }
+
         echo "    if (form && form.submit) form.submit();\n";
         echo "  }\n";
-        echo "  if ({$this->_name}) {$this->_name}.style.display = 'none';\n";
+        echo "  if ({$safeName}) {$safeName}.style.display = 'none';\n";
         echo "}\n\n";
 
         // Show menu function
-        echo "function Show{$this->_name}(event, type) {\n";
-        echo "  {$this->_name}CreateMenu();\n";
-        echo "  if (!{$this->_name}) return;\n";
+        echo "function Show{$safeName}(event, type) {\n";
+        echo "  {$safeName}CreateMenu();\n";
+        echo "  if (!{$safeName}) return;\n";
         echo "  var x, y;\n";
         echo "  if (event.pageX !== undefined) {\n";
         echo "    x = event.pageX;\n";
@@ -136,9 +149,9 @@ class CustomPopupMenu extends Component
         echo "    x = event.clientX + document.body.scrollLeft;\n";
         echo "    y = event.clientY + document.body.scrollTop;\n";
         echo "  }\n";
-        echo "  {$this->_name}.style.left = x + 'px';\n";
-        echo "  {$this->_name}.style.top = y + 'px';\n";
-        echo "  {$this->_name}.style.display = 'block';\n";
+        echo "  {$safeName}.style.left = x + 'px';\n";
+        echo "  {$safeName}.style.top = y + 'px';\n";
+        echo "  {$safeName}.style.display = 'block';\n";
         echo "  event.preventDefault();\n";
         echo "  return false;\n";
         echo "}\n";
@@ -153,9 +166,12 @@ class CustomPopupMenu extends Component
     {
         $html = '<ul class="vcl-popup-menu-list">';
 
+        // Escape name for use as JS identifier in onclick
+        $safeName = Escaper::id($this->_name);
+
         foreach ($items as $index => $item) {
             $caption = $item['Caption'] ?? '';
-            $tag = $item['Tag'] ?? 0;
+            $tag = (int) ($item['Tag'] ?? 0);  // Force integer for tag
             $imageIndex = $item['ImageIndex'] ?? -1;
             $subItems = $item['Items'] ?? [];
 
@@ -169,12 +185,16 @@ class CustomPopupMenu extends Component
 
             $html .= '<li class="' . $itemClass . '">';
 
-            $escapedCaption = htmlspecialchars($caption);
+            $escapedCaption = Escaper::html($caption);
             $image = $this->getItemImage($imageIndex);
 
-            $html .= '<a href="#" onclick="' . $this->_name . 'SubmitEvent(' . $tag . '); return false;">';
+            $html .= '<a href="#" onclick="' . $safeName . 'SubmitEvent(' . $tag . '); return false;">';
             if ($image !== '') {
-                $html .= '<img src="' . htmlspecialchars($image) . '" alt="" class="vcl-menu-icon" />';
+                // Validate image URL before using
+                $safeImage = Escaper::urlAttr($image);
+                if ($safeImage !== '#') {
+                    $html .= '<img src="' . Escaper::attr($image) . '" alt="" class="vcl-menu-icon" />';
+                }
             }
             $html .= '<span>' . $escapedCaption . '</span>';
             if ($hasSubItems) {

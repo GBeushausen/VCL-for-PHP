@@ -49,6 +49,10 @@ class MySQLStoredProc extends CustomMySQLQuery
 
     /**
      * Build the query to send to the server.
+     *
+     * Now uses prepared statement placeholders for security.
+     *
+     * @return string The query with ? placeholders
      */
     protected function buildQuery(): string
     {
@@ -56,21 +60,55 @@ class MySQLStoredProc extends CustomMySQLQuery
             return '';
         }
 
-        $pars = '';
-        foreach ($this->_params as $key => $val) {
-            if ($pars !== '') {
-                $pars .= ', ';
-            }
-            $pars .= "'{$val}'";
+        $paramCount = count($this->_params);
+
+        if ($paramCount > 0) {
+            $placeholders = implode(', ', array_fill(0, $paramCount, '?'));
+            $pars = "({$placeholders})";
+        } else {
+            $pars = '';
         }
 
-        if ($pars !== '') {
-            $pars = "({$pars})";
+        // Validate stored procedure name (alphanumeric, underscore, dot only)
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_\.]*$/', $this->_storedprocname)) {
+            throw new \VCL\Database\EDatabaseError("Invalid stored procedure name: {$this->_storedprocname}");
         }
 
-        $result = "CALL {$this->_storedprocname}{$pars};{$this->_fetchquery}";
+        $result = "CALL {$this->_storedprocname}{$pars}";
+
+        // Add fetch query if specified (should be a simple SELECT without user input)
+        if ($this->_fetchquery !== '') {
+            $result .= ";{$this->_fetchquery}";
+        }
 
         return $result;
+    }
+
+    /**
+     * Get the parameters for prepared statement binding.
+     *
+     * @return array The parameter values
+     */
+    public function getBindParams(): array
+    {
+        return array_values($this->_params);
+    }
+
+    /**
+     * Execute the stored procedure using prepared statements.
+     *
+     * @return \mysqli_result|bool
+     */
+    public function executePrepared(): \mysqli_result|bool
+    {
+        if ($this->_database === null) {
+            throw new \VCL\Database\EDatabaseError("No database connection");
+        }
+
+        $query = $this->buildQuery();
+        $params = $this->getBindParams();
+
+        return $this->_database->Execute($query, $params);
     }
 
     // Legacy getters/setters

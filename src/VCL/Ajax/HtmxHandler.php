@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\Ajax;
 
 use VCL\Core\Component;
+use VCL\Security\Escaper;
 
 /**
  * HtmxHandler processes htmx AJAX requests and generates responses.
@@ -191,10 +192,25 @@ class HtmxHandler
 
     /**
      * Send a redirect response via htmx.
+     *
+     * SECURITY: URL is validated to prevent open redirect vulnerabilities.
+     * Only allows http/https schemes and relative paths.
+     *
+     * @param string $url URL to redirect to
+     * @throws \InvalidArgumentException if URL scheme is not allowed
      */
     public function sendRedirect(string $url): void
     {
-        header('HX-Redirect: ' . $url);
+        // Validate URL to prevent open redirect and javascript: URLs
+        $safeUrl = Escaper::urlAttr($url);
+
+        if ($safeUrl === '#') {
+            throw new \InvalidArgumentException(
+                'Invalid redirect URL. Only http, https, and relative URLs are allowed.'
+            );
+        }
+
+        header('HX-Redirect: ' . $safeUrl);
     }
 
     /**

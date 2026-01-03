@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\DBCtrls;
 
 use VCL\UI\CustomControl;
+use VCL\Security\Escaper;
 
 /**
  * DBPaginator is a control to browse through the records of a datasource.
@@ -312,43 +313,47 @@ class DBPaginator extends CustomControl
             echo "<ul class=\"vcl-paginator-list horizontal\">\n";
         }
 
+        // Escape component name for use in HTML and JS
+        $safeName = Escaper::id($this->_name);
+        $htmlName = Escaper::attr($this->_name);
+
         // First button
         if ($this->_showfirst) {
             $disabled = $firstShown ? ' disabled' : '';
-            echo "<li><a href=\"#\" data-action=\"first\" class=\"vcl-page-link{$disabled}\" onclick=\"{$this->_name}_navigate('first'); return false;\">" . htmlspecialchars($this->_captionfirst) . "</a></li>\n";
+            echo "<li><a href=\"#\" data-action=\"first\" class=\"vcl-page-link{$disabled}\" onclick=\"{$safeName}_navigate('first'); return false;\">" . Escaper::html($this->_captionfirst) . "</a></li>\n";
         }
 
         // Previous button
         if ($this->_showprevious) {
             $disabled = $firstShown ? ' disabled' : '';
-            echo "<li><a href=\"#\" data-action=\"prev\" class=\"vcl-page-link{$disabled}\" onclick=\"{$this->_name}_navigate('prev'); return false;\">" . htmlspecialchars($this->_captionprevious) . "</a></li>\n";
+            echo "<li><a href=\"#\" data-action=\"prev\" class=\"vcl-page-link{$disabled}\" onclick=\"{$safeName}_navigate('prev'); return false;\">" . Escaper::html($this->_captionprevious) . "</a></li>\n";
         }
 
         // Page numbers
         foreach ($numbers as $number) {
             $active = $number['currentrecord'] ? ' active' : '';
-            $recNum = $number['recordnumber'];
+            $recNum = (int) $number['recordnumber'];  // Force integer for safety
             $caption = sprintf($this->_pagenumberformat, $recNum);
-            echo "<li><a href=\"#\" data-action=\"{$recNum}\" class=\"vcl-page-link{$active}\" onclick=\"{$this->_name}_navigate('{$recNum}'); return false;\">{$caption}</a></li>\n";
+            echo "<li><a href=\"#\" data-action=\"{$recNum}\" class=\"vcl-page-link{$active}\" onclick=\"{$safeName}_navigate({$recNum}); return false;\">" . Escaper::html($caption) . "</a></li>\n";
         }
 
         // Next button
         if ($this->_shownext) {
             $disabled = $lastShown ? ' disabled' : '';
-            echo "<li><a href=\"#\" data-action=\"next\" class=\"vcl-page-link{$disabled}\" onclick=\"{$this->_name}_navigate('next'); return false;\">" . htmlspecialchars($this->_captionnext) . "</a></li>\n";
+            echo "<li><a href=\"#\" data-action=\"next\" class=\"vcl-page-link{$disabled}\" onclick=\"{$safeName}_navigate('next'); return false;\">" . Escaper::html($this->_captionnext) . "</a></li>\n";
         }
 
         // Last button
         if ($this->_showlast) {
             $disabled = $lastShown ? ' disabled' : '';
-            echo "<li><a href=\"#\" data-action=\"last\" class=\"vcl-page-link{$disabled}\" onclick=\"{$this->_name}_navigate('last'); return false;\">" . htmlspecialchars($this->_captionlast) . "</a></li>\n";
+            echo "<li><a href=\"#\" data-action=\"last\" class=\"vcl-page-link{$disabled}\" onclick=\"{$safeName}_navigate('last'); return false;\">" . Escaper::html($this->_captionlast) . "</a></li>\n";
         }
 
         echo "</ul>\n";
         echo "</nav>\n";
 
         // Hidden input for form submission
-        echo "<input type=\"hidden\" id=\"{$this->_name}\" name=\"{$this->_name}\" value=\"\" />\n";
+        echo "<input type=\"hidden\" id=\"{$htmlName}\" name=\"{$htmlName}\" value=\"\" />\n";
 
         $this->dumpPaginatorCSS();
         $this->dumpPaginatorJS();
@@ -402,13 +407,22 @@ class DBPaginator extends CustomControl
      */
     protected function dumpPaginatorJS(): void
     {
-        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
+        // Escape names for use as JS identifiers and strings
+        $safeName = Escaper::id($this->_name);
+        $jsNameString = Escaper::jsString($this->_name);
+        $formName = $this->owner !== null ? Escaper::id($this->owner->Name) : '';
 
         echo "<script type=\"text/javascript\">\n";
-        echo "function {$this->_name}_navigate(action) {\n";
-        echo "  var input = document.getElementById('{$this->_name}');\n";
+        echo "function {$safeName}_navigate(action) {\n";
+        echo "  var input = document.getElementById('{$jsNameString}');\n";
         echo "  if (input) input.value = action;\n";
-        echo "  var form = document.{$formName};\n";
+
+        if ($formName !== '') {
+            echo "  var form = document.{$formName};\n";
+        } else {
+            echo "  var form = document.forms[0];\n";
+        }
+
         echo "  if (form && form.submit) form.submit();\n";
         echo "}\n";
         echo "</script>\n";

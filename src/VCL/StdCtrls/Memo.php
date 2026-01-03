@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\StdCtrls;
 
 use VCL\UI\FocusControl;
+use VCL\Security\Escaper;
 
 /**
  * Memo is a multiline text editing control.
@@ -83,13 +84,14 @@ class Memo extends FocusControl
         $readonly = $this->_readonly ? ' readonly' : '';
         $disabled = !$this->_enabled ? ' disabled' : '';
         $maxlength = $this->_maxlength > 0 ? " maxlength=\"{$this->_maxlength}\"" : '';
-        $placeholder = $this->_placeholder !== '' ? " placeholder=\"" . htmlspecialchars($this->_placeholder) . "\"" : '';
+        $placeholder = $this->_placeholder !== '' ? " placeholder=\"" . Escaper::attr($this->_placeholder) . "\"" : '';
         $wrap = $this->_wordwrap ? 'soft' : 'off';
 
         $style = $this->buildMemoStyle();
+        $htmlName = Escaper::attr($this->_name);
 
-        echo "<textarea id=\"{$this->_name}\" name=\"{$this->_name}\" style=\"{$style}\" wrap=\"{$wrap}\"{$readonly}{$disabled}{$maxlength}{$placeholder}>";
-        echo htmlspecialchars($this->_text);
+        echo "<textarea id=\"{$htmlName}\" name=\"{$htmlName}\" style=\"{$style}\" wrap=\"{$wrap}\"{$readonly}{$disabled}{$maxlength}{$placeholder}>";
+        echo Escaper::html($this->_text);
         echo "</textarea>\n";
     }
 
