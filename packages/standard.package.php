@@ -210,6 +210,8 @@
    registerBooleanProperty("CustomPage","ShowHeader");
    registerBooleanProperty("CustomPage","UseAjax");
    registerBooleanProperty("CustomPage","UseAjaxDebug");
+   registerBooleanProperty("CustomPage","UseHtmx");
+   registerBooleanProperty("CustomPage","UseHtmxDebug");
    registerBooleanProperty("CustomLabel","WordWrap");
    registerBooleanProperty("Image","Autosize");
    registerBooleanProperty("Image","Border");

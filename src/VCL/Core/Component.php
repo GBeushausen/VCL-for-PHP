@@ -420,11 +420,13 @@ class Component extends Persistent
     }
 
     // =========================================================================
-    // AJAX SUPPORT
+    // AJAX SUPPORT (Legacy xajax - deprecated, use htmx methods instead)
     // =========================================================================
 
     /**
      * Returns javascript code for an ajax event.
+     *
+     * @deprecated Use generateHtmxEvent() instead
      */
     public function generateAjaxEvent(string $jsEvent, string $phpEvent): string
     {
@@ -434,12 +436,121 @@ class Component extends Persistent
 
     /**
      * Dumps javascript code for an ajax call.
+     *
+     * @deprecated Use htmxCall() instead
      */
     public function ajaxCall(string $phpEvent, array $params = [], array $comps = []): string
     {
         $jcomps = !empty($comps) ? '["' . implode('","', $comps) . '"]' : '[]';
         $ownerName = $this->owner !== null ? $this->owner->Name : '';
         return " xajax_ajaxProcess('{$ownerName}','{$this->_name}',params,'{$phpEvent}',xajax.getFormValues('{$ownerName}'),{$jcomps});\n ";
+    }
+
+    // =========================================================================
+    // HTMX SUPPORT (Modern AJAX replacement)
+    // =========================================================================
+
+    /**
+     * Generate htmx attributes for an event.
+     *
+     * @param string $phpEvent The PHP event handler name
+     * @param string $trigger The htmx trigger (e.g., 'click', 'change', 'submit')
+     * @param string $target The target element selector (default: this element)
+     * @param string $swap The swap method (innerHTML, outerHTML, beforeend, etc.)
+     * @return string HTML attributes for htmx
+     */
+    public function generateHtmxEvent(
+        string $phpEvent,
+        string $trigger = 'click',
+        string $target = '',
+        string $swap = 'innerHTML'
+    ): string {
+        global $scriptfilename;
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
+        $action = $scriptfilename ?? $_SERVER['PHP_SELF'] ?? '';
+
+        $attrs = [];
+        $attrs[] = sprintf('hx-post="%s"', htmlspecialchars($action));
+        $attrs[] = sprintf('hx-trigger="%s"', htmlspecialchars($trigger));
+
+        if ($target !== '') {
+            $attrs[] = sprintf('hx-target="%s"', htmlspecialchars($target));
+        }
+
+        $attrs[] = sprintf('hx-swap="%s"', htmlspecialchars($swap));
+
+        // Include form values
+        $attrs[] = sprintf('hx-include="[name^=\'%s\']"', htmlspecialchars($ownerName));
+
+        // Add VCL metadata (use JSON_HEX flags for safe HTML attribute escaping)
+        $attrs[] = sprintf('hx-vals=\'%s\'', json_encode([
+            '_vcl_form' => $ownerName,
+            '_vcl_control' => $this->_name,
+            '_vcl_event' => $phpEvent,
+        ], JSON_HEX_APOS | JSON_HEX_QUOT));
+
+        return ' ' . implode(' ', $attrs) . ' ';
+    }
+
+    /**
+     * Generate htmx attributes for a form submission.
+     *
+     * @param string $phpEvent The PHP event handler name
+     * @param string $target The target element selector
+     * @param string $swap The swap method
+     * @return string HTML attributes for htmx
+     */
+    public function generateHtmxSubmit(
+        string $phpEvent,
+        string $target = '',
+        string $swap = 'innerHTML'
+    ): string {
+        return $this->generateHtmxEvent($phpEvent, 'submit', $target, $swap);
+    }
+
+    /**
+     * Generate JavaScript code for programmatic htmx request.
+     *
+     * @param string $phpEvent The PHP event handler name
+     * @param string $target Optional target selector
+     * @return string JavaScript code
+     */
+    public function htmxCall(string $phpEvent, string $target = ''): string
+    {
+        global $scriptfilename;
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
+        $action = $scriptfilename ?? $_SERVER['PHP_SELF'] ?? '';
+
+        $targetJs = $target !== '' ? json_encode($target) : 'null';
+
+        return sprintf(
+            "htmx.ajax('POST', %s, {values: {_vcl_form: %s, _vcl_control: %s, _vcl_event: %s}, target: %s});\n",
+            json_encode($action),
+            json_encode($ownerName),
+            json_encode($this->_name),
+            json_encode($phpEvent),
+            $targetJs
+        );
+    }
+
+    /**
+     * Generate hidden input fields for htmx VCL metadata.
+     *
+     * @param string $phpEvent The PHP event handler name
+     * @return string HTML hidden inputs
+     */
+    public function getHtmxHiddenFields(string $phpEvent): string
+    {
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
+
+        return sprintf(
+            '<input type="hidden" name="_vcl_form" value="%s">' .
+            '<input type="hidden" name="_vcl_control" value="%s">' .
+            '<input type="hidden" name="_vcl_event" value="%s">',
+            htmlspecialchars($ownerName),
+            htmlspecialchars($this->_name),
+            htmlspecialchars($phpEvent)
+        );
     }
 
     // =========================================================================

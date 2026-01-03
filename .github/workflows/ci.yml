@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main, master, php84-migration]
+    branches: [main, master]
   pull_request:
-    branches: [main, master, php84-migration]
 
 jobs:
   test:
@@ -44,8 +43,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: Install dependencies
+      - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install npm dependencies
+        run: npm install
 
       - name: Run PHPStan
         run: composer analyse

@@ -1,0 +1,28 @@
+{
+  "name": "vcl",
+  "version": "1.0.0",
+  "description": "Visual Component Library for PHP",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GBeushausen/VCL-for-PHP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/GBeushausen/VCL-for-PHP/issues"
+  },
+  "homepage": "https://github.com/GBeushausen/VCL-for-PHP#readme",
+  "dependencies": {
+    "htmx.org": "^2.0.8"
+  }
+}

@@ -1,6 +1,6 @@
 # VCL for PHP 3.0
 
-[![CI](https://github.com/user/vcl-php/actions/workflows/ci.yml/badge.svg)](https://github.com/user/vcl-php/actions/workflows/ci.yml)
+[![CI](https://github.com/GBeushausen/VCL-for-PHP/actions/workflows/ci.yml/badge.svg)](https://github.com/GBeushausen/VCL-for-PHP/actions/workflows/ci.yml)
 
 A Delphi-inspired Visual Component Library for building web applications with PHP.
 
@@ -26,9 +26,10 @@ This repository contains a modernized version that has been refactored to work w
 ## Installation
 
 ```bash
-git clone https://github.com/user/vcl-php.git
-cd vcl-php
+git clone https://github.com/GBeushausen/VCL-for-PHP.git
+cd VCL-for-PHP
 composer install
+npm install          # Optional: for htmx AJAX support
 ```
 
 ## Quick Start

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VCL\Forms;
 
+use VCL\Ajax\HtmxHandler;
 use VCL\Core\Component;
 
 /**
@@ -58,8 +59,9 @@ class Application extends Component
         }
 
         // Handle session restore request (only if session is active)
+        // Skip session restore during AJAX requests (xajax or htmx)
         if (session_status() === PHP_SESSION_ACTIVE && isset($_GET['restore_session'])) {
-            if (!isset($_POST['xajax'])) {
+            if (!self::isAjaxRequest()) {
                 $_SESSION = [];
                 session_destroy();
                 if (PHP_SAPI !== 'cli' && !headers_sent()) {
@@ -78,6 +80,38 @@ class Application extends Component
                 }
             }
         }
+    }
+
+    /**
+     * Check if the current request is an AJAX request (xajax or htmx).
+     */
+    public static function isAjaxRequest(): bool
+    {
+        // Check for htmx request
+        if (isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'] === 'true') {
+            return true;
+        }
+
+        // Check for legacy xajax request
+        if (isset($_POST['xajax'])) {
+            return true;
+        }
+
+        // Check for standard X-Requested-With header
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the current request is an htmx request specifically.
+     */
+    public static function isHtmxRequest(): bool
+    {
+        return HtmxHandler::isHtmxRequest();
     }
 
     /**

@@ -32,10 +32,14 @@ class Page extends CustomPage
     protected int $_rightmargin = 0;
     protected int $_bottommargin = 0;
 
-    // Ajax
+    // Ajax (Legacy xajax)
     protected bool $_useajax = false;
     protected bool $_useajaxdebug = false;
     protected string $_useajaxuri = '';
+
+    // Htmx (Modern AJAX replacement)
+    protected bool $_usehtmx = false;
+    protected bool $_usehtmxdebug = false;
 
     // Template
     protected bool $_dynamic = false;
@@ -138,6 +142,16 @@ class Page extends CustomPage
     public string $UseAjaxUri {
         get => $this->_useajaxuri;
         set => $this->_useajaxuri = $value;
+    }
+
+    public bool $UseHtmx {
+        get => $this->_usehtmx;
+        set => $this->_usehtmx = $value;
+    }
+
+    public bool $UseHtmxDebug {
+        get => $this->_usehtmxdebug;
+        set => $this->_usehtmxdebug = $value;
     }
 
     public bool $Dynamic {
@@ -330,10 +344,77 @@ class Page extends CustomPage
 
         $this->callEvent('onshowheader', []);
 
+        // Include htmx library if enabled
+        if ($this->_usehtmx) {
+            $this->dumpHtmxScript();
+        }
+
         $this->dumpHeaderJavascript();
         $this->dumpChildrenHeaderCode();
 
         echo "</head>\n";
+    }
+
+    /**
+     * Dump htmx script include.
+     */
+    protected function dumpHtmxScript(): void
+    {
+        global $VCLPATH;
+        $basePath = $VCLPATH ?? '';
+
+        // htmx from npm (node_modules)
+        $htmxFilePath = $basePath . 'node_modules/htmx.org/dist/htmx.min.js';
+
+        // VCL htmx helper from src/VCL/Assets
+        $vclHtmxFilePath = $basePath . 'src/VCL/Assets/js/vcl-htmx.js';
+
+        // Determine URL for htmx: local file if available, otherwise CDN
+        // CDN version should match package.json (htmx.org ^2.0.8) - updated 2025-01
+        if (file_exists($htmxFilePath)) {
+            $htmxUrl = $this->pathToUrl($htmxFilePath);
+        } else {
+            $htmxUrl = 'https://unpkg.com/htmx.org@2';
+        }
+
+        echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($htmxUrl, ENT_QUOTES, 'UTF-8'));
+
+        // Include VCL htmx helper if it exists
+        if (file_exists($vclHtmxFilePath)) {
+            $vclHtmxUrl = $this->pathToUrl($vclHtmxFilePath);
+            echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($vclHtmxUrl, ENT_QUOTES, 'UTF-8'));
+        }
+
+        // Add debug extension if enabled
+        if ($this->_usehtmxdebug) {
+            echo '<script>htmx.logAll();</script>' . "\n";
+        }
+    }
+
+    /**
+     * Convert a filesystem path to a web-accessible URL.
+     */
+    protected function pathToUrl(string $path): string
+    {
+        // If it's already an absolute URL, return as-is
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        $normalizedPath = str_replace('\\', '/', $path);
+        $normalizedRoot = $documentRoot !== '' ? str_replace('\\', '/', rtrim($documentRoot, '/\\')) : '';
+
+        $relative = $normalizedPath;
+        if ($normalizedRoot !== '' && str_starts_with($normalizedPath, $normalizedRoot)) {
+            $relative = substr($normalizedPath, strlen($normalizedRoot));
+        }
+
+        if ($relative === '' || $relative[0] !== '/') {
+            $relative = '/' . ltrim($relative, '/');
+        }
+
+        return $relative;
     }
 
     /**
@@ -440,16 +521,16 @@ class Page extends CustomPage
             return;
         }
 
-        if ($this->_templateengine !== '') {
-            if ($this->_useajax) {
-                $this->processAjax();
-            }
-            $this->dumpUsingTemplate();
-            return;
+        // Process htmx or legacy ajax requests
+        if ($this->_usehtmx) {
+            $this->processHtmx();
+        } elseif ($this->_useajax) {
+            $this->processAjax();
         }
 
-        if ($this->_useajax) {
-            $this->processAjax();
+        if ($this->_templateengine !== '') {
+            $this->dumpUsingTemplate();
+            return;
         }
 
         // Check for frames
@@ -576,12 +657,36 @@ class Page extends CustomPage
     }
 
     /**
-     * Process Ajax requests.
+     * Process Ajax requests (legacy xajax).
+     *
+     * @deprecated Use processHtmx() instead
      */
     public function processAjax(): void
     {
-        // Placeholder for Ajax processing
-        // Would integrate with xajax or similar library
+        // Legacy xajax processing - kept for backward compatibility
+        // New code should use UseHtmx and processHtmx()
+    }
+
+    /**
+     * Process htmx AJAX requests.
+     *
+     * This method checks for htmx requests and processes them,
+     * returning HTML fragments instead of full page renders.
+     */
+    public function processHtmx(): void
+    {
+        if (!\VCL\Ajax\HtmxHandler::isHtmxRequest()) {
+            return;
+        }
+
+        $this->callEvent('onbeforeajaxprocess', []);
+
+        $handler = new \VCL\Ajax\HtmxHandler($this);
+        $handler->setDebug($this->_usehtmxdebug);
+
+        if ($handler->processRequest()) {
+            exit; // Stop page processing after htmx response
+        }
     }
 
     /**
@@ -671,4 +776,12 @@ class Page extends CustomPage
     public function getjsOnUnload(): ?string { return $this->_jsonunload; }
     public function setjsOnUnload(?string $value): void { $this->jsOnUnload = $value; }
     public function defaultjsOnUnload(): ?string { return null; }
+
+    public function getUseHtmx(): bool { return $this->_usehtmx; }
+    public function setUseHtmx(bool $value): void { $this->UseHtmx = $value; }
+    public function defaultUseHtmx(): bool { return false; }
+
+    public function getUseHtmxDebug(): bool { return $this->_usehtmxdebug; }
+    public function setUseHtmxDebug(bool $value): void { $this->UseHtmxDebug = $value; }
+    public function defaultUseHtmxDebug(): bool { return false; }
 }
