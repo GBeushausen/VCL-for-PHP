@@ -117,6 +117,15 @@ class Table extends DataSet
         set => $this->_hasautoinc = $value;
     }
 
+    /**
+     * Current record fields as associative array.
+     * Use this for type-safe field access: $table->Fields['fieldname']
+     */
+    public array $Fields {
+        get => $this->fieldbuffer;
+        set => $this->fieldbuffer = $value;
+    }
+
     // Event properties
     public ?string $OnBeforeOpen {
         get => $this->_onbeforeopen;
@@ -223,10 +232,13 @@ class Table extends DataSet
         }
 
         // Master/Detail support
-        if ($this->MasterSource !== '' && is_object($this->_mastersource)) {
+        if (is_object($this->_mastersource)) {
             $masterDataset = $this->_mastersource->DataSet ?? null;
             if ($masterDataset !== null && !empty($this->MasterFields)) {
-                $masterDataset->Open();
+                // Only open if not already active (don't reset cursor!)
+                if (!$masterDataset->Active) {
+                    $masterDataset->Open();
+                }
 
                 $ms = '';
                 foreach ($this->MasterFields as $thisfield => $msfield) {
@@ -485,6 +497,38 @@ class Table extends DataSet
     }
 
     /**
+     * Get all field names.
+     */
+    public function FieldNames(): array
+    {
+        return array_keys($this->fieldbuffer);
+    }
+
+    /**
+     * Get all field values.
+     */
+    public function FieldValues(): array
+    {
+        return array_values($this->fieldbuffer);
+    }
+
+    /**
+     * Get a field value by name.
+     */
+    public function FieldByName(string $fieldname): mixed
+    {
+        return $this->fieldbuffer[$fieldname] ?? null;
+    }
+
+    /**
+     * Move to a specific record by index.
+     */
+    public function MoveTo(int $index): void
+    {
+        $this->MoveBy($index - $this->_currentIndex);
+    }
+
+    /**
      * Put dataset in edit mode.
      */
     public function Edit(): void
@@ -697,9 +741,18 @@ class Table extends DataSet
 
     /**
      * Magic getter for field access.
+     *
+     * Note: We must check for database fields FIRST because PHP's method_exists()
+     * is case-insensitive. Without this, reading $table->name would incorrectly
+     * call Component::getName() instead of reading the database field 'name'.
      */
     public function __get(string $nm): mixed
     {
+        // Check if this is a database field first (when table is active)
+        if ($this->Active && array_key_exists($nm, $this->fieldbuffer)) {
+            return $this->FieldGet($nm);
+        }
+
         try {
             return parent::__get($nm);
         } catch (\VCL\Core\Exception\PropertyNotFoundException $e) {
@@ -709,9 +762,19 @@ class Table extends DataSet
 
     /**
      * Magic setter for field access.
+     *
+     * Note: We must check for database fields FIRST because PHP's method_exists()
+     * is case-insensitive. Without this, setting $table->name would incorrectly
+     * call Component::setName() instead of setting the database field 'name'.
      */
     public function __set(string $nm, mixed $val): void
     {
+        // Check if this is a database field first (when table is active)
+        if ($this->Active && array_key_exists($nm, $this->fieldbuffer)) {
+            $this->FieldSet($nm, $val);
+            return;
+        }
+
         try {
             parent::__set($nm, $val);
         } catch (\VCL\Core\Exception\PropertyNotFoundException $e) {

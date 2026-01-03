@@ -130,6 +130,14 @@ class Query extends DataSet
         set => $this->_onafterclose = $value;
     }
 
+    /**
+     * Current record fields as associative array.
+     * Use this for type-safe field access: $query->Fields['fieldname']
+     */
+    public array $Fields {
+        get => $this->fieldbuffer;
+    }
+
     public ?string $OnBeforeInsert {
         get => $this->_onbeforeinsert;
         set => $this->_onbeforeinsert = $value;
@@ -364,6 +372,14 @@ class Query extends DataSet
     }
 
     /**
+     * Move to a specific record by index.
+     */
+    public function MoveTo(int $index): void
+    {
+        $this->MoveBy($index - $this->_currentIndex);
+    }
+
+    /**
      * Check if at end of file.
      */
     public function EOF(): bool
@@ -415,7 +431,31 @@ class Query extends DataSet
     }
 
     /**
+     * Get all field names.
+     */
+    public function FieldNames(): array
+    {
+        return array_keys($this->fieldbuffer);
+    }
+
+    /**
+     * Get all field values.
+     */
+    public function FieldValues(): array
+    {
+        return array_values($this->fieldbuffer);
+    }
+
+    /**
      * Get a field value by name.
+     */
+    public function FieldByName(string $fieldname): mixed
+    {
+        return $this->fieldbuffer[$fieldname] ?? null;
+    }
+
+    /**
+     * Get a field value by name (internal).
      */
     public function FieldGet(string $fieldname): mixed
     {
@@ -445,9 +485,18 @@ class Query extends DataSet
 
     /**
      * Magic getter for field access.
+     *
+     * Note: We must check for database fields FIRST because PHP's method_exists()
+     * is case-insensitive. Without this, reading $query->name would incorrectly
+     * call Component::getName() instead of reading the database field 'name'.
      */
     public function __get(string $nm): mixed
     {
+        // Check if this is a database field first (when query is active)
+        if ($this->Active && array_key_exists($nm, $this->fieldbuffer)) {
+            return $this->FieldGet($nm);
+        }
+
         try {
             return parent::__get($nm);
         } catch (\VCL\Core\Exception\PropertyNotFoundException $e) {
@@ -457,9 +506,19 @@ class Query extends DataSet
 
     /**
      * Magic setter for field access.
+     *
+     * Note: We must check for database fields FIRST because PHP's method_exists()
+     * is case-insensitive. Without this, setting $query->name would incorrectly
+     * call Component::setName() instead of setting the database field 'name'.
      */
     public function __set(string $nm, mixed $val): void
     {
+        // Check if this is a database field first (when query is active)
+        if ($this->Active && array_key_exists($nm, $this->fieldbuffer)) {
+            $this->FieldSet($nm, $val);
+            return;
+        }
+
         try {
             parent::__set($nm, $val);
         } catch (\VCL\Core\Exception\PropertyNotFoundException $e) {

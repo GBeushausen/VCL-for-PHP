@@ -381,17 +381,17 @@ class Connection extends CustomConnection
     }
 
     /**
-     * Quote a string for safe use in SQL.
+     * Quote a value for safe use in SQL.
      *
      * Note: Prefer using prepared statements with Execute() instead.
      */
-    public function QuoteStr(string $input): string
+    public function QuoteStr(mixed $input): string
     {
         if ($this->_dbal === null) {
             $this->Open();
         }
 
-        return $this->_dbal->quote($input);
+        return $this->_dbal->quote((string)$input);
     }
 
     /**

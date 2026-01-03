@@ -10,6 +10,7 @@ VCL provides a modern database abstraction layer built on [Doctrine DBAL](https:
 - [Executing Queries](#executing-queries)
 - [Query Component](#query-component)
 - [Table Component](#table-component)
+- [StoredProc Component](#storedproc-component)
 - [QueryBuilder](#querybuilder)
 - [Transactions](#transactions)
 - [Schema Introspection](#schema-introspection)
@@ -417,6 +418,127 @@ if ($table->BOF()) { /* At beginning */ }
 
 // Get record count
 echo "Total records: " . $table->ReadRecordCount();
+```
+
+## StoredProc Component
+
+The `StoredProc` class encapsulates stored procedure execution across different database systems. It extends `Query` and automatically generates the appropriate SQL syntax for each database driver.
+
+### Basic Usage
+
+```php
+use VCL\Database\StoredProc;
+use VCL\Database\Connection;
+
+$db = new Connection();
+$db->Driver = DriverType::MySQL;
+$db->Host = 'localhost';
+$db->DatabaseName = 'mydb';
+$db->UserName = 'user';
+$db->UserPassword = 'secret';
+$db->Open();
+
+// Create stored procedure component
+$proc = new StoredProc();
+$proc->Database = $db;
+$proc->StoredProcName = 'GetUserById';
+$proc->Params = [123];
+
+// Execute and fetch results
+$proc->Open();
+while (!$proc->EOF()) {
+    echo $proc->username . "\n";
+    $proc->Next();
+}
+$proc->Close();
+```
+
+### Database-Specific SQL Generation
+
+StoredProc automatically generates the correct syntax based on the database driver:
+
+| Driver | Generated SQL |
+|--------|---------------|
+| MySQL/MariaDB | `CALL procedure_name(params)` |
+| Oracle | `BEGIN procedure_name(params); END;` |
+| PostgreSQL/SQLite/Others | `SELECT * FROM procedure_name(params)` |
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `StoredProcName` | `string` | Name of the stored procedure |
+| `FetchQuery` | `string` | Additional query to execute after the procedure (MySQL only) |
+| `Params` | `array` | Parameters to pass to the procedure |
+| `Database` | `Connection` | Database connection to use |
+
+### Using FetchQuery (MySQL)
+
+For MySQL stored procedures that set session variables:
+
+```php
+$proc = new StoredProc();
+$proc->Database = $db;
+$proc->StoredProcName = 'CalculateTotal';
+$proc->Params = [1001];
+$proc->FetchQuery = 'SELECT @total, @tax, @discount';
+
+$proc->Open();
+$total = $proc->Fields['@total'];
+```
+
+Generated SQL: `CALL CalculateTotal('1001'); SELECT @total, @tax, @discount`
+
+### Executing Without Result Set
+
+For procedures that don't return results:
+
+```php
+$proc = new StoredProc();
+$proc->Database = $db;
+$proc->StoredProcName = 'UpdateUserStatus';
+$proc->Params = [123, 'active'];
+
+// ExecuteProc runs the procedure without expecting a result set
+$proc->ExecuteProc();
+```
+
+### Examples by Database
+
+#### MySQL
+
+```php
+// MySQL stored procedure
+$proc = new StoredProc();
+$proc->Database = $mysqlDb;
+$proc->StoredProcName = 'sp_get_orders';
+$proc->Params = ['2024-01-01', '2024-12-31'];
+$proc->Open();
+// Executes: CALL sp_get_orders('2024-01-01', '2024-12-31')
+```
+
+#### PostgreSQL
+
+```php
+// PostgreSQL function
+$proc = new StoredProc();
+$proc->Database = $pgDb;
+$proc->StoredProcName = 'get_user_orders';
+$proc->Params = [42];
+$proc->Open();
+// Executes: SELECT * FROM get_user_orders('42')
+```
+
+#### Oracle
+
+```php
+// Oracle procedure
+$proc = new StoredProc();
+$proc->Database = $oracleDb;
+$proc->StoredProcName = 'PKG_USERS.GET_BY_ID';
+$proc->Params = [42];
+$proc->ExecuteProc();
+// Executes: BEGIN PKG_USERS.GET_BY_ID('42'); END;
 ```
 
 ## QueryBuilder
@@ -1029,37 +1151,39 @@ $file = $generator->Generate('AddAvatarToUsers');
 
 ## Legacy Compatibility
 
-The `Database` class in `dbtables.inc.php` maintains backward compatibility with the original ADOdb-based API:
+The VCL database layer maintains backward compatibility with the original ADOdb-based API patterns:
 
 ```php
 <?php
-use_unit("dbtables.inc.php");
+use VCL\Database\Connection;
+use VCL\Database\Table;
+use VCL\Database\Query;
 
-// Legacy style still works
-$db = new Database($this);
-$db->DriverName = 'mysql';
+// Connection (replaces legacy Database class)
+$db = new Connection();
+$db->DriverName = 'mysql';  // or use $db->Driver = DriverType::MySQL
 $db->Host = 'localhost';
 $db->DatabaseName = 'mydb';
 $db->UserName = 'user';
 $db->UserPassword = 'secret';
 $db->Connected = true;
 
-// Legacy execute (now uses prepared statements internally)
+// Execute with prepared statements
 $rs = $db->Execute("SELECT * FROM users WHERE id = ?", [123]);
 
 // Table component
-$table = new Table($this);
+$table = new Table();
 $table->Database = $db;
 $table->TableName = 'users';
 $table->Active = true;
 
-while (!$table->EOF) {
+while (!$table->EOF()) {
     echo $table->username . "\n";
     $table->Next();
 }
 
 // Query component
-$query = new Query($this);
+$query = new Query();
 $query->Database = $db;
 $query->SQL = ["SELECT * FROM users WHERE status = 'active'"];
 $query->Active = true;

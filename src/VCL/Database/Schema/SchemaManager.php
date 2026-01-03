@@ -65,6 +65,14 @@ class SchemaManager
         $this->sm = $this->connection->Dbal()->createSchemaManager();
     }
 
+    /**
+     * Refresh the schema manager to pick up changes.
+     */
+    protected function RefreshSchemaManager(): void
+    {
+        $this->sm = $this->connection->Dbal()->createSchemaManager();
+    }
+
     // -------------------------------------------------------------------------
     // Database Operations
     // -------------------------------------------------------------------------
@@ -197,6 +205,9 @@ class SchemaManager
         foreach ($queries as $query) {
             $this->connection->ExecuteStatement($query);
         }
+
+        // Refresh to pick up the new table
+        $this->RefreshSchemaManager();
     }
 
     /**
@@ -205,6 +216,7 @@ class SchemaManager
     public function DropTable(string $tableName): void
     {
         $this->sm->dropTable($tableName);
+        $this->RefreshSchemaManager();
     }
 
     /**
@@ -213,6 +225,7 @@ class SchemaManager
     public function RenameTable(string $oldName, string $newName): void
     {
         $this->sm->renameTable($oldName, $newName);
+        $this->RefreshSchemaManager();
     }
 
     /**
@@ -505,6 +518,9 @@ class SchemaManager
         foreach ($queries as $query) {
             $this->connection->ExecuteStatement($query);
         }
+
+        // Refresh to pick up schema changes
+        $this->RefreshSchemaManager();
     }
 
     /**
