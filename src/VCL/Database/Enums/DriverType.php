@@ -86,7 +86,7 @@ enum DriverType: string
         return match(strtolower($driver)) {
             'mysql', 'mysqli', 'pdo_mysql' => self::MySQL,
             'mariadb' => self::MariaDB,
-            'postgres', 'postgres7', 'postgres8', 'postgres9', 'pdo_pgsql' => self::PostgreSQL,
+            'pgsql', 'postgres', 'postgres7', 'postgres8', 'postgres9', 'pdo_pgsql' => self::PostgreSQL,
             'sqlite', 'sqlite3', 'pdo_sqlite' => self::SQLite,
             'mssql', 'mssqlnative', 'sqlsrv', 'pdo_sqlsrv' => self::SQLServer,
             'oracle', 'oci8', 'oci8po' => self::Oracle,

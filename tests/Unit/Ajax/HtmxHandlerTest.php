@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace VCL\Tests\Unit\Ajax;
 
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use VCL\Ajax\HtmxHandler;
 use VCL\Forms\Page;
@@ -308,9 +309,7 @@ class HtmxHandlerTest extends TestCase
     // Note: The following methods set HTTP headers which cannot be fully tested in CLI mode.
     // These tests verify the methods exist and can be called without errors.
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSendHtmlOutputsContent(): void
     {
         $handler = new HtmxHandler();
@@ -322,9 +321,7 @@ class HtmxHandlerTest extends TestCase
         $this->assertSame('<div>Test</div>', $output);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
+    #[RunInSeparateProcess]
     public function testSendErrorOutputsErrorMessage(): void
     {
         $handler = new HtmxHandler();

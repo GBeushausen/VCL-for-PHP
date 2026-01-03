@@ -295,7 +295,11 @@ class QueryBuilder
      */
     public function SetParameter(string $name, mixed $value, mixed $type = null): self
     {
-        $this->qb->setParameter($name, $value, $type);
+        if ($type === null) {
+            $this->qb->setParameter($name, $value);
+        } else {
+            $this->qb->setParameter($name, $value, $type);
+        }
         return $this;
     }
 

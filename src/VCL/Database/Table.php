@@ -312,12 +312,13 @@ class Table extends DataSet
             return;
         }
 
+        $this->CheckDatabase();
+
         $sql = $this->BuildQuery();
         if (trim($sql) === '') {
             return;
         }
 
-        $this->CheckDatabase();
         $this->_database->Open();
 
         $limitstart = $this->LimitStart;

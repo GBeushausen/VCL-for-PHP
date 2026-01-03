@@ -317,14 +317,17 @@ class ConnectionTest extends TestCase
     {
         $this->connection->Open();
 
-        $this->connection->ExecuteStatement('CREATE TABLE test_idx (id INTEGER PRIMARY KEY, email TEXT UNIQUE)');
+        // Create table with explicit indexes
+        $this->connection->ExecuteStatement('CREATE TABLE test_idx (id INTEGER PRIMARY KEY, email TEXT, name TEXT)');
+        $this->connection->ExecuteStatement('CREATE INDEX idx_email ON test_idx (email)');
 
         $primaryIndexes = $this->connection->ExtractIndexes('test_idx', true);
         $this->assertNotEmpty($primaryIndexes);
 
         $nonPrimaryIndexes = $this->connection->ExtractIndexes('test_idx', false);
-        // SQLite creates a unique index for UNIQUE columns
+        // Check for explicitly created index
         $this->assertNotEmpty($nonPrimaryIndexes);
+        $this->assertArrayHasKey('idx_email', $nonPrimaryIndexes);
     }
 
     public function testCreateQueryBuilder(): void

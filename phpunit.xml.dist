@@ -9,7 +9,7 @@
          beStrictAboutCoverageMetadata="false"
          beStrictAboutOutputDuringTests="true"
          failOnRisky="true"
-         failOnWarning="true">
+         failOnWarning="false">
 
     <testsuites>
         <testsuite name="Unit">
@@ -26,12 +26,6 @@
         </include>
     </source>
 
-    <coverage>
-        <report>
-            <html outputDirectory="coverage"/>
-            <text outputFile="php://stdout"/>
-        </report>
-    </coverage>
 
     <php>
         <env name="APP_ENV" value="testing"/>

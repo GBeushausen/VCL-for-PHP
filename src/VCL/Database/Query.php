@@ -79,9 +79,15 @@ class Query extends DataSet
         set => $this->_database = $this->FixupProperty($value);
     }
 
-    public array $SQL {
+    public string|array $SQL {
         get => $this->_sql;
-        set => $this->_sql = $value;
+        set {
+            if (is_string($value)) {
+                $this->_sql = [$value];
+            } else {
+                $this->_sql = $value;
+            }
+        }
     }
 
     public array $Params {

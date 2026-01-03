@@ -71,8 +71,9 @@ class Connection extends CustomConnection
 
     public string $DriverName {
         get => $this->_driver->value;
-        /** @phpstan-ignore assign.propertyType (Virtual property with type conversion) */
-        set => $this->_driver = DriverType::FromAdodbDriver($value);
+        set {
+            $this->_driver = DriverType::FromAdodbDriver($value);
+        }
     }
 
     public string $DatabaseName {
@@ -143,7 +144,9 @@ class Connection extends CustomConnection
      */
     protected function ReadConnected(): bool
     {
-        return $this->_dbal !== null && $this->_dbal->isConnected();
+        // DBAL uses lazy connection, so isConnected() is false until a query is executed.
+        // For VCL semantics, we consider "connected" when the connection object exists.
+        return $this->_dbal !== null;
     }
 
     /**

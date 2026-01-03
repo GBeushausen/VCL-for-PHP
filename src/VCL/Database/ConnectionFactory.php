@@ -103,14 +103,24 @@ class ConnectionFactory
      */
     public static function FromDsn(string $dsn, ?object $owner = null): Connection
     {
+        // Handle SQLite DSNs specially (sqlite:///path or sqlite:///:memory:)
+        if (str_starts_with($dsn, 'sqlite://')) {
+            $path = substr($dsn, 9); // Remove 'sqlite://'
+            // Handle sqlite:///:memory: and sqlite:///path/to/file
+            if (str_starts_with($path, '/')) {
+                $path = substr($path, 1); // Remove leading /
+            }
+            return self::SQLite($path ?: ':memory:', $owner);
+        }
+
         $parsed = parse_url($dsn);
 
-        if ($parsed === false) {
+        if ($parsed === false || !isset($parsed['scheme'])) {
             throw new EDatabaseError("Invalid DSN format: {$dsn}");
         }
 
         $config = [
-            'driver' => $parsed['scheme'] ?? 'mysql',
+            'driver' => $parsed['scheme'],
             'host' => $parsed['host'] ?? 'localhost',
             'username' => isset($parsed['user']) ? urldecode($parsed['user']) : '',
             'password' => isset($parsed['pass']) ? urldecode($parsed['pass']) : '',
