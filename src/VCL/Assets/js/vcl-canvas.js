@@ -221,13 +221,16 @@ class VCLCanvas {
         const rx = w / 2;
         const ry = h / 2;
 
-        // Convert degrees to radians (jsGraphics uses degrees)
-        const startRad = (startAngle * Math.PI) / 180;
-        const endRad = (endAngle * Math.PI) / 180;
+        // Convert degrees to radians
+        // jsGraphics uses counter-clockwise angles, HTML5 Canvas uses clockwise by default
+        // Negate angles to match the original behavior
+        const startRad = (-startAngle * Math.PI) / 180;
+        const endRad = (-endAngle * Math.PI) / 180;
 
         this.ctx.beginPath();
         this.ctx.moveTo(cx, cy);
-        this.ctx.ellipse(cx, cy, rx, ry, 0, startRad, endRad);
+        // Use counter-clockwise (true) to match jsGraphics behavior
+        this.ctx.ellipse(cx, cy, rx, ry, 0, startRad, endRad, true);
         this.ctx.closePath();
         this.ctx.fill();
     }
@@ -296,7 +299,6 @@ class VCLCanvas {
      */
     drawString(text, x, y) {
         // Adjust Y position - Canvas measures from baseline, jsGraphics from top
-        const metrics = this.ctx.measureText(text);
         const height = parseInt(this._fontSize, 10) || 12;
         this.ctx.fillText(text, x, y + height);
     }
@@ -408,4 +410,13 @@ function jsGraphics(target) {
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { VCLCanvas, jsGraphics, Font, Stroke };
+}
+
+// Attach to window for backwards compatibility with wz_jsgraphics.js globals
+// In strict mode, const declarations are not added to the global object
+if (typeof window !== 'undefined') {
+    window.VCLCanvas = VCLCanvas;
+    window.jsGraphics = jsGraphics;
+    window.Font = window.Font || Font;
+    window.Stroke = window.Stroke || Stroke;
 }
