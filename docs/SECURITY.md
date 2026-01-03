@@ -155,7 +155,7 @@ echo Escaper::html($input);
 - `<` → `&lt;`
 - `>` → `&gt;`
 - `"` → `&quot;`
-- `'` → `&apos;`
+- `'` → `&#039;`
 - `&` → `&amp;`
 
 #### `attr(string $string): string`
