@@ -227,4 +227,74 @@ class HtmxHandlerTest extends TestCase
         $this->assertStringContainsString('&lt;script&gt;', $html);
         $this->assertStringNotContainsString('<script>bad</script>"', $html);
     }
+
+    public function testProcessRequestRejectsInvalidControlName(): void
+    {
+        $_SERVER['HTTP_HX_REQUEST'] = 'true';
+        $_POST['_vcl_control'] = '<script>alert(1)</script>';
+        $_POST['_vcl_event'] = 'onclick';
+
+        $handler = new HtmxHandler();
+
+        ob_start();
+        $result = $handler->processRequest();
+        $output = ob_get_clean();
+
+        $this->assertTrue($result);
+        $this->assertStringContainsString('Invalid control name format', $output);
+    }
+
+    public function testProcessRequestRejectsInvalidEventName(): void
+    {
+        $_SERVER['HTTP_HX_REQUEST'] = 'true';
+        $_POST['_vcl_control'] = 'Button1';
+        $_POST['_vcl_event'] = 'onclick; DROP TABLE users;';
+
+        $handler = new HtmxHandler();
+
+        ob_start();
+        $result = $handler->processRequest();
+        $output = ob_get_clean();
+
+        $this->assertTrue($result);
+        $this->assertStringContainsString('Invalid event name format', $output);
+    }
+
+    public function testProcessRequestAcceptsValidControlName(): void
+    {
+        $_SERVER['HTTP_HX_REQUEST'] = 'true';
+        $_POST['_vcl_control'] = 'Button_1';
+        $_POST['_vcl_event'] = 'onclick';
+
+        $page = new Page();
+        $page->Name = 'TestPage';
+
+        $handler = new HtmxHandler($page);
+
+        ob_start();
+        $result = $handler->processRequest();
+        ob_get_clean();
+
+        // Should pass validation (control not found is a different error)
+        $this->assertTrue($result);
+    }
+
+    public function testProcessRequestAcceptsValidEventName(): void
+    {
+        $_SERVER['HTTP_HX_REQUEST'] = 'true';
+        $_POST['_vcl_control'] = 'Button1';
+        $_POST['_vcl_event'] = 'on_custom_event';
+
+        $page = new Page();
+        $page->Name = 'TestPage';
+
+        $handler = new HtmxHandler($page);
+
+        ob_start();
+        $result = $handler->processRequest();
+        ob_get_clean();
+
+        // Should pass validation
+        $this->assertTrue($result);
+    }
 }

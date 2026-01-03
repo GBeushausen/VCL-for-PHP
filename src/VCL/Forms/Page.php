@@ -364,27 +364,56 @@ class Page extends CustomPage
         $basePath = $VCLPATH ?? '';
 
         // htmx from npm (node_modules)
-        $htmxPath = $basePath . 'node_modules/htmx.org/dist/htmx.min.js';
+        $htmxFilePath = $basePath . 'node_modules/htmx.org/dist/htmx.min.js';
 
         // VCL htmx helper from src/VCL/Assets
-        $vclHtmxPath = $basePath . 'src/VCL/Assets/js/vcl-htmx.js';
+        $vclHtmxFilePath = $basePath . 'src/VCL/Assets/js/vcl-htmx.js';
 
-        // Fallback to CDN if local file doesn't exist
-        if (!file_exists($htmxPath)) {
-            $htmxPath = 'https://unpkg.com/htmx.org@2.0.4';
+        // Determine URL for htmx: local file if available, otherwise CDN
+        if (file_exists($htmxFilePath)) {
+            $htmxUrl = $this->pathToUrl($htmxFilePath);
+        } else {
+            $htmxUrl = 'https://unpkg.com/htmx.org@2.0.8';
         }
 
-        echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($htmxPath));
+        echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($htmxUrl, ENT_QUOTES, 'UTF-8'));
 
         // Include VCL htmx helper if it exists
-        if (file_exists($vclHtmxPath)) {
-            echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($vclHtmxPath));
+        if (file_exists($vclHtmxFilePath)) {
+            $vclHtmxUrl = $this->pathToUrl($vclHtmxFilePath);
+            echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($vclHtmxUrl, ENT_QUOTES, 'UTF-8'));
         }
 
         // Add debug extension if enabled
         if ($this->_usehtmxdebug) {
             echo '<script>htmx.logAll();</script>' . "\n";
         }
+    }
+
+    /**
+     * Convert a filesystem path to a web-accessible URL.
+     */
+    protected function pathToUrl(string $path): string
+    {
+        // If it's already an absolute URL, return as-is
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+        $normalizedPath = str_replace('\\', '/', $path);
+        $normalizedRoot = $documentRoot !== '' ? str_replace('\\', '/', rtrim($documentRoot, '/\\')) : '';
+
+        $relative = $normalizedPath;
+        if ($normalizedRoot !== '' && str_starts_with($normalizedPath, $normalizedRoot)) {
+            $relative = substr($normalizedPath, strlen($normalizedRoot));
+        }
+
+        if ($relative === '' || $relative[0] !== '/') {
+            $relative = '/' . ltrim($relative, '/');
+        }
+
+        return $relative;
     }
 
     /**
@@ -749,9 +778,9 @@ class Page extends CustomPage
 
     public function getUseHtmx(): bool { return $this->_usehtmx; }
     public function setUseHtmx(bool $value): void { $this->UseHtmx = $value; }
-    public function defaultUseHtmx(): int { return 0; }
+    public function defaultUseHtmx(): bool { return false; }
 
     public function getUseHtmxDebug(): bool { return $this->_usehtmxdebug; }
     public function setUseHtmxDebug(bool $value): void { $this->UseHtmxDebug = $value; }
-    public function defaultUseHtmxDebug(): int { return 0; }
+    public function defaultUseHtmxDebug(): bool { return false; }
 }

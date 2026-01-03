@@ -29,7 +29,7 @@ This repository contains a modernized version that has been refactored to work w
 git clone https://github.com/GBeushausen/VCL-for-PHP.git
 cd VCL-for-PHP
 composer install
-npm install          # Optional: für htmx AJAX-Unterstützung
+npm install          # Optional: for htmx AJAX support
 ```
 
 ## Quick Start

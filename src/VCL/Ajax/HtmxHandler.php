@@ -115,6 +115,17 @@ class HtmxHandler
             return false;
         }
 
+        // Validate control and event names (alphanumeric, underscore, hyphen only)
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_-]*$/', $controlName)) {
+            $this->sendError('Invalid control name format', 400);
+            return true;
+        }
+
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $eventName)) {
+            $this->sendError('Invalid event name format', 400);
+            return true;
+        }
+
         // Use the owner (page) that was passed to the handler
         $form = $this->owner;
 

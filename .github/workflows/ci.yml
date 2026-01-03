@@ -2,9 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [main, master, php84-migration]
+    branches: [main, master]
   pull_request:
-    branches: [main, master, php84-migration]
 
 jobs:
   test:

@@ -77,8 +77,12 @@
     /**
      * Update a specific element with htmx.
      *
+     * SECURITY WARNING: This function swaps raw HTML into the DOM without sanitization.
+     * Only use with trusted content from your own server. Never pass user-generated
+     * content directly to this function without proper server-side sanitization.
+     *
      * @param {string} selector - The target selector
-     * @param {string} html - The HTML content
+     * @param {string} html - The HTML content (must be sanitized server-side)
      * @param {string} swapStyle - The swap style (innerHTML, outerHTML, etc.)
      */
     VCL.htmx.update = function(selector, html, swapStyle) {
@@ -141,16 +145,33 @@
             console.error('htmx response error:', event.detail.xhr.status, event.detail.xhr.statusText);
         });
 
-        // Handle htmx after swap for custom processing
+        // Handle htmx after swap for script processing
+        // SECURITY: Only external scripts (with src) are re-inserted.
+        // Inline scripts are not executed automatically to prevent XSS.
         document.body.addEventListener('htmx:afterSwap', function(event) {
             var scripts = event.detail.target.querySelectorAll('script');
             scripts.forEach(function(script) {
-                if (!script.hasAttribute('data-executed')) {
-                    var newScript = document.createElement('script');
-                    newScript.textContent = script.textContent;
-                    script.setAttribute('data-executed', 'true');
-                    document.head.appendChild(newScript).parentNode.removeChild(newScript);
+                if (script.hasAttribute('data-executed')) {
+                    return;
                 }
+                script.setAttribute('data-executed', 'true');
+
+                // Only re-insert external scripts with a src attribute
+                if (script.src) {
+                    var newScript = document.createElement('script');
+                    newScript.src = script.src;
+                    if (script.type) {
+                        newScript.type = script.type;
+                    }
+                    if (script.async) {
+                        newScript.async = script.async;
+                    }
+                    if (script.defer) {
+                        newScript.defer = script.defer;
+                    }
+                    document.head.appendChild(newScript);
+                }
+                // Inline scripts are intentionally not executed for security
             });
         });
     }
