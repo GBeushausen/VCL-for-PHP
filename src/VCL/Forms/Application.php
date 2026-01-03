@@ -59,7 +59,7 @@ class Application extends Component
         }
 
         // Handle session restore request (only if session is active)
-        // Skip session restore during AJAX requests (xajax or htmx)
+        // Skip session restore during AJAX requests
         if (session_status() === PHP_SESSION_ACTIVE && isset($_GET['restore_session'])) {
             if (!self::isAjaxRequest()) {
                 $_SESSION = [];
@@ -83,17 +83,12 @@ class Application extends Component
     }
 
     /**
-     * Check if the current request is an AJAX request (xajax or htmx).
+     * Check if the current request is an AJAX request.
      */
     public static function isAjaxRequest(): bool
     {
         // Check for htmx request
-        if (isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'] === 'true') {
-            return true;
-        }
-
-        // Check for legacy xajax request
-        if (isset($_POST['xajax'])) {
+        if (HtmxHandler::isHtmxRequest()) {
             return true;
         }
 

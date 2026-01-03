@@ -66,7 +66,7 @@
    //Folders required by components using this package
    registerAsset(array("MainMenu","PopupMenu"),array("qooxdoo","dynapi"));
    registerAsset(array("ScrollBar"),array("dynapi"));
-   registerAsset(array("Page"),array("js","xajax","language","smarty"));
+   registerAsset(array("Page"),array("js","language","smarty"));
    registerAsset(array("GroupBox"),array("qooxdoo"));
    registerAsset(array("Window"),array("qooxdoo"));
 

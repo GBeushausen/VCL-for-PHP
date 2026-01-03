@@ -1,8 +1,7 @@
 /**
  * VCL htmx Helper Functions
  *
- * This file provides VCL-specific extensions and helper functions for htmx integration.
- * It replaces the legacy xajax functionality with modern htmx patterns.
+ * Provides VCL-specific extensions and helper functions for htmx integration.
  */
 
 (function() {
@@ -183,37 +182,5 @@
         // DOM already loaded
         initHtmxListeners();
     }
-
-    // Backward compatibility with xajax patterns
-    window.xajax_ajaxProcess = function(formName, controlName, params, eventName, formValues, components) {
-        console.warn('xajax_ajaxProcess is deprecated. Use VCL.htmx.submit() instead.');
-
-        var values = {
-            '_vcl_form': formName,
-            '_vcl_control': controlName,
-            '_vcl_event': eventName
-        };
-
-        if (formValues && typeof formValues === 'object') {
-            Object.assign(values, formValues);
-        }
-
-        if (params) {
-            values['params'] = JSON.stringify(params);
-        }
-
-        htmx.ajax('POST', window.location.href, {values: values});
-    };
-
-    // xajax compatibility shim
-    window.xajax = window.xajax || {
-        getFormValues: function(formName) {
-            var form = document.getElementById(formName + '_form');
-            if (!form) return {};
-
-            var formData = new FormData(form);
-            return Object.fromEntries(formData);
-        }
-    };
 
 })();

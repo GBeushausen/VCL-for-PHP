@@ -420,34 +420,7 @@ class Component extends Persistent
     }
 
     // =========================================================================
-    // AJAX SUPPORT (Legacy xajax - deprecated, use htmx methods instead)
-    // =========================================================================
-
-    /**
-     * Returns javascript code for an ajax event.
-     *
-     * @deprecated Use generateHtmxEvent() instead
-     */
-    public function generateAjaxEvent(string $jsEvent, string $phpEvent): string
-    {
-        $ownerName = $this->owner !== null ? $this->owner->Name : '';
-        return " {$jsEvent}=\"xajax_ajaxProcess('{$ownerName}','{$this->_name}',null,'{$phpEvent}',xajax.getFormValues('{$ownerName}'))\" ";
-    }
-
-    /**
-     * Dumps javascript code for an ajax call.
-     *
-     * @deprecated Use htmxCall() instead
-     */
-    public function ajaxCall(string $phpEvent, array $params = [], array $comps = []): string
-    {
-        $jcomps = !empty($comps) ? '["' . implode('","', $comps) . '"]' : '[]';
-        $ownerName = $this->owner !== null ? $this->owner->Name : '';
-        return " xajax_ajaxProcess('{$ownerName}','{$this->_name}',params,'{$phpEvent}',xajax.getFormValues('{$ownerName}'),{$jcomps});\n ";
-    }
-
-    // =========================================================================
-    // HTMX SUPPORT (Modern AJAX replacement)
+    // HTMX SUPPORT
     // =========================================================================
 
     /**
