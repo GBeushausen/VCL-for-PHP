@@ -297,16 +297,15 @@ All legacy code continues to work:
 - Removed `document.all` and `document.layers`
 - Use `document.getElementById()` instead
 
-## AJAX: htmx Migration (Branch: htmx-migration)
+## AJAX: htmx
 
-### xajax vs htmx
-| Feature | xajax (Legacy) | htmx (Modern) |
-|---------|----------------|---------------|
-| Library Age | 2005, unmaintained | 2020+, actively developed |
-| Approach | JavaScript functions | HTML attributes |
-| Response Format | XML commands | HTML fragments |
-| Request Detection | `$_POST['xajax']` | `HTTP_HX_REQUEST` header |
-| Size | ~40KB | ~14KB (minified) |
+VCL uses htmx for AJAX functionality. htmx provides declarative AJAX via HTML attributes.
+
+### Key Features
+- HTML attributes for AJAX behavior (hx-post, hx-trigger, hx-target)
+- Returns HTML fragments that are swapped into the page
+- Request detection via `HTTP_HX_REQUEST` header
+- ~14KB minified
 
 ### Using htmx in VCL
 
@@ -386,13 +385,7 @@ HtmxHandler::executeScript('alert("Hello")');
 
 ### Installation
 ```bash
-# htmx wird via npm installiert
 npm install htmx.org
 ```
 
-Die VCL-Helper-Datei liegt unter `src/VCL/Assets/js/vcl-htmx.js`.
-
-### Backward Compatibility
-- `UseAjax` (xajax) still works for legacy code
-- `xajax_ajaxProcess()` shim provided in `vcl-htmx.js`
-- Both can be enabled simultaneously during migration
+The VCL helper is at `src/VCL/Assets/js/vcl-htmx.js`.

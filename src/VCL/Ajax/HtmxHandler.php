@@ -9,8 +9,8 @@ use VCL\Core\Component;
 /**
  * HtmxHandler processes htmx AJAX requests and generates responses.
  *
- * htmx is a modern replacement for xajax that uses HTML attributes for AJAX behavior.
- * It returns HTML fragments instead of XML/JSON commands.
+ * htmx uses HTML attributes for declarative AJAX behavior and returns
+ * HTML fragments that are swapped into the page.
  *
  * @see https://htmx.org/
  */
@@ -258,7 +258,7 @@ class HtmxHandler
     }
 
     // =========================================================================
-    // RESPONSE BUILDERS (similar to xajaxResponse)
+    // RESPONSE BUILDERS
     // =========================================================================
 
     /**

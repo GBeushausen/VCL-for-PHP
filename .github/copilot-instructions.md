@@ -23,7 +23,7 @@
 - Event properties typically store a **method name string** (e.g. `$Button->OnClick = 'Button1Click'`).
 - `Component::callEvent()` dispatches to the owner’s method when appropriate (see `src/VCL/Core/Component.php`).
 
-## AJAX: prefer htmx over legacy xajax
+## AJAX: htmx
 - Enable on a page via `Page->UseHtmx = true` (optionally `UseHtmxDebug = true`).
 - htmx requests are handled by `Page::processHtmx()` using `VCL\\Ajax\\HtmxHandler` (see `src/VCL/Forms/Page.php`, `src/VCL/Ajax/HtmxHandler.php`).
 - htmx event handlers should return a **string HTML fragment** (or `null` for side-effects); the handler response is sent as `text/html`.

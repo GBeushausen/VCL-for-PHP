@@ -132,13 +132,6 @@ class PageTest extends TestCase
         $this->assertSame('submit.php', $this->page->Action);
     }
 
-    public function testUseAjaxProperty(): void
-    {
-        $this->assertFalse($this->page->UseAjax);
-        $this->page->UseAjax = true;
-        $this->assertTrue($this->page->UseAjax);
-    }
-
     public function testJsOnLoadEvent(): void
     {
         $this->page->jsOnLoad = 'pageLoad';

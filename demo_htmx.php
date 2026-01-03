@@ -5,14 +5,12 @@ declare(strict_types=1);
 /**
  * htmx Demo - VCL for PHP 3.0
  *
- * This demo shows how to use htmx for AJAX functionality instead of xajax.
+ * This demo shows how to use htmx for AJAX functionality.
  *
- * htmx advantages over xajax:
- * - Modern, actively maintained library
- * - Uses HTML attributes (declarative) instead of JavaScript
- * - Returns HTML fragments instead of XML commands
- * - Smaller footprint and better performance
- * - Works with any backend, not PHP-specific
+ * htmx features:
+ * - Uses HTML attributes (declarative) for AJAX behavior
+ * - Returns HTML fragments that are swapped into the page
+ * - Small footprint (~14KB minified)
  */
 
 require_once __DIR__ . '/vendor/autoload.php';

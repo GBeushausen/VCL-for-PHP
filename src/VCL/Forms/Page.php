@@ -32,12 +32,7 @@ class Page extends CustomPage
     protected int $_rightmargin = 0;
     protected int $_bottommargin = 0;
 
-    // Ajax (Legacy xajax)
-    protected bool $_useajax = false;
-    protected bool $_useajaxdebug = false;
-    protected string $_useajaxuri = '';
-
-    // Htmx (Modern AJAX replacement)
+    // Htmx (AJAX support)
     protected bool $_usehtmx = false;
     protected bool $_usehtmxdebug = false;
 
@@ -127,21 +122,6 @@ class Page extends CustomPage
     public int $BottomMargin {
         get => $this->_bottommargin;
         set => $this->_bottommargin = $value;
-    }
-
-    public bool $UseAjax {
-        get => $this->_useajax;
-        set => $this->_useajax = $value;
-    }
-
-    public bool $UseAjaxDebug {
-        get => $this->_useajaxdebug;
-        set => $this->_useajaxdebug = $value;
-    }
-
-    public string $UseAjaxUri {
-        get => $this->_useajaxuri;
-        set => $this->_useajaxuri = $value;
     }
 
     public bool $UseHtmx {
@@ -521,11 +501,9 @@ class Page extends CustomPage
             return;
         }
 
-        // Process htmx or legacy ajax requests
+        // Process htmx AJAX requests
         if ($this->_usehtmx) {
             $this->processHtmx();
-        } elseif ($this->_useajax) {
-            $this->processAjax();
         }
 
         if ($this->_templateengine !== '') {
@@ -657,17 +635,6 @@ class Page extends CustomPage
     }
 
     /**
-     * Process Ajax requests (legacy xajax).
-     *
-     * @deprecated Use processHtmx() instead
-     */
-    public function processAjax(): void
-    {
-        // Legacy xajax processing - kept for backward compatibility
-        // New code should use UseHtmx and processHtmx()
-    }
-
-    /**
      * Process htmx AJAX requests.
      *
      * This method checks for htmx requests and processes them,
@@ -716,14 +683,6 @@ class Page extends CustomPage
     public function getIsMaster(): bool { return $this->_ismaster; }
     public function setIsMaster(bool $value): void { $this->IsMaster = $value; }
     public function defaultIsMaster(): string { return '0'; }
-
-    public function getUseAjax(): bool { return $this->_useajax; }
-    public function setUseAjax(bool $value): void { $this->UseAjax = $value; }
-    public function defaultUseAjax(): int { return 0; }
-
-    public function getUseAjaxDebug(): bool { return $this->_useajaxdebug; }
-    public function setUseAjaxDebug(bool $value): void { $this->UseAjaxDebug = $value; }
-    public function defaultUseAjaxDebug(): int { return 0; }
 
     public function getDocType(): DocType|string { return $this->_doctype; }
     public function setDocType(DocType|string $value): void { $this->DocType = $value; }
