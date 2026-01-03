@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Language
+
+**All code, comments, documentation, and commit messages must be in English.**
+
 ## Project Overview
 
 VCL for PHP 3.0 is a Delphi-inspired Visual Component Library framework, originally developed by qadram software S.L. (2004-2008). It enables building web applications using a component-based paradigm similar to Delphi's VCL.
@@ -389,3 +393,53 @@ npm install htmx.org
 ```
 
 The VCL helper is at `src/VCL/Assets/js/vcl-htmx.js`.
+
+## Security
+
+VCL includes a comprehensive security layer to prevent XSS, SQL injection, and other vulnerabilities.
+
+**Full documentation:** [docs/SECURITY.md](docs/SECURITY.md)
+**Migration guide:** [docs/SECURITY_MIGRATION.md](docs/SECURITY_MIGRATION.md)
+
+### Quick Reference
+
+```php
+use VCL\Security\Escaper;
+use VCL\Security\Sanitizer;
+use VCL\Security\InputValidator;
+
+// Output Escaping
+echo Escaper::html($text);              // HTML text
+echo Escaper::attr($value);             // HTML attributes
+echo Escaper::js($data);                // JavaScript values
+echo Escaper::urlAttr($url);            // URLs in href/src
+
+// HTML Sanitization
+$sanitizer = new Sanitizer();
+$safe = $sanitizer->sanitizeRichText($html);
+
+// Input Validation
+$validator = new InputValidator();
+$name = $validator->validateControlName($input);
+$url = $validator->validateUrl($input);
+
+// Database (Prepared Statements)
+$db->Execute("SELECT * FROM users WHERE id = ?", [$userId]);
+```
+
+### Security Classes
+
+| Class | Purpose |
+|-------|---------|
+| `Escaper` | Context-aware output escaping (HTML, JS, CSS, URL) |
+| `Sanitizer` | HTML sanitization with configurable allowed tags |
+| `InputValidator` | Input validation with Symfony Validator |
+| `ValidControlName` | Constraint for VCL control names |
+| `ValidEventName` | Constraint for VCL event names |
+| `SafeUrl` | Constraint for safe URLs |
+
+### Running Security Tests
+
+```bash
+vendor/bin/phpunit tests/Unit/Security/
+```
