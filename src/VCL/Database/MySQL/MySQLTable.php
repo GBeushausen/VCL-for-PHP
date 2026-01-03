@@ -1,257 +1,103 @@
 <?php
+/**
+ * This file is part of the VCL for PHP project
+ *
+ * Copyright (c) 2004-2008 qadram software S.L.
+ * Copyright (c) 2024-2025 Gunnar Beushausen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ */
 
 declare(strict_types=1);
 
 namespace VCL\Database\MySQL;
 
+use VCL\Database\Table;
+
 /**
- * MySQLTable encapsulates a database table in a MySQL server.
+ * MySQLTable encapsulates a MySQL database table.
  *
- * Use MySQLTable to access data in a single database table using MySQL native access in PHP.
- * Table provides direct access to every record and field in an underlying database table.
- * A table component can also work with a subset of records within a database table using
- * ranges and filters.
+ * This class extends the DBAL-based Table class for MySQL-specific use cases.
+ * It exists primarily for backward compatibility.
  *
- * PHP 8.4 version with Property Hooks.
+ * New code should use VCL\Database\Table directly.
+ *
+ * Example:
+ * ```php
+ * // Legacy way (still works)
+ * $table = new MySQLTable();
+ * $table->Database = $mysqlDb;
+ * $table->TableName = 'users';
+ * $table->Active = true;
+ *
+ * // Modern way (recommended)
+ * use VCL\Database\Table;
+ * $table = new Table();
+ * $table->Database = $connection;
+ * $table->TableName = 'users';
+ * $table->Active = true;
+ * ```
  */
-class MySQLTable extends CustomMySQLTable
+class MySQLTable extends Table
 {
-    // Events
-    protected ?string $_onbeforeopen = null;
-    protected ?string $_onafteropen = null;
-    protected ?string $_onbeforeclose = null;
-    protected ?string $_onafterclose = null;
-    protected ?string $_onbeforeinsert = null;
-    protected ?string $_onafterinsert = null;
-    protected ?string $_onbeforeedit = null;
-    protected ?string $_onafteredit = null;
-    protected ?string $_onbeforepost = null;
-    protected ?string $_onafterpost = null;
-    protected ?string $_onbeforecancel = null;
-    protected ?string $_onaftercancel = null;
-    protected ?string $_onbeforedelete = null;
-    protected ?string $_onafterdelete = null;
-    protected ?string $_ondeleteerror = null;
-
-    // Property Hooks for Events
-    public ?string $OnBeforeOpen {
-        get => $this->_onbeforeopen;
-        set => $this->_onbeforeopen = $value;
-    }
-
-    public ?string $OnAfterOpen {
-        get => $this->_onafteropen;
-        set => $this->_onafteropen = $value;
-    }
-
-    public ?string $OnBeforeClose {
-        get => $this->_onbeforeclose;
-        set => $this->_onbeforeclose = $value;
-    }
-
-    public ?string $OnAfterClose {
-        get => $this->_onafterclose;
-        set => $this->_onafterclose = $value;
-    }
-
-    public ?string $OnBeforeInsert {
-        get => $this->_onbeforeinsert;
-        set => $this->_onbeforeinsert = $value;
-    }
-
-    public ?string $OnAfterInsert {
-        get => $this->_onafterinsert;
-        set => $this->_onafterinsert = $value;
-    }
-
-    public ?string $OnBeforeEdit {
-        get => $this->_onbeforeedit;
-        set => $this->_onbeforeedit = $value;
-    }
-
-    public ?string $OnAfterEdit {
-        get => $this->_onafteredit;
-        set => $this->_onafteredit = $value;
-    }
-
-    public ?string $OnBeforePost {
-        get => $this->_onbeforepost;
-        set => $this->_onbeforepost = $value;
-    }
-
-    public ?string $OnAfterPost {
-        get => $this->_onafterpost;
-        set => $this->_onafterpost = $value;
-    }
-
-    public ?string $OnBeforeCancel {
-        get => $this->_onbeforecancel;
-        set => $this->_onbeforecancel = $value;
-    }
-
-    public ?string $OnAfterCancel {
-        get => $this->_onaftercancel;
-        set => $this->_onaftercancel = $value;
-    }
-
-    public ?string $OnBeforeDelete {
-        get => $this->_onbeforedelete;
-        set => $this->_onbeforedelete = $value;
-    }
-
-    public ?string $OnAfterDelete {
-        get => $this->_onafterdelete;
-        set => $this->_onafterdelete = $value;
-    }
-
-    public ?string $OnDeleteError {
-        get => $this->_ondeleteerror;
-        set => $this->_ondeleteerror = $value;
-    }
-
-    /**
-     * Open the dataset.
-     */
-    public function Open(): void
-    {
-        $this->callEvent('onbeforeopen', []);
-        parent::Open();
-        $this->callEvent('onafteropen', []);
-    }
-
-    /**
-     * Close the dataset.
-     */
-    public function Close(): void
-    {
-        $this->callEvent('onbeforeclose', []);
-        parent::Close();
-        $this->callEvent('onafterclose', []);
-    }
-
-    /**
-     * Put dataset in insert mode.
-     */
-    public function Insert(): void
-    {
-        $this->callEvent('onbeforeinsert', []);
-        parent::Insert();
-        $this->callEvent('onafterinsert', []);
-    }
-
-    /**
-     * Put dataset in edit mode.
-     */
-    public function Edit(): void
-    {
-        $this->callEvent('onbeforeedit', []);
-        parent::Edit();
-        $this->callEvent('onafteredit', []);
-    }
-
-    /**
-     * Post pending changes.
-     */
-    public function Post(): void
-    {
-        $this->callEvent('onbeforepost', []);
-        parent::Post();
-        $this->callEvent('onafterpost', []);
-    }
-
-    /**
-     * Cancel pending changes.
-     */
-    public function Cancel(): void
-    {
-        $this->callEvent('onbeforecancel', []);
-        parent::Cancel();
-        $this->callEvent('onaftercancel', []);
-    }
-
-    /**
-     * Delete current record.
-     */
-    public function Delete(): void
-    {
-        $this->callEvent('onbeforedelete', []);
-        try {
-            parent::Delete();
-            $this->callEvent('onafterdelete', []);
-        } catch (\Exception $e) {
-            $this->callEvent('ondeleteerror', ['error' => $e->getMessage()]);
-            throw $e;
-        }
-    }
-
     // Legacy getters/setters for published properties
-    public function getMasterSource(): mixed { return $this->readMasterSource(); }
-    public function setMasterSource(mixed $value): void { $this->writeMasterSource($value); }
+    public function getMasterSource(): mixed { return $this->MasterSource; }
+    public function setMasterSource(mixed $value): void { $this->MasterSource = $value; }
 
-    public function getMasterFields(): array { return $this->readMasterFields(); }
-    public function setMasterFields(array $value): void { $this->writeMasterFields($value); }
+    public function getMasterFields(): array { return $this->MasterFields; }
+    public function setMasterFields(array $value): void { $this->MasterFields = $value; }
 
-    public function getTableName(): string { return $this->readTableName(); }
-    public function setTableName(string $value): void { $this->writeTableName($value); }
+    public function getTableName(): string { return $this->_tablename; }
+    public function setTableName(string $value): void { $this->TableName = $value; }
 
-    public function getActive(): bool { return $this->readActive(); }
-    public function setActive(bool $value): void { $this->writeActive($value); }
+    public function getActive(): bool { return $this->Active; }
+    public function setActive(bool $value): void { $this->Active = $value; }
 
-    public function getDatabase(): mixed { return $this->readDatabase(); }
-    public function setDatabase(mixed $value): void { $this->writeDatabase($value); }
+    public function getDatabase(): ?\VCL\Database\Connection { return $this->_database; }
+    public function setDatabase(mixed $value): void { $this->Database = $value; }
 
-    public function getFilter(): string { return $this->readFilter(); }
-    public function setFilter(string $value): void { $this->writeFilter($value); }
+    public function getFilter(): string { return $this->_filter; }
+    public function setFilter(string $value): void { $this->Filter = $value; }
 
-    public function getOrderField(): string { return $this->readOrderField(); }
-    public function setOrderField(string $value): void { $this->writeOrderField($value); }
+    public function getOrderField(): string { return $this->_orderfield; }
+    public function setOrderField(string $value): void { $this->OrderField = $value; }
 
-    public function getOrder(): string { return $this->readOrder(); }
-    public function setOrder(string $value): void { $this->writeOrder($value); }
+    public function getOrder(): string { return $this->_order; }
+    public function setOrder(string $value): void { $this->Order = $value; }
 
-    // Event getters/setters
-    public function getOnBeforeOpen(): ?string { return $this->_onbeforeopen; }
-    public function setOnBeforeOpen(?string $value): void { $this->OnBeforeOpen = $value; }
+    public function getHasAutoInc(): string { return $this->_hasautoinc; }
+    public function setHasAutoInc(string $value): void { $this->HasAutoInc = $value; }
 
-    public function getOnAfterOpen(): ?string { return $this->_onafteropen; }
-    public function setOnAfterOpen(?string $value): void { $this->OnAfterOpen = $value; }
+    // Legacy read/write methods for compatibility
+    public function readMasterSource(): mixed { return $this->MasterSource; }
+    public function writeMasterSource(mixed $value): void { $this->MasterSource = $value; }
 
-    public function getOnBeforeClose(): ?string { return $this->_onbeforeclose; }
-    public function setOnBeforeClose(?string $value): void { $this->OnBeforeClose = $value; }
+    public function readMasterFields(): array { return $this->MasterFields; }
+    public function writeMasterFields(array $value): void { $this->MasterFields = $value; }
 
-    public function getOnAfterClose(): ?string { return $this->_onafterclose; }
-    public function setOnAfterClose(?string $value): void { $this->OnAfterClose = $value; }
+    public function readTableName(): string { return $this->_tablename; }
+    public function writeTableName(string $value): void { $this->TableName = $value; }
 
-    public function getOnBeforeInsert(): ?string { return $this->_onbeforeinsert; }
-    public function setOnBeforeInsert(?string $value): void { $this->OnBeforeInsert = $value; }
+    public function readDatabase(): mixed { return $this->_database; }
+    public function writeDatabase(mixed $value): void { $this->Database = $value; }
 
-    public function getOnAfterInsert(): ?string { return $this->_onafterinsert; }
-    public function setOnAfterInsert(?string $value): void { $this->OnAfterInsert = $value; }
+    public function readFilter(): string { return $this->_filter; }
+    public function writeFilter(string $value): void { $this->Filter = $value; }
 
-    public function getOnBeforeEdit(): ?string { return $this->_onbeforeedit; }
-    public function setOnBeforeEdit(?string $value): void { $this->OnBeforeEdit = $value; }
+    public function readOrderField(): string { return $this->_orderfield; }
+    public function writeOrderField(string $value): void { $this->OrderField = $value; }
 
-    public function getOnAfterEdit(): ?string { return $this->_onafteredit; }
-    public function setOnAfterEdit(?string $value): void { $this->OnAfterEdit = $value; }
+    public function readOrder(): string { return $this->_order; }
+    public function writeOrder(string $value): void { $this->Order = $value; }
 
-    public function getOnBeforePost(): ?string { return $this->_onbeforepost; }
-    public function setOnBeforePost(?string $value): void { $this->OnBeforePost = $value; }
-
-    public function getOnAfterPost(): ?string { return $this->_onafterpost; }
-    public function setOnAfterPost(?string $value): void { $this->OnAfterPost = $value; }
-
-    public function getOnBeforeCancel(): ?string { return $this->_onbeforecancel; }
-    public function setOnBeforeCancel(?string $value): void { $this->OnBeforeCancel = $value; }
-
-    public function getOnAfterCancel(): ?string { return $this->_onaftercancel; }
-    public function setOnAfterCancel(?string $value): void { $this->OnAfterCancel = $value; }
-
-    public function getOnBeforeDelete(): ?string { return $this->_onbeforedelete; }
-    public function setOnBeforeDelete(?string $value): void { $this->OnBeforeDelete = $value; }
-
-    public function getOnAfterDelete(): ?string { return $this->_onafterdelete; }
-    public function setOnAfterDelete(?string $value): void { $this->OnAfterDelete = $value; }
-
-    public function getOnDeleteError(): ?string { return $this->_ondeleteerror; }
-    public function setOnDeleteError(?string $value): void { $this->OnDeleteError = $value; }
+    public function readHasAutoInc(): string { return $this->_hasautoinc; }
+    public function writeHasAutoInc(string $value): void { $this->HasAutoInc = $value; }
 }

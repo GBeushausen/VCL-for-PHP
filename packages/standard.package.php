@@ -65,7 +65,7 @@
 
    //Folders required by components using this package
    registerAsset(array("MainMenu","PopupMenu"),array("qooxdoo"));
-   registerAsset(array("Page"),array("js","language","smarty"));
+   registerAsset(array("Page"),array("js","smarty"));
    registerAsset(array("GroupBox"),array("qooxdoo"));
    registerAsset(array("Window"),array("qooxdoo"));
 

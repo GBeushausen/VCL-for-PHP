@@ -10,6 +10,9 @@ use VCL\Database\Enums\DatasetState;
 /**
  * CustomMySQLTable is the base class for MySQLTable.
  *
+ * @deprecated Use VCL\Database\Table instead which provides a driver-independent
+ *             implementation using Doctrine DBAL.
+ *
  * Use MySQLTable to access data in a single database table using MySQL native access in PHP.
  * Table provides direct access to every record and field in an underlying database table.
  * A table component can also work with a subset of records within a database table using
