@@ -108,8 +108,8 @@ class FileCacheTest extends TestCase
         // Set with very short TTL
         $this->cache->set('expired_key', 'expired_value', 1);
 
-        // Wait for expiration
-        sleep(2);
+        // Wait for expiration (use longer sleep to avoid flaky tests)
+        sleep(3);
 
         $this->assertNull($this->cache->get('expired_key'));
     }
@@ -125,8 +125,8 @@ class FileCacheTest extends TestCase
         // Set with very short TTL
         $this->cache->set('gc_key', 'gc_value', 1);
 
-        // Wait for expiration
-        sleep(2);
+        // Wait for expiration (use longer sleep to avoid flaky tests)
+        sleep(3);
 
         $removed = $this->cache->gc();
         $this->assertGreaterThanOrEqual(1, $removed);

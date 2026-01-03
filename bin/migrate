@@ -1,0 +1,372 @@
+#!/usr/bin/env php
+<?php
+/**
+ * VCL Database Migration CLI Tool
+ *
+ * Usage:
+ *   php bin/migrate status              Show migration status
+ *   php bin/migrate migrate             Run all pending migrations
+ *   php bin/migrate rollback [steps]    Rollback migrations (default: 1)
+ *   php bin/migrate reset               Rollback all migrations
+ *   php bin/migrate refresh             Reset and re-run all migrations
+ *   php bin/migrate generate <name>     Generate a new migration
+ *   php bin/migrate create-table <name> Generate a table creation migration
+ */
+
+declare(strict_types=1);
+
+// Find autoloader
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../vendor/autoload.php',
+];
+
+$autoloaderFound = false;
+foreach ($autoloadPaths as $path) {
+    if (file_exists($path)) {
+        require_once $path;
+        $autoloaderFound = true;
+        break;
+    }
+}
+
+if (!$autoloaderFound) {
+    fwrite(STDERR, "Error: Could not find vendor/autoload.php\n");
+    fwrite(STDERR, "Run 'composer install' first.\n");
+    exit(1);
+}
+
+use VCL\Database\Connection;
+use VCL\Database\ConnectionFactory;
+use VCL\Database\Migration\MigrationManager;
+use VCL\Database\Migration\MigrationGenerator;
+use VCL\Database\Migration\MigrationException;
+
+// Load configuration
+$configPath = getcwd() . '/migrations.php';
+if (!file_exists($configPath)) {
+    $configPath = __DIR__ . '/../migrations.php';
+}
+
+if (!file_exists($configPath)) {
+    fwrite(STDERR, "Error: migrations.php not found\n");
+    fwrite(STDERR, "Create a migrations.php configuration file in your project root.\n");
+    exit(1);
+}
+
+$config = require $configPath;
+
+// Parse command line arguments
+$command = $argv[1] ?? 'help';
+$args = array_slice($argv, 2);
+
+// Color output helpers
+function green(string $text): string {
+    return "\033[32m{$text}\033[0m";
+}
+
+function red(string $text): string {
+    return "\033[31m{$text}\033[0m";
+}
+
+function yellow(string $text): string {
+    return "\033[33m{$text}\033[0m";
+}
+
+function cyan(string $text): string {
+    return "\033[36m{$text}\033[0m";
+}
+
+function writeln(string $text = ''): void {
+    echo $text . PHP_EOL;
+}
+
+// Create connection
+function createConnection(array $config): Connection {
+    $connConfig = $config['connection'] ?? [];
+
+    // Allow environment variable overrides
+    $connConfig['host'] = getenv('DB_HOST') ?: ($connConfig['host'] ?? 'localhost');
+    $connConfig['database'] = getenv('DB_DATABASE') ?: ($connConfig['database'] ?? '');
+    $connConfig['username'] = getenv('DB_USERNAME') ?: ($connConfig['username'] ?? '');
+    $connConfig['password'] = getenv('DB_PASSWORD') ?: ($connConfig['password'] ?? '');
+
+    if (empty($connConfig['database'])) {
+        fwrite(STDERR, "Error: No database configured.\n");
+        fwrite(STDERR, "Set connection details in migrations.php or use environment variables:\n");
+        fwrite(STDERR, "  DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD\n");
+        exit(1);
+    }
+
+    return ConnectionFactory::FromArray($connConfig);
+}
+
+// Commands
+function showHelp(): void {
+    writeln(cyan("VCL Database Migration Tool"));
+    writeln();
+    writeln("Usage: php bin/migrate <command> [options]");
+    writeln();
+    writeln("Commands:");
+    writeln("  " . green("status") . "              Show migration status");
+    writeln("  " . green("migrate") . "             Run all pending migrations");
+    writeln("  " . green("migrate:up") . " <ver>    Run a specific migration");
+    writeln("  " . green("migrate:down") . " <ver>  Rollback a specific migration");
+    writeln("  " . green("rollback") . " [steps]    Rollback migrations (default: 1)");
+    writeln("  " . green("reset") . "               Rollback all migrations");
+    writeln("  " . green("refresh") . "             Reset and re-run all migrations");
+    writeln("  " . green("generate") . " <name>     Generate a new empty migration");
+    writeln("  " . green("create-table") . " <name> Generate a table creation migration");
+    writeln("  " . green("help") . "                Show this help message");
+    writeln();
+    writeln("Environment Variables:");
+    writeln("  DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD");
+}
+
+function showStatus(array $config): void {
+    $connection = createConnection($config);
+    $manager = new MigrationManager($connection, $config);
+
+    $status = $manager->GetStatus();
+
+    writeln(cyan("Migration Status"));
+    writeln(str_repeat('-', 60));
+    writeln("Total migrations:   " . $status['total']);
+    writeln("Executed:           " . green((string)$status['executed']));
+    writeln("Pending:            " . ($status['pending'] > 0 ? yellow((string)$status['pending']) : '0'));
+    writeln();
+
+    if (empty($status['migrations'])) {
+        writeln(yellow("No migrations found."));
+        return;
+    }
+
+    writeln("Migrations:");
+    foreach ($status['migrations'] as $version => $info) {
+        $statusIcon = $info['executed'] ? green('[X]') : yellow('[ ]');
+        $executedAt = $info['executed_at'] ? " ({$info['executed_at']})" : '';
+        writeln("  {$statusIcon} {$version}{$executedAt}");
+    }
+}
+
+function runMigrate(array $config, ?string $targetVersion = null): void {
+    $connection = createConnection($config);
+    $manager = new MigrationManager($connection, $config);
+
+    $pending = $manager->GetPendingMigrations();
+
+    if (empty($pending)) {
+        writeln(green("Nothing to migrate. Database is up to date."));
+        return;
+    }
+
+    writeln(cyan("Running migrations..."));
+    writeln();
+
+    try {
+        $executed = $manager->Migrate($targetVersion);
+
+        foreach ($executed as $version) {
+            writeln(green("  [OK] ") . $version);
+        }
+
+        writeln();
+        writeln(green("Successfully executed " . count($executed) . " migration(s)."));
+    } catch (MigrationException $e) {
+        writeln(red("Migration failed: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+function runRollback(array $config, int $steps = 1): void {
+    $connection = createConnection($config);
+    $manager = new MigrationManager($connection, $config);
+
+    $executed = $manager->GetExecutedMigrations();
+
+    if (empty($executed)) {
+        writeln(yellow("Nothing to rollback."));
+        return;
+    }
+
+    writeln(cyan("Rolling back {$steps} migration(s)..."));
+    writeln();
+
+    try {
+        $rolledBack = $manager->Rollback($steps);
+
+        foreach ($rolledBack as $version) {
+            writeln(yellow("  [ROLLED BACK] ") . $version);
+        }
+
+        writeln();
+        writeln(green("Successfully rolled back " . count($rolledBack) . " migration(s)."));
+    } catch (MigrationException $e) {
+        writeln(red("Rollback failed: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+function runReset(array $config): void {
+    $connection = createConnection($config);
+    $manager = new MigrationManager($connection, $config);
+
+    $executed = $manager->GetExecutedMigrations();
+
+    if (empty($executed)) {
+        writeln(yellow("Nothing to reset."));
+        return;
+    }
+
+    writeln(cyan("Resetting all migrations..."));
+    writeln();
+
+    try {
+        $rolledBack = $manager->Reset();
+
+        foreach ($rolledBack as $version) {
+            writeln(yellow("  [ROLLED BACK] ") . $version);
+        }
+
+        writeln();
+        writeln(green("Successfully reset " . count($rolledBack) . " migration(s)."));
+    } catch (MigrationException $e) {
+        writeln(red("Reset failed: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+function runRefresh(array $config): void {
+    writeln(cyan("Refreshing database..."));
+    writeln();
+
+    runReset($config);
+    writeln();
+    runMigrate($config);
+}
+
+function runGenerate(array $config, string $name): void {
+    $connection = createConnection($config);
+    $generator = new MigrationGenerator($connection, $config);
+
+    try {
+        $filePath = $generator->Generate($name);
+        writeln(green("Created migration: ") . $filePath);
+    } catch (MigrationException $e) {
+        writeln(red("Failed to generate migration: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+function runCreateTable(array $config, string $tableName): void {
+    $connection = createConnection($config);
+    $generator = new MigrationGenerator($connection, $config);
+
+    // Default columns for a new table
+    $columns = [
+        'id' => ['type' => 'integer', 'autoincrement' => true],
+        'created_at' => ['type' => 'datetime', 'notnull' => false],
+        'updated_at' => ['type' => 'datetime', 'notnull' => false],
+    ];
+
+    $options = [
+        'primary' => ['id'],
+    ];
+
+    try {
+        $filePath = $generator->GenerateCreateTable($tableName, $columns, $options);
+        writeln(green("Created table migration: ") . $filePath);
+        writeln();
+        writeln("Edit the migration file to add your columns.");
+    } catch (MigrationException $e) {
+        writeln(red("Failed to generate migration: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+function runMigrateVersion(array $config, string $version, string $direction): void {
+    $connection = createConnection($config);
+    $manager = new MigrationManager($connection, $config);
+
+    try {
+        $manager->ExecuteVersion($version, $direction);
+
+        if ($direction === 'up') {
+            writeln(green("Successfully executed migration: ") . $version);
+        } else {
+            writeln(yellow("Successfully rolled back migration: ") . $version);
+        }
+    } catch (MigrationException $e) {
+        writeln(red("Failed: " . $e->getMessage()));
+        exit(1);
+    }
+}
+
+// Execute command
+switch ($command) {
+    case 'status':
+        showStatus($config);
+        break;
+
+    case 'migrate':
+        $targetVersion = $args[0] ?? null;
+        runMigrate($config, $targetVersion);
+        break;
+
+    case 'migrate:up':
+        if (empty($args[0])) {
+            writeln(red("Error: Version required"));
+            writeln("Usage: php bin/migrate migrate:up <version>");
+            exit(1);
+        }
+        runMigrateVersion($config, $args[0], 'up');
+        break;
+
+    case 'migrate:down':
+        if (empty($args[0])) {
+            writeln(red("Error: Version required"));
+            writeln("Usage: php bin/migrate migrate:down <version>");
+            exit(1);
+        }
+        runMigrateVersion($config, $args[0], 'down');
+        break;
+
+    case 'rollback':
+        $steps = isset($args[0]) ? (int)$args[0] : 1;
+        runRollback($config, $steps);
+        break;
+
+    case 'reset':
+        runReset($config);
+        break;
+
+    case 'refresh':
+        runRefresh($config);
+        break;
+
+    case 'generate':
+        if (empty($args[0])) {
+            writeln(red("Error: Migration name required"));
+            writeln("Usage: php bin/migrate generate <name>");
+            exit(1);
+        }
+        runGenerate($config, $args[0]);
+        break;
+
+    case 'create-table':
+        if (empty($args[0])) {
+            writeln(red("Error: Table name required"));
+            writeln("Usage: php bin/migrate create-table <table_name>");
+            exit(1);
+        }
+        runCreateTable($config, $args[0]);
+        break;
+
+    case 'help':
+    case '--help':
+    case '-h':
+    default:
+        showHelp();
+        break;
+}

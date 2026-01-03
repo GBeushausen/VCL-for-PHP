@@ -28,6 +28,8 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-session": "*",
+        "doctrine/dbal": "^4.0",
+        "doctrine/migrations": "^3.9",
         "symfony/html-sanitizer": "^8.0",
         "symfony/validator": "^8.0"
     },
@@ -36,16 +38,18 @@
         "phpstan/phpstan": "^2.0"
     },
     "suggest": {
-        "ext-mysqli": "Required for MySQL database support",
+        "ext-pdo": "Required for database support via Doctrine DBAL",
+        "ext-pdo_mysql": "Required for MySQL database support",
+        "ext-pdo_pgsql": "Required for PostgreSQL database support",
+        "ext-pdo_sqlite": "Required for SQLite database support",
         "ext-oci8": "Required for Oracle database support",
-        "ext-interbase": "Required for InterBase/Firebird database support",
         "ext-gd": "Required for image manipulation features",
-        "adodb/adodb-php": "Alternative database abstraction layer",
         "smarty/smarty": "Template engine integration"
     },
     "autoload": {
         "psr-4": {
-            "VCL\\": "src/VCL/"
+            "VCL\\": "src/VCL/",
+            "VCL\\Migrations\\": "migrations/"
         },
         "files": [
             "src/bootstrap.php",
@@ -53,7 +57,8 @@
             "src/VCL/RTL/functions.php",
             "src/VCL/Graphics/constants.php",
             "src/VCL/Forms/constants.php",
-            "src/VCL/StdCtrls/constants.php"
+            "src/VCL/StdCtrls/constants.php",
+            "src/VCL/Database/constants.php"
         ]
     },
     "autoload-dev": {
@@ -61,6 +66,9 @@
             "VCL\\Tests\\": "tests/"
         }
     },
+    "bin": [
+        "bin/migrate"
+    ],
     "scripts": {
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html coverage/",
@@ -69,7 +77,12 @@
         "check": [
             "@analyse",
             "@test"
-        ]
+        ],
+        "migrate": "php bin/migrate migrate",
+        "migrate:status": "php bin/migrate status",
+        "migrate:rollback": "php bin/migrate rollback",
+        "migrate:reset": "php bin/migrate reset",
+        "migrate:refresh": "php bin/migrate refresh"
     },
     "config": {
         "sort-packages": true,

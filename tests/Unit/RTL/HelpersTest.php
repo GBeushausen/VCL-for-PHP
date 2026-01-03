@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace VCL\Tests\Unit\RTL;
 
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use VCL\RTL\Helpers;
 
@@ -109,6 +110,7 @@ class HelpersTest extends TestCase
         $this->assertSame('#ABCDEF', Helpers::colorToHex('#ABCDEF'));
     }
 
+    #[IgnoreDeprecations]
     public function testSafeUnserialize(): void
     {
         $data = serialize(['key' => 'value']);

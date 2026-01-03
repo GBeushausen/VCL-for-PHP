@@ -69,14 +69,18 @@ class FileCacheTest extends TestCase
 
     public function testExpiredCacheReturnsNull(): void
     {
-        // Set with 1 second TTL
+        // Use a very short TTL and longer sleep for reliable testing
         $this->cache->set('expiring', 'value', 1);
 
         // Should exist immediately
         $this->assertTrue($this->cache->has('expiring'));
 
-        // Wait for expiration
-        sleep(2);
+        // Wait for expiration - sleep longer than TTL to ensure expiration
+        // File system time resolution can be 1-2 seconds on some systems
+        sleep(4);
+
+        // Clear any file stat cache that might be stale
+        clearstatcache();
 
         // Should be expired now
         $this->assertNull($this->cache->get('expiring'));

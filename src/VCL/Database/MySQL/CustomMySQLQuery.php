@@ -7,6 +7,9 @@ namespace VCL\Database\MySQL;
 /**
  * CustomMySQLQuery is the base class for MySQLQuery.
  *
+ * @deprecated Use VCL\Database\Query instead which provides a driver-independent
+ *             implementation using Doctrine DBAL.
+ *
  * Query components are useful because they can:
  * - Access more than one table at a time (called a "join" in SQL).
  * - Automatically access a subset of rows and columns in its underlying table(s),

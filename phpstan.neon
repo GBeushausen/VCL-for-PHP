@@ -2,6 +2,7 @@ parameters:
     level: 5
     paths:
         - src/VCL
+        - examples
     excludePaths:
         - src/VCL/Legacy/*
 
@@ -29,6 +30,11 @@ parameters:
         # Dynamic property access for Delphi-style components
         - '#Access to an undefined property VCL\\Core\\Component::#'
         - '#Access to an undefined property VCL\\Core\\Persistent::#'
+
+        # Dynamic field access via __get/__set for database components (VCL-style: $query->fieldname)
+        - '#Access to an undefined property VCL\\Database\\Query::\$[a-z]#'
+        - '#Access to an undefined property VCL\\Database\\Table::\$[a-z]#'
+        - '#Access to an undefined property VCL\\Database\\StoredProc::\$[a-z]#'
 
         # Magic method __get/__set dynamic access
         - '#Cannot access property \$[A-Z].+ on mixed#'
