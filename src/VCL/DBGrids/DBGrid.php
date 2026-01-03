@@ -496,50 +496,62 @@ class DBGrid extends CustomDBGrid
      */
     protected function dumpGridJS(): void
     {
-        $formName = $this->owner !== null ? $this->owner->Name : 'document.forms[0]';
+        // Escape names for use in JS
+        $safeName = \VCL\Security\Escaper::id($this->_name);
+        $jsNameString = \VCL\Security\Escaper::jsString($this->_name);
+        $formName = $this->owner !== null ? \VCL\Security\Escaper::id($this->owner->Name) : '';
 
         echo "<script type=\"text/javascript\">\n";
 
         // Row selection
-        echo "function {$this->_name}_selectRow(index) {\n";
-        echo "  var rows = document.querySelectorAll('#{$this->_name} tbody tr');\n";
+        echo "function {$safeName}_selectRow(index) {\n";
+        echo "  var rows = document.querySelectorAll('#{$jsNameString} tbody tr');\n";
         echo "  rows.forEach(function(row) { row.classList.remove('selected'); });\n";
         echo "  if (rows[index]) rows[index].classList.add('selected');\n";
-        echo "  document.getElementById('{$this->_name}_selectedrow').value = index;\n";
+        echo "  document.getElementById('{$jsNameString}_selectedrow').value = index;\n";
 
         if ($this->_jsonrowchanged !== null) {
-            echo "  if (typeof {$this->_jsonrowchanged} === 'function') {$this->_jsonrowchanged}({index: index});\n";
+            $safeCallback = \VCL\Security\Escaper::id($this->_jsonrowchanged);
+            echo "  if (typeof {$safeCallback} === 'function') {$safeCallback}({index: index});\n";
         }
 
         echo "}\n";
 
         // Action handler
-        echo "function {$this->_name}_action(action) {\n";
-        echo "  document.getElementById('{$this->_name}_action').value = action;\n";
-        echo "  var form = document.{$formName};\n";
+        echo "function {$safeName}_action(action) {\n";
+        echo "  document.getElementById('{$jsNameString}_action').value = action;\n";
+        // Use bracket notation for consistency with form name escaping
+        if ($formName !== '') {
+            echo "  var form = document['{$formName}'];\n";
+        } else {
+            echo "  var form = document.forms[0];\n";
+        }
         echo "  if (form && form.submit) form.submit();\n";
         echo "}\n";
 
         // Data change handler
         if ($this->_jsondatachanged !== null) {
-            echo "document.querySelectorAll('#{$this->_name} .vcl-dbgrid-input').forEach(function(input) {\n";
+            $safeDataChanged = \VCL\Security\Escaper::id($this->_jsondatachanged);
+            echo "document.querySelectorAll('#{$jsNameString} .vcl-dbgrid-input').forEach(function(input) {\n";
             echo "  input.addEventListener('change', function(e) {\n";
-            echo "    if (typeof {$this->_jsondatachanged} === 'function') {$this->_jsondatachanged}(e);\n";
+            echo "    if (typeof {$safeDataChanged} === 'function') {$safeDataChanged}(e);\n";
             echo "  });\n";
             echo "});\n";
         }
 
         // Click handler
         if ($this->_onclick !== null) {
-            echo "document.getElementById('{$this->_name}').addEventListener('click', function(e) {\n";
-            echo "  if (typeof {$this->_onclick} === 'function') {$this->_onclick}(e);\n";
+            $safeOnClick = \VCL\Security\Escaper::id($this->_onclick);
+            echo "document.getElementById('{$jsNameString}').addEventListener('click', function(e) {\n";
+            echo "  if (typeof {$safeOnClick} === 'function') {$safeOnClick}(e);\n";
             echo "});\n";
         }
 
         // DblClick handler
         if ($this->_ondblclick !== null) {
-            echo "document.getElementById('{$this->_name}').addEventListener('dblclick', function(e) {\n";
-            echo "  if (typeof {$this->_ondblclick} === 'function') {$this->_ondblclick}(e);\n";
+            $safeOnDblClick = \VCL\Security\Escaper::id($this->_ondblclick);
+            echo "document.getElementById('{$jsNameString}').addEventListener('dblclick', function(e) {\n";
+            echo "  if (typeof {$safeOnDblClick} === 'function') {$safeOnDblClick}(e);\n";
             echo "});\n";
         }
 

@@ -243,7 +243,6 @@ class Escaper
     {
         $dangerous = [
             'expression(',
-            'url(',
             'javascript:',
             'behavior:',
             'binding:',
@@ -257,6 +256,53 @@ class Escaper
             if (str_contains($lowercase, $pattern)) {
                 return true;
             }
+        }
+
+        // Check for url() - allow only safe schemes
+        if (preg_match('/url\s*\(/i', $lowercase)) {
+            return !$this->isValidCssUrl($value);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a CSS url() value is safe.
+     * Allows http://, https://, and relative paths.
+     *
+     * @param string $value The CSS value containing url()
+     * @return bool True if safe
+     */
+    private function isValidCssUrl(string $value): bool
+    {
+        // Extract the URL from url(...)
+        if (!preg_match('/url\s*\(\s*["\']?([^"\')\s]+)["\']?\s*\)/i', $value, $matches)) {
+            return false;
+        }
+
+        $url = trim($matches[1]);
+        $lowercaseUrl = strtolower($url);
+
+        // Block dangerous schemes
+        foreach (self::DANGEROUS_SCHEMES as $scheme) {
+            if (str_starts_with($lowercaseUrl, $scheme)) {
+                return false;
+            }
+        }
+
+        // Allow http and https URLs
+        if (str_starts_with($lowercaseUrl, 'http://') || str_starts_with($lowercaseUrl, 'https://')) {
+            return true;
+        }
+
+        // Allow relative paths
+        if (str_starts_with($url, '/') || str_starts_with($url, './') || str_starts_with($url, '../')) {
+            return true;
+        }
+
+        // Allow simple filenames (no scheme)
+        if (preg_match('/^[a-zA-Z0-9_\-\.\/]+$/', $url)) {
+            return true;
         }
 
         return false;

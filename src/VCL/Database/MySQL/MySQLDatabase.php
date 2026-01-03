@@ -266,7 +266,7 @@ class MySQLDatabase extends CustomConnection
                 $bindParams[$key] = &$params[$key];
             }
 
-            if (!mysqli_stmt_bind_param($stmt, $types, ...$params)) {
+            if (!mysqli_stmt_bind_param($stmt, $types, ...$bindParams)) {
                 $error = mysqli_stmt_error($stmt);
                 mysqli_stmt_close($stmt);
                 throw new \VCL\Database\EDatabaseError("Error binding parameters: {$error}");

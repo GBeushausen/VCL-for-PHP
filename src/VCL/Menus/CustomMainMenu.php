@@ -119,7 +119,8 @@ class CustomMainMenu extends QWidget
                 // Validate image path - only allow relative paths and http(s) URLs
                 $safeImage = Escaper::urlAttr($image);
                 if ($safeImage !== '#') {
-                    echo "<img src=\"{$safeImage}\" alt=\"\" class=\"vcl-menu-icon\" />";
+                    $escapedImage = Escaper::attr($safeImage);
+                    echo "<img src=\"{$escapedImage}\" alt=\"\" class=\"vcl-menu-icon\" />";
                 }
             }
             echo "<span>{$escapedCaption}</span>";
@@ -238,8 +239,9 @@ class CustomMainMenu extends QWidget
         echo "    var hid = document.getElementById('{$jsNameString}_state');\n";
         echo "    if (hid) hid.value = tag;\n";
 
+        // Use bracket notation for consistency with form name escaping
         if ($formName !== '') {
-            echo "    var form = document.{$formName};\n";
+            echo "    var form = document['{$formName}'];\n";
         } else {
             echo "    var form = document.forms[0];\n";
         }

@@ -126,8 +126,9 @@ class CustomPopupMenu extends Component
         echo "    var hid = document.getElementById('{$jsNameString}_state');\n";
         echo "    if (hid) hid.value = tag;\n";
 
+        // Use consistent syntax: document.formName or document.forms[0]
         if ($formName !== '') {
-            echo "    var form = document.{$formName};\n";
+            echo "    var form = document['{$formName}'];\n";
         } else {
             echo "    var form = document.forms[0];\n";
         }
@@ -193,7 +194,7 @@ class CustomPopupMenu extends Component
                 // Validate image URL before using
                 $safeImage = Escaper::urlAttr($image);
                 if ($safeImage !== '#') {
-                    $html .= '<img src="' . Escaper::attr($image) . '" alt="" class="vcl-menu-icon" />';
+                    $html .= '<img src="' . Escaper::attr($safeImage) . '" alt="" class="vcl-menu-icon" />';
                 }
             }
             $html .= '<span>' . $escapedCaption . '</span>';

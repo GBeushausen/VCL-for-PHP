@@ -208,7 +208,7 @@ class Helpers
      */
     public static function dbcsUnserialize(string $data): mixed
     {
-        @trigger_error(
+        trigger_error(
             'dbcsUnserialize() is deprecated. Use JSON encoding for new code.',
             E_USER_DEPRECATED
         );
@@ -237,7 +237,7 @@ class Helpers
      */
     public static function safeUnserialize(string $data): mixed
     {
-        @trigger_error(
+        trigger_error(
             'safeUnserialize() is deprecated. Use JSON encoding for new code.',
             E_USER_DEPRECATED
         );
@@ -245,8 +245,8 @@ class Helpers
         // SECURITY: Only allow arrays and scalar types, no object instantiation
         $result = @unserialize($data, ['allowed_classes' => false]);
         if ($result === false && $data !== 'b:0;') {
-            // dbcsUnserialize already has its own deprecation warning, suppress it here
-            @$result = unserialize(
+            // DBCS fix logic is inlined here to avoid triggering double deprecation warnings
+            $result = @unserialize(
                 preg_replace_callback(
                     '/s:(\d+):"(.*?)";/s',
                     fn($m) => 's:' . strlen($m[2]) . ':"' . $m[2] . '";',

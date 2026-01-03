@@ -417,8 +417,9 @@ class DBPaginator extends CustomControl
         echo "  var input = document.getElementById('{$jsNameString}');\n";
         echo "  if (input) input.value = action;\n";
 
+        // Use bracket notation for consistency with form name escaping
         if ($formName !== '') {
-            echo "  var form = document.{$formName};\n";
+            echo "  var form = document['{$formName}'];\n";
         } else {
             echo "  var form = document.forms[0];\n";
         }
