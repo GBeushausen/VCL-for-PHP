@@ -153,9 +153,17 @@ class MySQLDatabase extends CustomConnection
 
     /**
      * Quote a string for MySQL.
+     *
+     * @deprecated Use prepared statements with Execute() instead.
+     *             Example: $db->Execute("SELECT * FROM users WHERE name = ?", [$name]);
      */
     public function QuoteStr(string $input): string
     {
+        @trigger_error(
+            'QuoteStr() is deprecated. Use prepared statements with Execute() instead.',
+            E_USER_DEPRECATED
+        );
+
         if ($this->_connection !== null) {
             return "'" . mysqli_real_escape_string($this->_connection, $input) . "'";
         }
@@ -163,9 +171,34 @@ class MySQLDatabase extends CustomConnection
     }
 
     /**
+     * Escape a string for MySQL (without quotes).
+     *
+     * For internal use only. Prefer prepared statements.
+     */
+    public function escapeString(string $input): string
+    {
+        if ($this->_connection !== null) {
+            return mysqli_real_escape_string($this->_connection, $input);
+        }
+        return addslashes($input);
+    }
+
+    /**
      * Execute a query.
      *
+     * When $params is provided and not empty, uses prepared statements for security.
+     * The query should use ? placeholders for parameters.
+     *
+     * @param string $query The SQL query (use ? for placeholders when using params)
+     * @param array $params Optional parameters for prepared statement
      * @return \mysqli_result|bool
+     *
+     * @example
+     * // Without params (legacy mode)
+     * $db->Execute("SELECT * FROM users");
+     *
+     * // With prepared statement (secure mode)
+     * $db->Execute("SELECT * FROM users WHERE id = ? AND status = ?", [123, 'active']);
      */
     public function Execute(string $query, array $params = []): \mysqli_result|bool
     {
@@ -175,6 +208,12 @@ class MySQLDatabase extends CustomConnection
             throw new \VCL\Database\EDatabaseError("No database connection");
         }
 
+        // Use prepared statements if params are provided
+        if (!empty($params)) {
+            return $this->ExecutePrepared($query, $params);
+        }
+
+        // Legacy mode: direct query execution
         $rs = @mysqli_query($this->_connection, $query);
 
         if ($rs === false) {
@@ -186,14 +225,125 @@ class MySQLDatabase extends CustomConnection
     }
 
     /**
+     * Execute a query using prepared statements.
+     *
+     * This method provides protection against SQL injection by using
+     * mysqli prepared statements with parameter binding.
+     *
+     * @param string $query SQL query with ? placeholders
+     * @param array $params Parameters to bind
+     * @return \mysqli_result|bool
+     * @throws \VCL\Database\EDatabaseError
+     *
+     * @example
+     * $db->ExecutePrepared(
+     *     "INSERT INTO users (name, email) VALUES (?, ?)",
+     *     ['John', 'john@example.com']
+     * );
+     */
+    public function ExecutePrepared(string $query, array $params): \mysqli_result|bool
+    {
+        $this->Open();
+
+        if ($this->_connection === null) {
+            throw new \VCL\Database\EDatabaseError("No database connection");
+        }
+
+        // Prepare the statement
+        $stmt = @mysqli_prepare($this->_connection, $query);
+
+        if ($stmt === false) {
+            $error = mysqli_error($this->_connection);
+            throw new \VCL\Database\EDatabaseError("Error preparing query: {$query} [{$error}]");
+        }
+
+        // Bind parameters if any
+        if (!empty($params)) {
+            $types = $this->getParamTypes($params);
+            $bindParams = [];
+
+            foreach ($params as $key => $value) {
+                $bindParams[$key] = &$params[$key];
+            }
+
+            if (!mysqli_stmt_bind_param($stmt, $types, ...$bindParams)) {
+                $error = mysqli_stmt_error($stmt);
+                mysqli_stmt_close($stmt);
+                throw new \VCL\Database\EDatabaseError("Error binding parameters: {$error}");
+            }
+        }
+
+        // Execute the statement
+        if (!mysqli_stmt_execute($stmt)) {
+            $error = mysqli_stmt_error($stmt);
+            mysqli_stmt_close($stmt);
+            throw new \VCL\Database\EDatabaseError("Error executing prepared query: {$query} [{$error}]");
+        }
+
+        // Get result set if any
+        $result = mysqli_stmt_get_result($stmt);
+
+        // For non-SELECT queries, result will be false but that's OK
+        if ($result === false) {
+            // Check if it was actually an error or just no result set
+            if (mysqli_stmt_errno($stmt) !== 0) {
+                $error = mysqli_stmt_error($stmt);
+                mysqli_stmt_close($stmt);
+                throw new \VCL\Database\EDatabaseError("Error getting result: {$error}");
+            }
+            // For INSERT/UPDATE/DELETE, return true on success
+            mysqli_stmt_close($stmt);
+            return true;
+        }
+
+        mysqli_stmt_close($stmt);
+        return $result;
+    }
+
+    /**
+     * Get parameter types string for mysqli_stmt_bind_param.
+     *
+     * @param array $params The parameters
+     * @return string Type string (i=integer, d=double, s=string, b=blob)
+     */
+    private function getParamTypes(array $params): string
+    {
+        $types = '';
+
+        foreach ($params as $param) {
+            if ($param === null) {
+                $types .= 's';  // Treat null as string
+            } elseif (is_int($param)) {
+                $types .= 'i';
+            } elseif (is_float($param)) {
+                $types .= 'd';
+            } elseif (is_bool($param)) {
+                $types .= 'i';  // Booleans as integers
+            } else {
+                $types .= 's';  // Default to string
+            }
+        }
+
+        return $types;
+    }
+
+    /**
      * Execute a limited query.
      *
+     * @param string $query The SQL query
+     * @param int $numrows Number of rows to return
+     * @param int $offset Starting offset
+     * @param array $params Optional parameters for prepared statement
      * @return \mysqli_result|bool
      */
     public function ExecuteLimit(string $query, int $numrows, int $offset = 0, array $params = []): \mysqli_result|bool
     {
+        // Validate and sanitize limit values
+        $numrows = max(0, $numrows);
+        $offset = max(0, $offset);
+
         $sql = $query . " LIMIT {$offset}, {$numrows}";
-        return $this->Execute($sql);
+        return $this->Execute($sql, $params);
     }
 
     /**

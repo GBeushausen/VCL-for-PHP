@@ -86,8 +86,10 @@ class FileCache extends Cache
             return null;
         }
 
-        $cache = @unserialize($data);
-        if ($cache === false) {
+        $cache = @json_decode($data, true);
+        if (!is_array($cache)) {
+            // Invalid or old serialized format - delete and return null
+            $this->delete($key);
             return null;
         }
 
@@ -113,7 +115,7 @@ class FileCache extends Cache
             'content' => $content,
         ];
 
-        @file_put_contents($file, serialize($cache), LOCK_EX);
+        @file_put_contents($file, json_encode($cache, JSON_THROW_ON_ERROR), LOCK_EX);
     }
 
     /**
@@ -180,8 +182,9 @@ class FileCache extends Cache
                     continue;
                 }
 
-                $cache = @unserialize($data);
-                if ($cache === false) {
+                $cache = @json_decode($data, true);
+                if (!is_array($cache)) {
+                    // Invalid or old serialized format - remove it
                     @unlink($file);
                     $removed++;
                     continue;

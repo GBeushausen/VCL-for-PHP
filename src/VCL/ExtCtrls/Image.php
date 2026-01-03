@@ -96,9 +96,39 @@ class Image extends FocusControl
         set => $this->_binary = $value;
     }
 
+    /**
+     * Allowed MIME types for binary content output.
+     */
+    private const ALLOWED_BINARY_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/svg+xml',
+        'image/bmp',
+        'image/tiff',
+        'image/x-icon',
+        'application/pdf',
+    ];
+
     public string $BinaryType {
         get => $this->_binarytype;
-        set => $this->_binarytype = $value;
+        set {
+            // Validate MIME type to prevent header injection
+            $normalized = strtolower(trim($value));
+
+            // Check against whitelist
+            if (!in_array($normalized, self::ALLOWED_BINARY_TYPES, true)) {
+                // If not in whitelist, check if it looks like a valid MIME type
+                if (!preg_match('#^[a-z]+/[a-z0-9.+-]+$#', $normalized)) {
+                    throw new \InvalidArgumentException(
+                        "Invalid binary type: {$value}. Must be a valid MIME type."
+                    );
+                }
+            }
+
+            $this->_binarytype = $normalized;
+        }
     }
 
     public ?string $OnClick {
