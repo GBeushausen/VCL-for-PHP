@@ -294,9 +294,8 @@ class CustomMySQLTable extends MySQLDataSet
                         $this->_params[] = (string) $msValue;
                     }
 
-                    if (!empty($masterConditions)) {
-                        $whereParts[] = '(' . implode(' AND ', $masterConditions) . ')';
-                    }
+                    // Always has items since count($this->_masterfields) > 0
+                    $whereParts[] = '(' . implode(' AND ', $masterConditions) . ')';
                 }
             }
         }
