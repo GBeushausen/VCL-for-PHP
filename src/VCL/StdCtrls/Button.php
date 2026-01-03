@@ -46,6 +46,11 @@ class Button extends ButtonControl
      */
     protected function getInputType(): string
     {
+        // Use 'button' type when htmx is enabled to prevent form submission
+        if ($this->isHtmxEnabled() && $this->_onclick !== null) {
+            return 'button';
+        }
+
         return match ($this->_buttontype) {
             'btReset' => 'reset',
             'btButton' => 'button',
@@ -59,6 +64,11 @@ class Button extends ButtonControl
     public function dumpContents(): void
     {
         $this->dumpContentsButtonControl($this->getInputType(), $this->Name);
+
+        // Add htmx result target div if htmx is enabled
+        if ($this->isHtmxEnabled() && $this->_onclick !== null) {
+            $this->dumpHtmxResultDiv();
+        }
     }
 
     /**

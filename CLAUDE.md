@@ -296,3 +296,103 @@ All legacy code continues to work:
 - Removed `var event = event || window.event`
 - Removed `document.all` and `document.layers`
 - Use `document.getElementById()` instead
+
+## AJAX: htmx Migration (Branch: htmx-migration)
+
+### xajax vs htmx
+| Feature | xajax (Legacy) | htmx (Modern) |
+|---------|----------------|---------------|
+| Library Age | 2005, unmaintained | 2020+, actively developed |
+| Approach | JavaScript functions | HTML attributes |
+| Response Format | XML commands | HTML fragments |
+| Request Detection | `$_POST['xajax']` | `HTTP_HX_REQUEST` header |
+| Size | ~40KB | ~14KB (minified) |
+
+### Using htmx in VCL
+
+```php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use VCL\Forms\Application;
+use VCL\Forms\Page;
+use VCL\StdCtrls\Button;
+
+class MyPage extends Page
+{
+    public ?Button $Button1 = null;
+
+    public function __construct(?object $aowner = null)
+    {
+        parent::__construct($aowner);
+        $this->Name = 'MyPage';
+
+        // Enable htmx
+        $this->UseHtmx = true;
+        $this->UseHtmxDebug = true;  // Optional: logging
+
+        $this->Button1 = new Button($this);
+        $this->Button1->Name = 'Button1';
+        $this->Button1->Parent = $this;
+        $this->Button1->OnClick = 'handleClick';
+    }
+
+    // Event handler returns HTML fragment
+    public function handleClick(object $sender, array $params): string
+    {
+        return '<div class="result">Button clicked!</div>';
+    }
+}
+
+$application = Application::getInstance();
+$page = new MyPage($application);
+$page->preinit();
+$page->init();
+$page->show();
+```
+
+### htmx Helper Methods in Component
+```php
+// Generate htmx attributes for any event
+$attrs = $control->generateHtmxEvent(
+    'onClick',      // PHP event name
+    'click',        // htmx trigger
+    '#result',      // target selector
+    'innerHTML'     // swap method
+);
+// Returns: hx-post="..." hx-trigger="click" hx-target="#result" hx-swap="innerHTML"
+
+// Generate programmatic htmx call
+$js = $control->htmxCall('onSubmit', '#result');
+// Returns: htmx.ajax('POST', '...', {...})
+```
+
+### HtmxHandler Class
+```php
+use VCL\Ajax\HtmxHandler;
+
+// Check if request is htmx
+if (HtmxHandler::isHtmxRequest()) {
+    // Process and respond
+}
+
+// Response helpers
+HtmxHandler::updateElement('myDiv', '<p>New content</p>');
+HtmxHandler::replaceElement('myDiv', '<div id="myDiv">Replaced</div>');
+HtmxHandler::executeScript('alert("Hello")');
+```
+
+### Installation
+```bash
+# htmx wird via npm installiert
+npm install htmx.org
+```
+
+Die VCL-Helper-Datei liegt unter `src/VCL/Assets/js/vcl-htmx.js`.
+
+### Backward Compatibility
+- `UseAjax` (xajax) still works for legacy code
+- `xajax_ajaxProcess()` shim provided in `vcl-htmx.js`
+- Both can be enabled simultaneously during migration

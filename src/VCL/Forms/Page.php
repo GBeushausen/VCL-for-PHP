@@ -32,10 +32,14 @@ class Page extends CustomPage
     protected int $_rightmargin = 0;
     protected int $_bottommargin = 0;
 
-    // Ajax
+    // Ajax (Legacy xajax)
     protected bool $_useajax = false;
     protected bool $_useajaxdebug = false;
     protected string $_useajaxuri = '';
+
+    // Htmx (Modern AJAX replacement)
+    protected bool $_usehtmx = false;
+    protected bool $_usehtmxdebug = false;
 
     // Template
     protected bool $_dynamic = false;
@@ -138,6 +142,16 @@ class Page extends CustomPage
     public string $UseAjaxUri {
         get => $this->_useajaxuri;
         set => $this->_useajaxuri = $value;
+    }
+
+    public bool $UseHtmx {
+        get => $this->_usehtmx;
+        set => $this->_usehtmx = $value;
+    }
+
+    public bool $UseHtmxDebug {
+        get => $this->_usehtmxdebug;
+        set => $this->_usehtmxdebug = $value;
     }
 
     public bool $Dynamic {
@@ -330,10 +344,47 @@ class Page extends CustomPage
 
         $this->callEvent('onshowheader', []);
 
+        // Include htmx library if enabled
+        if ($this->_usehtmx) {
+            $this->dumpHtmxScript();
+        }
+
         $this->dumpHeaderJavascript();
         $this->dumpChildrenHeaderCode();
 
         echo "</head>\n";
+    }
+
+    /**
+     * Dump htmx script include.
+     */
+    protected function dumpHtmxScript(): void
+    {
+        global $VCLPATH;
+        $basePath = $VCLPATH ?? '';
+
+        // htmx from npm (node_modules)
+        $htmxPath = $basePath . 'node_modules/htmx.org/dist/htmx.min.js';
+
+        // VCL htmx helper from src/VCL/Assets
+        $vclHtmxPath = $basePath . 'src/VCL/Assets/js/vcl-htmx.js';
+
+        // Fallback to CDN if local file doesn't exist
+        if (!file_exists($htmxPath)) {
+            $htmxPath = 'https://unpkg.com/htmx.org@2.0.4';
+        }
+
+        echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($htmxPath));
+
+        // Include VCL htmx helper if it exists
+        if (file_exists($vclHtmxPath)) {
+            echo sprintf('<script src="%s"></script>' . "\n", htmlspecialchars($vclHtmxPath));
+        }
+
+        // Add debug extension if enabled
+        if ($this->_usehtmxdebug) {
+            echo '<script>htmx.logAll();</script>' . "\n";
+        }
     }
 
     /**
@@ -440,16 +491,16 @@ class Page extends CustomPage
             return;
         }
 
-        if ($this->_templateengine !== '') {
-            if ($this->_useajax) {
-                $this->processAjax();
-            }
-            $this->dumpUsingTemplate();
-            return;
+        // Process htmx or legacy ajax requests
+        if ($this->_usehtmx) {
+            $this->processHtmx();
+        } elseif ($this->_useajax) {
+            $this->processAjax();
         }
 
-        if ($this->_useajax) {
-            $this->processAjax();
+        if ($this->_templateengine !== '') {
+            $this->dumpUsingTemplate();
+            return;
         }
 
         // Check for frames
@@ -576,12 +627,36 @@ class Page extends CustomPage
     }
 
     /**
-     * Process Ajax requests.
+     * Process Ajax requests (legacy xajax).
+     *
+     * @deprecated Use processHtmx() instead
      */
     public function processAjax(): void
     {
-        // Placeholder for Ajax processing
-        // Would integrate with xajax or similar library
+        // Legacy xajax processing - kept for backward compatibility
+        // New code should use UseHtmx and processHtmx()
+    }
+
+    /**
+     * Process htmx AJAX requests.
+     *
+     * This method checks for htmx requests and processes them,
+     * returning HTML fragments instead of full page renders.
+     */
+    public function processHtmx(): void
+    {
+        if (!\VCL\Ajax\HtmxHandler::isHtmxRequest()) {
+            return;
+        }
+
+        $this->callEvent('onbeforeajaxprocess', []);
+
+        $handler = new \VCL\Ajax\HtmxHandler($this);
+        $handler->setDebug($this->_usehtmxdebug);
+
+        if ($handler->processRequest()) {
+            exit; // Stop page processing after htmx response
+        }
     }
 
     /**
@@ -671,4 +746,12 @@ class Page extends CustomPage
     public function getjsOnUnload(): ?string { return $this->_jsonunload; }
     public function setjsOnUnload(?string $value): void { $this->jsOnUnload = $value; }
     public function defaultjsOnUnload(): ?string { return null; }
+
+    public function getUseHtmx(): bool { return $this->_usehtmx; }
+    public function setUseHtmx(bool $value): void { $this->UseHtmx = $value; }
+    public function defaultUseHtmx(): int { return 0; }
+
+    public function getUseHtmxDebug(): bool { return $this->_usehtmxdebug; }
+    public function setUseHtmxDebug(bool $value): void { $this->UseHtmxDebug = $value; }
+    public function defaultUseHtmxDebug(): int { return 0; }
 }

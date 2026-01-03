@@ -89,14 +89,18 @@ class ButtonControl extends FocusControl
             return;
         }
 
+        // Skip event processing for htmx requests - HtmxHandler handles those
+        if ($this->isHtmxEnabled() && \VCL\Ajax\HtmxHandler::isHtmxRequest()) {
+            return;
+        }
+
         // Check for OnSubmit event
         if ($this->_onsubmit !== null && isset($this->input->$name)) {
             $this->callEvent('onsubmit', []);
         }
 
-        // Check for OnClick event via hidden field
-        if ($this->_onclick !== null && $this->_enabled) {
-            // Event handling through wrapper
+        // Check for OnClick event - button must have been clicked (name in POST)
+        if ($this->_onclick !== null && $this->_enabled && isset($this->input->$name)) {
             $this->callEvent('onclick', []);
         }
     }
@@ -160,11 +164,17 @@ class ButtonControl extends FocusControl
             $attrs[] = sprintf('title="%s"', htmlspecialchars($this->_hint));
         }
 
-        // Events
+        // Events - use htmx if enabled, otherwise traditional JS
         if ($this->_enabled) {
-            $events = $this->getJSEventAttributes();
-            if ($events !== '') {
-                $attrs[] = $events;
+            if ($this->isHtmxEnabled() && $this->_onclick !== null) {
+                // Use htmx for the click event (inherited from FocusControl)
+                $attrs[] = $this->getHtmxClickAttributes();
+            } else {
+                // Traditional JavaScript events
+                $events = $this->getJSEventAttributes();
+                if ($events !== '') {
+                    $attrs[] = $events;
+                }
             }
 
             if ($this->_jsonselect !== null) {

@@ -172,6 +172,118 @@ class FocusControl extends Control
     }
 
     // =========================================================================
+    // HTMX SUPPORT
+    // =========================================================================
+
+    /**
+     * Check if the owner page has htmx enabled.
+     */
+    protected function isHtmxEnabled(): bool
+    {
+        $owner = $this->owner;
+        while ($owner !== null) {
+            if (method_exists($owner, 'getUseHtmx') && $owner->getUseHtmx()) {
+                return true;
+            }
+            $owner = $owner->owner ?? null;
+        }
+        return false;
+    }
+
+    /**
+     * Generate htmx attributes for an event.
+     *
+     * @param string $eventName The VCL event name (e.g., 'onclick', 'onchange')
+     * @param string $trigger The htmx trigger (e.g., 'click', 'change', 'keyup')
+     * @param string|null $target Optional target selector (defaults to control_result div)
+     * @param string $swap The swap method (innerHTML, outerHTML, etc.)
+     * @return string HTML attributes string
+     */
+    protected function getHtmxAttributes(
+        string $eventName,
+        string $trigger,
+        ?string $target = null,
+        string $swap = 'innerHTML'
+    ): string {
+        $ownerName = $this->owner !== null ? $this->owner->Name : '';
+        $action = $_SERVER['PHP_SELF'] ?? '';
+
+        // Default target is a result div next to this control
+        if ($target === null) {
+            $target = '#' . $this->Name . '_result';
+        }
+
+        $attrs = [];
+        $attrs[] = sprintf('hx-post="%s"', htmlspecialchars($action));
+        $attrs[] = sprintf('hx-trigger="%s"', htmlspecialchars($trigger));
+        $attrs[] = sprintf('hx-target="%s"', htmlspecialchars($target));
+        $attrs[] = sprintf('hx-swap="%s"', htmlspecialchars($swap));
+
+        // Include all form values
+        $attrs[] = sprintf('hx-include="#%s_form"', htmlspecialchars($ownerName));
+
+        // Add VCL metadata
+        $vclVals = json_encode([
+            '_vcl_form' => $ownerName,
+            '_vcl_control' => $this->Name,
+            '_vcl_event' => $eventName,
+        ]);
+        $attrs[] = sprintf("hx-vals='%s'", $vclVals);
+
+        return implode(' ', $attrs);
+    }
+
+    /**
+     * Generate htmx attributes for OnClick event.
+     */
+    protected function getHtmxClickAttributes(?string $target = null): string
+    {
+        return $this->getHtmxAttributes('onclick', 'click', $target);
+    }
+
+    /**
+     * Generate htmx attributes for OnChange event.
+     */
+    protected function getHtmxChangeAttributes(?string $target = null): string
+    {
+        return $this->getHtmxAttributes('onchange', 'change', $target);
+    }
+
+    /**
+     * Generate htmx attributes for OnSubmit event.
+     */
+    protected function getHtmxSubmitAttributes(?string $target = null): string
+    {
+        return $this->getHtmxAttributes('onsubmit', 'submit', $target);
+    }
+
+    /**
+     * Generate htmx attributes for keyboard events with debounce.
+     *
+     * @param string $eventName The VCL event name
+     * @param int $delay Debounce delay in milliseconds
+     */
+    protected function getHtmxKeyAttributes(
+        string $eventName = 'onkeyup',
+        int $delay = 300,
+        ?string $target = null
+    ): string {
+        $trigger = sprintf('keyup changed delay:%dms', $delay);
+        return $this->getHtmxAttributes($eventName, $trigger, $target);
+    }
+
+    /**
+     * Output htmx result div for this control.
+     * Call this in dumpContents() after rendering the control.
+     */
+    protected function dumpHtmxResultDiv(): void
+    {
+        if ($this->isHtmxEnabled()) {
+            echo sprintf('<div id="%s_result"></div>', htmlspecialchars($this->Name));
+        }
+    }
+
+    // =========================================================================
     // LEGACY GETTERS/SETTERS
     // =========================================================================
 
