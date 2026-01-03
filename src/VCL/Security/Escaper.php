@@ -138,6 +138,11 @@ class Escaper
             return $value;
         }
 
+        // Allow safe url() values
+        if (preg_match('/^url\s*\(/i', $value) && $this->isValidCssUrl($value)) {
+            return $value;
+        }
+
         return $default;
     }
 
