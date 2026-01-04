@@ -741,7 +741,7 @@ class Page extends CustomPage
     VCL.clearForm = function(form) {
         if (!form) return;
         // Clear text inputs and textareas
-        form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], input[type="url"], textarea').forEach(function(el) {
+        form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], input[type="url"], input[type="search"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"], textarea').forEach(function(el) {
             el.value = '';
         });
         // Reset selects to first option

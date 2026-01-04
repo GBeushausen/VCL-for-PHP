@@ -102,4 +102,4 @@ class SimpleDemoPage extends Page
 // Seite erstellen und anzeigen
 $application = Application::getInstance();
 $page = new SimpleDemoPage($application);
-$page->show();  
+$page->show();

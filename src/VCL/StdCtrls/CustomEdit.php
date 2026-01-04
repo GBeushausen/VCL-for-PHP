@@ -19,6 +19,26 @@ use VCL\StdCtrls\Enums\CharCase;
  */
 class CustomEdit extends FocusControl
 {
+    /**
+     * Allowed HTML5 input types for validation.
+     */
+    private const ALLOWED_INPUT_TYPES = [
+        'text',
+        'search',
+        'email',
+        'password',
+        'tel',
+        'url',
+        'number',
+        'date',
+        'datetime-local',
+        'month',
+        'time',
+        'week',
+        'color',
+        'hidden',
+    ];
+
     protected BorderStyle|string $_borderstyle = BorderStyle::Single;
     protected mixed $_datasource = null;
     protected string $_datafield = '';
@@ -107,9 +127,20 @@ class CustomEdit extends FocusControl
         set => $this->_placeholder = $value;
     }
 
+    /**
+     * Extra HTML attributes to add to the input element.
+     * WARNING: This property should only receive trusted input from developers,
+     * never user-supplied data. Event handlers are stripped for security.
+     */
     public string $ExtraAttributes {
         get => $this->_extraAttributes;
-        set => $this->_extraAttributes = $value;
+        set {
+            // Strip potentially dangerous event handlers for security
+            $sanitized = preg_replace('/\bon\w+\s*=/i', 'data-blocked-', $value);
+            // Strip javascript: URLs
+            $sanitized = preg_replace('/javascript\s*:/i', 'blocked:', $sanitized);
+            $this->_extraAttributes = $sanitized;
+        }
     }
 
     // HTML5 Validation Property Hooks
@@ -125,7 +156,19 @@ class CustomEdit extends FocusControl
 
     public string $Pattern {
         get => $this->_pattern;
-        set => $this->_pattern = $value;
+        set {
+            // Allow empty pattern (means "no pattern")
+            if ($value !== '') {
+                // Validate regex by testing it with preg_match
+                $delimitedPattern = '/' . str_replace('/', '\/', $value) . '/';
+                if (@preg_match($delimitedPattern, '') === false) {
+                    throw new \InvalidArgumentException(
+                        'Invalid HTML5 pattern value provided to CustomEdit::Pattern.'
+                    );
+                }
+            }
+            $this->_pattern = $value;
+        }
     }
 
     public string $ValidationMessage {
@@ -135,7 +178,13 @@ class CustomEdit extends FocusControl
 
     public string $InputType {
         get => $this->_inputType;
-        set => $this->_inputType = $value;
+        set {
+            $normalized = strtolower($value);
+            // Validate against allowed types, fallback to 'text' for invalid values
+            $this->_inputType = in_array($normalized, self::ALLOWED_INPUT_TYPES, true)
+                ? $normalized
+                : 'text';
+        }
     }
 
     public ?string $OnClick {
@@ -247,8 +296,8 @@ class CustomEdit extends FocusControl
         }
 
         // Hint / Validation message
-        $title = $this->_validationMessage !== '' ? $this->_validationMessage : $this->_hint;
-        if ($title !== '' && ($this->_showHint || $this->_validationMessage !== '')) {
+        $title = $this->getTitleAttribute();
+        if ($title !== '') {
             $attrs[] = sprintf('title="%s"', htmlspecialchars($title));
         }
 
@@ -278,6 +327,25 @@ class CustomEdit extends FocusControl
         }
 
         return implode(' ', $attrs);
+    }
+
+    /**
+     * Get the title attribute value combining validation message and hint.
+     * Returns empty string if no title should be displayed.
+     */
+    protected function getTitleAttribute(): string
+    {
+        $titleParts = [];
+
+        if ($this->_validationMessage !== '') {
+            $titleParts[] = $this->_validationMessage;
+        }
+
+        if ($this->_showHint && $this->_hint !== '') {
+            $titleParts[] = $this->_hint;
+        }
+
+        return implode(' - ', $titleParts);
     }
 
     /**
@@ -356,7 +424,7 @@ class CustomEdit extends FocusControl
 
         echo sprintf(
             '<input type="%s" id="%s" name="%s" value="%s" style="%s" %s />',
-            htmlspecialchars($type),
+            $type,
             $name,
             $name,
             $value,
@@ -432,8 +500,8 @@ class CustomEdit extends FocusControl
         }
 
         // Hint / Validation message
-        $title = $this->_validationMessage !== '' ? $this->_validationMessage : $this->_hint;
-        if ($title !== '' && ($this->_showHint || $this->_validationMessage !== '')) {
+        $title = $this->getTitleAttribute();
+        if ($title !== '') {
             $attrs[] = sprintf('title="%s"', htmlspecialchars($title));
         }
 
