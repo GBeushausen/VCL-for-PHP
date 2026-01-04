@@ -36,6 +36,12 @@ class Page extends CustomPage
     protected bool $_usehtmx = false;
     protected bool $_usehtmxdebug = false;
 
+    // Tailwind CSS support
+    protected bool $_useTailwind = false;
+    protected string $_tailwindStylesheet = '';
+    protected array $_bodyClasses = [];
+    protected string $_defaultTheme = 'light';
+
     // Template
     protected bool $_dynamic = false;
     protected string $_templateengine = '';
@@ -132,6 +138,26 @@ class Page extends CustomPage
     public bool $UseHtmxDebug {
         get => $this->_usehtmxdebug;
         set => $this->_usehtmxdebug = $value;
+    }
+
+    public bool $UseTailwind {
+        get => $this->_useTailwind;
+        set => $this->_useTailwind = $value;
+    }
+
+    public string $TailwindStylesheet {
+        get => $this->_tailwindStylesheet;
+        set => $this->_tailwindStylesheet = $value;
+    }
+
+    public array $BodyClasses {
+        get => $this->_bodyClasses;
+        set => $this->_bodyClasses = $value;
+    }
+
+    public string $DefaultTheme {
+        get => $this->_defaultTheme;
+        set => $this->_defaultTheme = $value;
     }
 
     public bool $Dynamic {
@@ -299,6 +325,11 @@ class Page extends CustomPage
             $htmlAttrs[] = $extra;
         }
 
+        // Add Tailwind theme attribute
+        if ($this->_useTailwind) {
+            $htmlAttrs[] = sprintf('data-theme="%s"', htmlspecialchars($this->_defaultTheme));
+        }
+
         echo '<html ' . implode(' ', $htmlAttrs) . ">\n";
         echo "<head>\n";
 
@@ -320,6 +351,12 @@ class Page extends CustomPage
         // Favicon
         if ($this->_icon !== '') {
             echo sprintf('<link rel="icon" href="%s">' . "\n", htmlspecialchars($this->_icon));
+        }
+
+        // Tailwind CSS stylesheet
+        if ($this->_useTailwind && $this->_tailwindStylesheet !== '') {
+            $stylesheetUrl = $this->pathToUrl($this->_tailwindStylesheet);
+            echo sprintf('<link rel="stylesheet" href="%s">' . "\n", htmlspecialchars($stylesheetUrl, ENT_QUOTES, 'UTF-8'));
         }
 
         $this->callEvent('onshowheader', []);
@@ -446,8 +483,14 @@ class Page extends CustomPage
     {
         $attrs = [];
         $styles = [];
+        $classes = [];
 
-        // Margins via CSS
+        // Body classes (for Tailwind)
+        if (!empty($this->_bodyClasses)) {
+            $classes = array_merge($classes, $this->_bodyClasses);
+        }
+
+        // Margins via CSS (only if not using Tailwind classes for margins)
         if ($this->_leftmargin > 0) {
             $styles[] = "margin-left: {$this->_leftmargin}px";
         }
@@ -473,6 +516,12 @@ class Page extends CustomPage
             $styles[] = 'background-size: cover';
         }
 
+        // Class attribute
+        if (!empty($classes)) {
+            $attrs[] = sprintf('class="%s"', htmlspecialchars(implode(' ', $classes)));
+        }
+
+        // Style attribute
         if (!empty($styles)) {
             $attrs[] = 'style="' . implode('; ', $styles) . '"';
         }
@@ -493,7 +542,7 @@ class Page extends CustomPage
     /**
      * Dump page contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $this->callEvent('onshow', []);
 
@@ -556,6 +605,9 @@ class Page extends CustomPage
 
         if (!$this->hasframes) {
             if ($this->_showfooter) {
+                // Output Tailwind theme switch script before closing body
+                $this->dumpTailwindThemeScript();
+
                 echo "</body>\n";
                 echo "</html>\n";
             }
@@ -632,6 +684,55 @@ class Page extends CustomPage
     {
         // Placeholder for template engine integration
         // Would integrate with Smarty or other template engines
+    }
+
+    /**
+     * Dump Tailwind CSS theme switch script.
+     *
+     * This script enables light/dark mode toggling and respects system preferences.
+     */
+    protected function dumpTailwindThemeScript(): void
+    {
+        if (!$this->_useTailwind) {
+            return;
+        }
+
+        echo <<<'SCRIPT'
+<script>
+(function() {
+    const VCLTheme = {
+        get: function() {
+            return localStorage.getItem('vcl-theme') ||
+                   (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        },
+        set: function(theme) {
+            localStorage.setItem('vcl-theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+        },
+        toggle: function() {
+            this.set(this.get() === 'dark' ? 'light' : 'dark');
+        },
+        init: function() {
+            const savedTheme = localStorage.getItem('vcl-theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('vcl-theme')) {
+                    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+    };
+    VCLTheme.init();
+    window.VCLTheme = VCLTheme;
+})();
+</script>
+
+SCRIPT;
     }
 
     /**
@@ -743,4 +844,20 @@ class Page extends CustomPage
     public function getUseHtmxDebug(): bool { return $this->_usehtmxdebug; }
     public function setUseHtmxDebug(bool $value): void { $this->UseHtmxDebug = $value; }
     public function defaultUseHtmxDebug(): bool { return false; }
+
+    public function getUseTailwind(): bool { return $this->_useTailwind; }
+    public function setUseTailwind(bool $value): void { $this->UseTailwind = $value; }
+    public function defaultUseTailwind(): bool { return false; }
+
+    public function getTailwindStylesheet(): string { return $this->_tailwindStylesheet; }
+    public function setTailwindStylesheet(string $value): void { $this->TailwindStylesheet = $value; }
+    public function defaultTailwindStylesheet(): string { return ''; }
+
+    public function getBodyClasses(): array { return $this->_bodyClasses; }
+    public function setBodyClasses(array $value): void { $this->BodyClasses = $value; }
+    public function defaultBodyClasses(): array { return []; }
+
+    public function getDefaultTheme(): string { return $this->_defaultTheme; }
+    public function setDefaultTheme(string $value): void { $this->DefaultTheme = $value; }
+    public function defaultDefaultTheme(): string { return 'light'; }
 }

@@ -88,7 +88,7 @@ class DateTimePicker extends FocusControl
     /**
      * Render the date time picker.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
         $class = $this->readStyleClass();

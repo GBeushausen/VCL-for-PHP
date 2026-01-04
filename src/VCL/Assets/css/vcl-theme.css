@@ -1,0 +1,536 @@
+/**
+ * VCL for PHP 3.0 - Tailwind CSS 4 Theme
+ *
+ * This file provides the theming layer for VCL components using Tailwind CSS 4.
+ */
+
+@import "tailwindcss";
+
+/* Source paths for Tailwind to scan for class usage */
+@source "../../../**/*.php";
+@source "../../../../examples/**/*.php";
+
+/* ============================================================================
+ * Theme Configuration - Tailwind CSS 4 @theme directive
+ * ============================================================================ */
+@theme {
+    /* Primary colors */
+    --color-vcl-primary: oklch(0.55 0.2 250);
+    --color-vcl-primary-hover: oklch(0.48 0.22 250);
+    --color-vcl-primary-active: oklch(0.42 0.24 250);
+
+    /* Secondary colors */
+    --color-vcl-secondary: oklch(0.65 0.05 250);
+    --color-vcl-secondary-hover: oklch(0.58 0.06 250);
+    --color-vcl-secondary-active: oklch(0.52 0.07 250);
+
+    /* Surface colors */
+    --color-vcl-surface: oklch(0.98 0.005 250);
+    --color-vcl-surface-elevated: oklch(1.0 0 0);
+    --color-vcl-surface-sunken: oklch(0.95 0.008 250);
+
+    /* Border colors */
+    --color-vcl-border: oklch(0.85 0.01 250);
+    --color-vcl-border-focus: oklch(0.55 0.2 250);
+
+    /* Text colors */
+    --color-vcl-text: oklch(0.2 0.02 250);
+    --color-vcl-text-muted: oklch(0.45 0.02 250);
+    --color-vcl-text-inverted: oklch(0.98 0.005 250);
+
+    /* Status colors */
+    --color-vcl-success: oklch(0.55 0.18 145);
+    --color-vcl-warning: oklch(0.70 0.18 80);
+    --color-vcl-danger: oklch(0.55 0.22 25);
+    --color-vcl-info: oklch(0.55 0.15 220);
+
+    /* Spacing */
+    --spacing-vcl-xs: 0.25rem;
+    --spacing-vcl-sm: 0.5rem;
+    --spacing-vcl-md: 1rem;
+    --spacing-vcl-lg: 1.5rem;
+    --spacing-vcl-xl: 2rem;
+
+    /* Border radius */
+    --radius-vcl-sm: 0.25rem;
+    --radius-vcl-md: 0.375rem;
+    --radius-vcl-lg: 0.5rem;
+    --radius-vcl-full: 9999px;
+
+    /* Shadows */
+    --shadow-vcl-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-vcl-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-vcl-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* ============================================================================
+ * Dark Theme Overrides
+ * ============================================================================ */
+[data-theme="dark"] {
+    --color-vcl-primary: oklch(0.65 0.2 250);
+    --color-vcl-primary-hover: oklch(0.72 0.22 250);
+    --color-vcl-primary-active: oklch(0.78 0.24 250);
+
+    --color-vcl-secondary: oklch(0.50 0.05 250);
+    --color-vcl-secondary-hover: oklch(0.58 0.06 250);
+
+    --color-vcl-surface: oklch(0.18 0.01 250);
+    --color-vcl-surface-elevated: oklch(0.22 0.01 250);
+    --color-vcl-surface-sunken: oklch(0.14 0.01 250);
+
+    --color-vcl-border: oklch(0.35 0.01 250);
+    --color-vcl-border-focus: oklch(0.65 0.2 250);
+
+    --color-vcl-text: oklch(0.92 0.01 250);
+    --color-vcl-text-muted: oklch(0.65 0.01 250);
+    --color-vcl-text-inverted: oklch(0.18 0.01 250);
+}
+
+/* ============================================================================
+ * Component Styles - Plain CSS (Tailwind 4 doesn't support @apply with custom classes)
+ * ============================================================================ */
+
+/* -------------------------------------------------------------------------
+ * Base Control
+ * ------------------------------------------------------------------------- */
+.vcl-control {
+    color: var(--color-vcl-text);
+}
+
+/* -------------------------------------------------------------------------
+ * Button Styles
+ * ------------------------------------------------------------------------- */
+.vcl-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid var(--color-vcl-border);
+    background-color: var(--color-vcl-surface);
+    color: var(--color-vcl-text);
+    box-shadow: var(--shadow-vcl-sm);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button:hover {
+    background-color: var(--color-vcl-surface-sunken);
+}
+
+.vcl-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+.vcl-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vcl-button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid var(--color-vcl-primary);
+    background-color: var(--color-vcl-primary);
+    color: var(--color-vcl-text-inverted);
+    box-shadow: var(--shadow-vcl-sm);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button-primary:hover {
+    background-color: var(--color-vcl-primary-hover);
+    border-color: var(--color-vcl-primary-hover);
+}
+
+.vcl-button-primary:active {
+    background-color: var(--color-vcl-primary-active);
+    border-color: var(--color-vcl-primary-active);
+}
+
+.vcl-button-primary:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+.vcl-button-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vcl-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid var(--color-vcl-secondary);
+    background-color: var(--color-vcl-secondary);
+    color: var(--color-vcl-text-inverted);
+    box-shadow: var(--shadow-vcl-sm);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button-secondary:hover {
+    background-color: var(--color-vcl-secondary-hover);
+    border-color: var(--color-vcl-secondary-hover);
+}
+
+.vcl-button-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vcl-button-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid var(--color-vcl-primary);
+    background-color: transparent;
+    color: var(--color-vcl-primary);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button-outline:hover {
+    background-color: var(--color-vcl-primary);
+    color: var(--color-vcl-text-inverted);
+}
+
+.vcl-button-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--color-vcl-text);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button-ghost:hover {
+    background-color: var(--color-vcl-surface-sunken);
+}
+
+.vcl-button-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    border-radius: var(--radius-vcl-md);
+    border: 1px solid var(--color-vcl-danger);
+    background-color: var(--color-vcl-danger);
+    color: var(--color-vcl-text-inverted);
+    box-shadow: var(--shadow-vcl-sm);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.vcl-button-danger:hover {
+    opacity: 0.9;
+}
+
+/* -------------------------------------------------------------------------
+ * Input Styles
+ * ------------------------------------------------------------------------- */
+.vcl-input {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    background-color: var(--color-vcl-surface);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-md);
+    color: var(--color-vcl-text);
+    box-shadow: var(--shadow-vcl-sm);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vcl-input::placeholder {
+    color: var(--color-vcl-text-muted);
+}
+
+.vcl-input:focus {
+    outline: none;
+    border-color: var(--color-vcl-border-focus);
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+.vcl-input:disabled {
+    background-color: var(--color-vcl-surface-sunken);
+    cursor: not-allowed;
+}
+
+.vcl-input-error {
+    border-color: var(--color-vcl-danger);
+}
+
+.vcl-input-error:focus {
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-danger);
+}
+
+/* -------------------------------------------------------------------------
+ * Label Styles
+ * ------------------------------------------------------------------------- */
+.vcl-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-vcl-text);
+}
+
+.vcl-label-required::after {
+    content: " *";
+    color: var(--color-vcl-danger);
+}
+
+/* -------------------------------------------------------------------------
+ * Panel Styles
+ * ------------------------------------------------------------------------- */
+.vcl-panel {
+    padding: 1rem;
+    background-color: var(--color-vcl-surface);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-lg);
+    box-shadow: var(--shadow-vcl-sm);
+}
+
+.vcl-panel-elevated {
+    padding: 1rem;
+    background-color: var(--color-vcl-surface-elevated);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-lg);
+    box-shadow: var(--shadow-vcl-md);
+}
+
+.vcl-panel-sunken {
+    padding: 1rem;
+    background-color: var(--color-vcl-surface-sunken);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-lg);
+}
+
+/* -------------------------------------------------------------------------
+ * Checkbox & Radio Styles
+ * ------------------------------------------------------------------------- */
+.vcl-checkbox {
+    width: 1rem;
+    height: 1rem;
+    border-radius: var(--radius-vcl-sm);
+    border: 1px solid var(--color-vcl-border);
+    background-color: var(--color-vcl-surface);
+    accent-color: var(--color-vcl-primary);
+}
+
+.vcl-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+.vcl-checkbox:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vcl-radio {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-vcl-border);
+    background-color: var(--color-vcl-surface);
+    accent-color: var(--color-vcl-primary);
+}
+
+.vcl-radio:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+.vcl-radio:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------
+ * Select/ComboBox Styles
+ * ------------------------------------------------------------------------- */
+.vcl-select {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    background-color: var(--color-vcl-surface);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-md);
+    color: var(--color-vcl-text);
+    box-shadow: var(--shadow-vcl-sm);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    background-size: 1.5em 1.5em;
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+}
+
+.vcl-select:focus {
+    outline: none;
+    border-color: var(--color-vcl-border-focus);
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+/* -------------------------------------------------------------------------
+ * Textarea/Memo Styles
+ * ------------------------------------------------------------------------- */
+.vcl-textarea {
+    display: block;
+    width: 100%;
+    min-height: 80px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    background-color: var(--color-vcl-surface);
+    border: 1px solid var(--color-vcl-border);
+    border-radius: var(--radius-vcl-md);
+    color: var(--color-vcl-text);
+    box-shadow: var(--shadow-vcl-sm);
+    resize: vertical;
+}
+
+.vcl-textarea:focus {
+    outline: none;
+    border-color: var(--color-vcl-border-focus);
+    box-shadow: 0 0 0 2px var(--color-vcl-surface), 0 0 0 4px var(--color-vcl-primary);
+}
+
+/* -------------------------------------------------------------------------
+ * Link Styles
+ * ------------------------------------------------------------------------- */
+.vcl-link {
+    color: var(--color-vcl-primary);
+    text-decoration: underline;
+}
+
+.vcl-link:hover {
+    color: var(--color-vcl-primary-hover);
+}
+
+.vcl-link:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-vcl-primary);
+}
+
+/* -------------------------------------------------------------------------
+ * Divider Styles
+ * ------------------------------------------------------------------------- */
+.vcl-divider {
+    border: 0;
+    border-top: 1px solid var(--color-vcl-border);
+    margin: 1rem 0;
+}
+
+.vcl-divider-vertical {
+    border: 0;
+    border-left: 1px solid var(--color-vcl-border);
+    margin: 0 1rem;
+    height: 100%;
+}
+
+/* -------------------------------------------------------------------------
+ * Theme-Aware Utility Classes
+ * Use these instead of hardcoded colors (bg-white, text-gray-600, etc.)
+ * to ensure proper dark mode support.
+ * ------------------------------------------------------------------------- */
+
+/* Background colors */
+.bg-vcl-surface {
+    background-color: var(--color-vcl-surface);
+}
+.bg-vcl-surface-elevated {
+    background-color: var(--color-vcl-surface-elevated);
+}
+.bg-vcl-surface-sunken {
+    background-color: var(--color-vcl-surface-sunken);
+}
+.bg-vcl-primary {
+    background-color: var(--color-vcl-primary);
+}
+
+/* Text colors */
+.text-vcl-text {
+    color: var(--color-vcl-text);
+}
+.text-vcl-text-muted {
+    color: var(--color-vcl-text-muted);
+}
+.text-vcl-text-inverted {
+    color: var(--color-vcl-text-inverted);
+}
+.text-vcl-primary {
+    color: var(--color-vcl-primary);
+}
+
+/* Border colors */
+.border-vcl-border {
+    border-color: var(--color-vcl-border);
+}
+.border-vcl-primary {
+    border-color: var(--color-vcl-primary);
+}
+
+/* Shadow utilities */
+.shadow-vcl-sm {
+    box-shadow: var(--shadow-vcl-sm);
+}
+.shadow-vcl-md {
+    box-shadow: var(--shadow-vcl-md);
+}
+.shadow-vcl-lg {
+    box-shadow: var(--shadow-vcl-lg);
+}
+
+/* -------------------------------------------------------------------------
+ * Visibility Utility Classes
+ * ------------------------------------------------------------------------- */
+.vcl-hidden {
+    display: none !important;
+}
+
+.vcl-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

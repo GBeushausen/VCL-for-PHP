@@ -6,6 +6,7 @@ namespace VCL\StdCtrls;
 
 use VCL\UI\GraphicControl;
 use VCL\UI\Enums\Anchors;
+use VCL\UI\Enums\RenderMode;
 
 /**
  * CustomLabel is the base class for label components.
@@ -83,6 +84,11 @@ class CustomLabel extends GraphicControl
         $this->_controlstyle['csRenderAlso'] = 'StyleSheet';
     }
 
+    protected function getComponentType(): string
+    {
+        return 'label';
+    }
+
     /**
      * Get the display caption, formatted if necessary.
      */
@@ -109,8 +115,14 @@ class CustomLabel extends GraphicControl
     /**
      * Render the label.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
+        // Check for Tailwind mode
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind();
+            return;
+        }
+
         $styles = [];
 
         // Build style string
@@ -214,6 +226,95 @@ class CustomLabel extends GraphicControl
             $styleAttr,
             $alignment,
             $events !== '' ? ' ' . $events : '',
+            $caption
+        );
+    }
+
+    /**
+     * Render the label using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(): void
+    {
+        // Build class list
+        $classes = [];
+
+        // Theme class (vcl-label)
+        $themeClass = $this->getThemeClass();
+        if ($themeClass !== '') {
+            $classes[] = $themeClass;
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Style class from Style property
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        // Word wrap
+        if (!$this->_wordwrap) {
+            $classes[] = 'whitespace-nowrap';
+        }
+
+        // Text alignment
+        $alignValue = $this->_alignment;
+        if ($alignValue instanceof Anchors) {
+            $alignValue = $alignValue->value;
+        }
+        $alignClass = match ($alignValue) {
+            'agLeft', Anchors::Left->value => 'text-left',
+            'agCenter', Anchors::Center->value => 'text-center',
+            'agRight', Anchors::Right->value => 'text-right',
+            default => '',
+        };
+        if ($alignClass !== '') {
+            $classes[] = $alignClass;
+        }
+
+        // Hidden
+        if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            $classes[] = 'hidden';
+        }
+
+        $classAttr = !empty($classes) ? sprintf(' class="%s"', htmlspecialchars(implode(' ', $classes))) : '';
+
+        // Minimal inline style (only if absolutely necessary)
+        $style = $this->getMinimalInlineStyle();
+        $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
+
+        // Build events
+        $events = $this->getJSEventAttributes();
+        $eventsAttr = $events !== '' ? ' ' . $events : '';
+
+        // Get caption
+        $caption = $this->getDisplayCaption();
+
+        // Build link if set
+        if ($this->_link !== '') {
+            $target = $this->_linktarget !== '' ? " target=\"{$this->_linktarget}\"" : '';
+            $caption = sprintf(
+                '<a href="%s"%s class="vcl-link">%s</a>',
+                htmlspecialchars($this->_link),
+                $target,
+                $this->_htmlcontent ? $caption : htmlspecialchars($caption)
+            );
+        } else {
+            // Only escape if not HTML content
+            if (!$this->_htmlcontent) {
+                $caption = htmlspecialchars($caption);
+            }
+        }
+
+        echo sprintf(
+            '<div id="%s"%s%s%s>%s</div>',
+            htmlspecialchars($this->Name),
+            $classAttr,
+            $styleAttr,
+            $eventsAttr,
             $caption
         );
     }

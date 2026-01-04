@@ -61,7 +61,7 @@ class Button extends ButtonControl
     /**
      * Render the button.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $this->dumpContentsButtonControl($this->getInputType(), $this->Name);
 

@@ -104,7 +104,7 @@ class TrackBar extends Control
     /**
      * Render the track bar using HTML5 range input.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
         $class = $this->readStyleClass();

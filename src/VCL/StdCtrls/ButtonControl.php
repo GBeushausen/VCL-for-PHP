@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\StdCtrls;
 
 use VCL\UI\FocusControl;
+use VCL\UI\Enums\RenderMode;
 
 /**
  * ButtonControl is the base class for button-type controls.
@@ -21,6 +22,7 @@ class ButtonControl extends FocusControl
     protected string $_datafieldproperty = 'Caption';
     protected int $_taborder = 0;
     protected bool $_tabstop = true;
+    protected string $_extraAttributes = '';
 
     // Events
     protected ?string $_onclick = null;
@@ -53,6 +55,11 @@ class ButtonControl extends FocusControl
         set => $this->_tabstop = $value;
     }
 
+    public string $ExtraAttributes {
+        get => $this->_extraAttributes;
+        set => $this->_extraAttributes = $value;
+    }
+
     public ?string $OnClick {
         get => $this->_onclick;
         set => $this->_onclick = $value;
@@ -75,6 +82,11 @@ class ButtonControl extends FocusControl
         $this->_height = 25;
         $this->_controlstyle['csRenderOwner'] = true;
         $this->_controlstyle['csRenderAlso'] = 'StyleSheet';
+    }
+
+    protected function getComponentType(): string
+    {
+        return 'button';
     }
 
     /**
@@ -195,6 +207,12 @@ class ButtonControl extends FocusControl
         string $surroundingTags = '%s',
         bool $composite = false
     ): void {
+        // Check for Tailwind mode
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind($inputType, $name, $additionalAttributes, $surroundingTags);
+            return;
+        }
+
         $style = $this->getButtonStyles();
 
         // Size
@@ -227,6 +245,66 @@ class ButtonControl extends FocusControl
             $classAttr,
             $attrs,
             $additionalAttributes
+        );
+
+        echo sprintf($surroundingTags, $input);
+    }
+
+    /**
+     * Dump button using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(
+        string $inputType,
+        string $name,
+        string $additionalAttributes = '',
+        string $surroundingTags = '%s'
+    ): void {
+        // Build class list
+        $classes = [];
+
+        // Theme class (vcl-button, vcl-button-primary, etc.)
+        $themeClass = $this->getThemeClass();
+        if ($themeClass !== '') {
+            $classes[] = $themeClass;
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Style class from Style property
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        // Hidden
+        if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            $classes[] = 'hidden';
+        }
+
+        $attrs = $this->getButtonAttributes();
+        $classAttr = !empty($classes) ? sprintf(' class="%s"', htmlspecialchars(implode(' ', $classes))) : '';
+
+        // Minimal inline style (only if absolutely necessary)
+        $style = $this->getMinimalInlineStyle();
+        $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
+
+        // Extra attributes (for htmx, onclick handlers, etc.)
+        $extraAttr = $this->_extraAttributes !== '' ? ' ' . $this->_extraAttributes : '';
+
+        $input = sprintf(
+            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s %s%s />',
+            htmlspecialchars($inputType),
+            htmlspecialchars($name),
+            htmlspecialchars($name),
+            htmlspecialchars($this->Caption),
+            $classAttr,
+            $styleAttr,
+            $attrs,
+            $additionalAttributes,
+            $extraAttr
         );
 
         echo sprintf($surroundingTags, $input);

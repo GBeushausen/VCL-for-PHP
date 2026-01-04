@@ -1,6 +1,6 @@
 {
   "name": "vcl",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Visual Component Library for PHP",
   "main": "index.js",
   "directories": {
@@ -8,21 +8,36 @@
     "test": "tests"
   },
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:css": "vite build",
+    "watch": "vite build --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GBeushausen/VCL-for-PHP.git"
   },
-  "keywords": [],
+  "keywords": [
+    "php",
+    "vcl",
+    "component-library",
+    "tailwindcss",
+    "delphi"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/GBeushausen/VCL-for-PHP/issues"
   },
   "homepage": "https://github.com/GBeushausen/VCL-for-PHP#readme",
   "dependencies": {
     "htmx.org": "^2.0.8"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "vite": "^6.0.0"
   }
 }

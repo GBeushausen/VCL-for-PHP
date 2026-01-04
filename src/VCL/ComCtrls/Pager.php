@@ -221,7 +221,7 @@ class Pager extends Control
         echo '</style>' . "\n";
     }
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $this->updateControls();
 

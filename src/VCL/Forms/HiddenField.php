@@ -71,7 +71,7 @@ class HiddenField extends Control
     /**
      * Render the hidden field.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
             if ($this->_onshow !== null) {

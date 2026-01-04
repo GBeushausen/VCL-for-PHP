@@ -58,7 +58,7 @@ class Bevel extends GraphicControl
     /**
      * Render the bevel.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if ($this->_canvas === null) {
             return;

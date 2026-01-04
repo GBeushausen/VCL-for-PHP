@@ -94,7 +94,7 @@ class Shape extends Control
     /**
      * Render the shape.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if ($this->_canvas === null) {
             return;

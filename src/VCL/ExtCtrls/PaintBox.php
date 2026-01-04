@@ -128,7 +128,7 @@ class PaintBox extends Control
     /**
      * Render the paint box.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             $name = htmlspecialchars($this->Name);

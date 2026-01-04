@@ -212,13 +212,23 @@ class Chart extends Control
         }
     }
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $style = 'width:' . $this->Width . 'px;height:' . $this->Height . 'px;';
 
         echo '<div style="' . $style . '">';
         echo '<canvas id="' . htmlspecialchars($this->Name) . '"></canvas>';
         echo '</div>';
+    }
+
+    /**
+     * Render the chart as HTML string.
+     */
+    public function render(): string
+    {
+        ob_start();
+        $this->dumpContents();
+        return ob_get_clean();
     }
 
     public function dumpJavascript(): void

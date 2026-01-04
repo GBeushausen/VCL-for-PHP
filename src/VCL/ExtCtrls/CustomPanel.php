@@ -6,6 +6,7 @@ namespace VCL\ExtCtrls;
 
 use VCL\UI\CustomControl;
 use VCL\UI\Enums\Anchors;
+use VCL\UI\Enums\RenderMode;
 
 /**
  * CustomPanel is the base class for panel controls.
@@ -74,6 +75,11 @@ class CustomPanel extends CustomControl
         $this->_controlstyle['csRenderAlso'] = 'StyleSheet';
     }
 
+    protected function getComponentType(): string
+    {
+        return 'panel';
+    }
+
     /**
      * Get the active layer for this panel.
      */
@@ -85,8 +91,14 @@ class CustomPanel extends CustomControl
     /**
      * Render the panel.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
+        // Check for Tailwind mode
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind();
+            return;
+        }
+
         $style = '';
         $alignment = '';
 
@@ -163,6 +175,78 @@ class CustomPanel extends CustomControl
 
         // Dump child controls using layout
         $this->Layout->dumpLayoutContents();
+
+        echo "</div>\n";
+    }
+
+    /**
+     * Render the panel using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(): void
+    {
+        // Build class list
+        $classes = [];
+
+        // Theme class (vcl-panel)
+        $themeClass = $this->getThemeClass();
+        if ($themeClass !== '') {
+            $classes[] = $themeClass;
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Padding/margin from Control
+        if ($this->_padding !== '') {
+            $classes[] = $this->_padding;
+        }
+        if ($this->_margin !== '') {
+            $classes[] = $this->_margin;
+        }
+
+        // Style class from Style property
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        // Hidden
+        if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            $classes[] = 'hidden';
+        }
+
+        $name = htmlspecialchars($this->Name);
+        $classAttr = !empty($classes) ? sprintf(' class="%s"', htmlspecialchars(implode(' ', $classes))) : '';
+
+        // Minimal inline style (only if absolutely necessary)
+        $style = $this->getMinimalInlineStyle();
+        $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
+
+        echo "<div id=\"{$name}\"{$classAttr}{$styleAttr}>\n";
+
+        // Include file if specified
+        if ($this->_include !== '' && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            include $this->_include;
+        }
+
+        // Render child controls
+        if ($this->controls !== null) {
+            foreach ($this->controls->items as $child) {
+                if (!$child->Visible) {
+                    continue;
+                }
+
+                if (method_exists($child, 'show')) {
+                    $child->show();
+                } elseif (method_exists($child, 'dumpContents')) {
+                    $child->dumpContents();
+                } elseif (method_exists($child, 'render')) {
+                    echo $child->render();
+                }
+            }
+        }
 
         echo "</div>\n";
     }

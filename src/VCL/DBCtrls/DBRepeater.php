@@ -69,7 +69,7 @@ class DBRepeater extends Panel
     /**
      * Dump the repeater contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             parent::dumpContents();

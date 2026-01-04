@@ -36,7 +36,7 @@ class DBIteratorEnd extends Control
     /**
      * Dump the iterator end marker.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             echo "<!-- DBIteratorEnd: {$this->_name} -->\n";

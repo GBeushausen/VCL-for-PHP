@@ -295,7 +295,7 @@ class DBPaginator extends CustomControl
     /**
      * Dump the paginator contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $style = $this->buildPaginatorStyle();
         $isVertical = ($this->_orientation === 'noVertical');

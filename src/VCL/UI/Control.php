@@ -8,8 +8,11 @@ use VCL\Core\Component;
 use VCL\Core\Collection;
 use VCL\Graphics\Font;
 use VCL\UI\Enums\Alignment;
+use VCL\UI\Enums\AlignItems;
 use VCL\UI\Enums\Anchors;
 use VCL\UI\Enums\Cursor;
+use VCL\UI\Enums\RenderMode;
+use VCL\UI\Enums\ResponsiveWidth;
 
 /**
  * Control is the base class for all visual components.
@@ -59,6 +62,16 @@ class Control extends Component
     // Layer support
     protected bool $_isLayer = false;
     protected string $_layer = '';
+
+    // Modern CSS support (Tailwind, Bootstrap, or any CSS framework)
+    protected RenderMode $_renderMode = RenderMode::Classic;
+    protected array $_cssClasses = [];
+    protected ?ResponsiveWidth $_responsiveWidth = null;
+    protected array $_responsiveClasses = []; // ['sm' => [...], 'md' => [...], 'lg' => [...]]
+    protected string $_gap = '';
+    protected string $_padding = '';
+    protected string $_margin = '';
+    protected string $_themeVariant = 'default';
 
     // Visual children
     public ?Collection $controls = null;
@@ -313,6 +326,54 @@ class Control extends Component
         set => $this->_layer = $value;
     }
 
+    // =========================================================================
+    // PROPERTY HOOKS - Modern CSS Framework Support
+    // =========================================================================
+
+    public RenderMode $RenderMode {
+        get => $this->_renderMode;
+        set => $this->_renderMode = $value;
+    }
+
+    /**
+     * Additional CSS classes to apply to this control.
+     * Framework-agnostic - works with Tailwind, Bootstrap, or custom CSS.
+     */
+    public array $Classes {
+        get => $this->_cssClasses;
+        set => $this->_cssClasses = $value;
+    }
+
+    public ?ResponsiveWidth $ResponsiveWidth {
+        get => $this->_responsiveWidth;
+        set => $this->_responsiveWidth = $value;
+    }
+
+    public array $ResponsiveClasses {
+        get => $this->_responsiveClasses;
+        set => $this->_responsiveClasses = $value;
+    }
+
+    public string $Gap {
+        get => $this->_gap;
+        set => $this->_gap = $value;
+    }
+
+    public string $Padding {
+        get => $this->_padding;
+        set => $this->_padding = $value;
+    }
+
+    public string $Margin {
+        get => $this->_margin;
+        set => $this->_margin = $value;
+    }
+
+    public string $ThemeVariant {
+        get => $this->_themeVariant;
+        set => $this->_themeVariant = $value;
+    }
+
     public int $ControlCount {
         get => $this->controls?->count() ?? 0;
     }
@@ -528,6 +589,18 @@ class Control extends Component
 
     public function getInlineStyle(): string
     {
+        return match ($this->_renderMode) {
+            RenderMode::Classic => $this->getClassicInlineStyle(),
+            RenderMode::Tailwind => $this->getMinimalInlineStyle(),
+            RenderMode::Hybrid => $this->getHybridInlineStyle(),
+        };
+    }
+
+    /**
+     * Classic inline style: full positioning, sizing, and appearance.
+     */
+    protected function getClassicInlineStyle(): string
+    {
         $styles = [];
 
         $alignValue = $this->_align instanceof Alignment ? $this->_align : Alignment::tryFrom($this->_align);
@@ -563,6 +636,120 @@ class Control extends Component
         return implode('; ', $styles);
     }
 
+    /**
+     * Minimal inline style for Tailwind mode: only visibility.
+     * All other styling is handled by Tailwind classes.
+     */
+    protected function getMinimalInlineStyle(): string
+    {
+        $styles = [];
+
+        if (!$this->_visible || $this->_hidden) {
+            $styles[] = "display: none";
+        }
+
+        return implode('; ', $styles);
+    }
+
+    /**
+     * Hybrid inline style: position via inline, appearance via Tailwind.
+     */
+    protected function getHybridInlineStyle(): string
+    {
+        $styles = [];
+
+        $alignValue = $this->_align instanceof Alignment ? $this->_align : Alignment::tryFrom($this->_align);
+
+        if ($alignValue !== null && $alignValue !== Alignment::None) {
+            $styles[] = 'position: ' . $alignValue->toCss();
+        } else {
+            $styles[] = "position: absolute";
+            $styles[] = "left: {$this->_left}px";
+            $styles[] = "top: {$this->_top}px";
+        }
+
+        if ($this->_width !== null) {
+            $styles[] = "width: {$this->_width}px";
+        }
+        if ($this->_height !== null) {
+            $styles[] = "height: {$this->_height}px";
+        }
+
+        if (!$this->_visible || $this->_hidden) {
+            $styles[] = "display: none";
+        }
+
+        return implode('; ', $styles);
+    }
+
+    /**
+     * Get component type for theming (e.g., 'button', 'input', 'panel').
+     * Override in subclasses to return specific component type.
+     */
+    protected function getComponentType(): string
+    {
+        return 'control';
+    }
+
+    /**
+     * Get the theme class for this control based on component type and variant.
+     */
+    protected function getThemeClass(): string
+    {
+        $componentType = $this->getComponentType();
+        $variant = $this->_themeVariant;
+
+        if ($variant === 'default' || $variant === '') {
+            return "vcl-{$componentType}";
+        }
+
+        return "vcl-{$componentType}-{$variant}";
+    }
+
+    /**
+     * Build CSS classes string for this control.
+     * Works with any CSS framework (Tailwind, Bootstrap, custom CSS).
+     */
+    public function getCssClasses(): string
+    {
+        if ($this->_renderMode === RenderMode::Classic) {
+            return '';
+        }
+
+        $classes = [];
+
+        // Add theme class
+        $classes[] = $this->getThemeClass();
+
+        // Add responsive width
+        if ($this->_responsiveWidth !== null) {
+            $classes[] = $this->_responsiveWidth->toTailwind();
+        }
+
+        // Add responsive classes for breakpoints
+        foreach ($this->_responsiveClasses as $breakpoint => $breakpointClasses) {
+            foreach ((array)$breakpointClasses as $class) {
+                $classes[] = "{$breakpoint}:{$class}";
+            }
+        }
+
+        // Add spacing classes
+        if ($this->_gap !== '') {
+            $classes[] = $this->_gap;
+        }
+        if ($this->_padding !== '') {
+            $classes[] = $this->_padding;
+        }
+        if ($this->_margin !== '') {
+            $classes[] = $this->_margin;
+        }
+
+        // Add custom CSS classes
+        $classes = array_merge($classes, $this->_cssClasses);
+
+        return implode(' ', array_filter($classes));
+    }
+
     // Legacy alias
     public function getStyle(): string
     {
@@ -582,12 +769,25 @@ class Control extends Component
             $attrs[] = 'style="' . htmlspecialchars($style) . '"';
         }
 
+        // Build class attribute from Style property and Tailwind classes
+        $classNames = [];
+
         if ($this->_style !== '') {
-            $class = $this->_style;
-            if (str_starts_with($class, '.')) {
-                $class = substr($class, 1);
+            $styleClass = $this->_style;
+            if (str_starts_with($styleClass, '.')) {
+                $styleClass = substr($styleClass, 1);
             }
-            $attrs[] = 'class="' . htmlspecialchars($class) . '"';
+            $classNames[] = $styleClass;
+        }
+
+        // Add CSS classes if in Tailwind or Hybrid mode
+        $cssClasses = $this->getCssClasses();
+        if ($cssClasses !== '') {
+            $classNames[] = $cssClasses;
+        }
+
+        if (!empty($classNames)) {
+            $attrs[] = 'class="' . htmlspecialchars(implode(' ', $classNames)) . '"';
         }
 
         if (!$this->_enabled) {

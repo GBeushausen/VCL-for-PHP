@@ -38,7 +38,7 @@ class DBIteratorBegin extends Control
     /**
      * Dump the iterator begin marker.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             echo "<!-- DBIteratorBegin: {$this->_name} -->\n";
