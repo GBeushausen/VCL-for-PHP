@@ -126,12 +126,10 @@ if (!defined('VCL_HTTP_PATH')) {
     if (PHP_SAPI !== 'cli') {
         $scriptFilename = $_SERVER['SCRIPT_FILENAME'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
         if ($scriptFilename !== '' && function_exists('relativePath')) {
-            $httpPath = relativePath(
-                realpath(dirname(__DIR__)),
-                dirname(realpath($scriptFilename))
-            );
-            if (str_starts_with($httpPath, '..')) {
-                $httpPath = '/vcl-bin';
+            $vclRoot = realpath(dirname(__DIR__));
+            $scriptDir = dirname(realpath($scriptFilename));
+            if ($vclRoot !== false && $scriptDir !== false) {
+                $httpPath = relativePath($vclRoot, $scriptDir);
             }
         }
     }

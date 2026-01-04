@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\StdCtrls;
 
 use VCL\UI\FocusControl;
+use VCL\UI\Enums\RenderMode;
 use VCL\StdCtrls\Enums\BorderStyle;
 use VCL\StdCtrls\Enums\CharCase;
 
@@ -119,6 +120,11 @@ class CustomEdit extends FocusControl
         $this->_height = 21;
         $this->_controlstyle['csRenderOwner'] = true;
         $this->_controlstyle['csRenderAlso'] = 'StyleSheet';
+    }
+
+    protected function getComponentType(): string
+    {
+        return 'input';
     }
 
     /**
@@ -264,6 +270,12 @@ class CustomEdit extends FocusControl
      */
     public function dumpContents(): void
     {
+        // Check for Tailwind mode
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind();
+            return;
+        }
+
         $style = $this->getCommonStyles();
 
         // Size
@@ -291,6 +303,107 @@ class CustomEdit extends FocusControl
             $value,
             $style,
             $attrs
+        );
+    }
+
+    /**
+     * Render the edit control using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(): void
+    {
+        // Build class list
+        $classes = [];
+
+        // Theme class (vcl-input)
+        $themeClass = $this->getThemeClass();
+        if ($themeClass !== '') {
+            $classes[] = $themeClass;
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Style class from Style property
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        // Character case
+        $charCase = $this->_charcase instanceof CharCase
+            ? $this->_charcase
+            : CharCase::from($this->_charcase);
+        $caseClass = match ($charCase) {
+            CharCase::LowerCase => 'lowercase',
+            CharCase::UpperCase => 'uppercase',
+            default => '',
+        };
+        if ($caseClass !== '') {
+            $classes[] = $caseClass;
+        }
+
+        // Hidden
+        if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            $classes[] = 'hidden';
+        }
+
+        // Build attributes
+        $attrs = [];
+
+        // Disabled
+        if (!$this->_enabled) {
+            $attrs[] = 'disabled';
+        }
+
+        // Max length
+        if ($this->_maxlength > 0) {
+            $attrs[] = sprintf('maxlength="%d"', $this->_maxlength);
+        }
+
+        // Read only
+        if ($this->_readonly) {
+            $attrs[] = 'readonly';
+        }
+
+        // Tab order
+        if ($this->_tabstop) {
+            $attrs[] = sprintf('tabindex="%d"', $this->_taborder);
+        }
+
+        // Hint
+        if ($this->_hint !== '' && $this->_showHint) {
+            $attrs[] = sprintf('title="%s"', htmlspecialchars($this->_hint));
+        }
+
+        // Events
+        if ($this->_enabled) {
+            $events = $this->getJSEventAttributes();
+            if ($events !== '') {
+                $attrs[] = $events;
+            }
+        }
+
+        $type = $this->_ispassword ? 'password' : 'text';
+        $value = htmlspecialchars($this->_text);
+        $name = htmlspecialchars($this->Name);
+
+        $classAttr = !empty($classes) ? sprintf(' class="%s"', htmlspecialchars(implode(' ', $classes))) : '';
+
+        // Minimal inline style (only if absolutely necessary)
+        $style = $this->getMinimalInlineStyle();
+        $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
+
+        echo sprintf(
+            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s />',
+            $type,
+            $name,
+            $name,
+            $value,
+            $classAttr,
+            $styleAttr,
+            implode(' ', $attrs)
         );
     }
 
