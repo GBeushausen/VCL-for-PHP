@@ -136,8 +136,9 @@ class FocusControl extends Control
 
     /**
      * Dumps all children by calling show() on each control.
+     * Override this method in subclasses to customize child rendering.
      */
-    public function dumpChildren(): void
+    protected function dumpChildren(): void
     {
         if ($this->controls === null) {
             return;

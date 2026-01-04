@@ -33,6 +33,13 @@ class CustomEdit extends FocusControl
     protected string $_placeholder = '';
     protected string $_extraAttributes = '';
 
+    // HTML5 Validation properties
+    protected bool $_required = false;
+    protected int $_minlength = 0;
+    protected string $_pattern = '';
+    protected string $_validationMessage = '';
+    protected string $_inputType = 'text';  // text, email, tel, url, number, etc.
+
     // Events
     protected ?string $_onclick = null;
     protected ?string $_ondblclick = null;
@@ -103,6 +110,32 @@ class CustomEdit extends FocusControl
     public string $ExtraAttributes {
         get => $this->_extraAttributes;
         set => $this->_extraAttributes = $value;
+    }
+
+    // HTML5 Validation Property Hooks
+    public bool $Required {
+        get => $this->_required;
+        set => $this->_required = $value;
+    }
+
+    public int $MinLength {
+        get => $this->_minlength;
+        set => $this->_minlength = max(0, $value);
+    }
+
+    public string $Pattern {
+        get => $this->_pattern;
+        set => $this->_pattern = $value;
+    }
+
+    public string $ValidationMessage {
+        get => $this->_validationMessage;
+        set => $this->_validationMessage = $value;
+    }
+
+    public string $InputType {
+        get => $this->_inputType;
+        set => $this->_inputType = $value;
     }
 
     public ?string $OnClick {
@@ -213,9 +246,23 @@ class CustomEdit extends FocusControl
             $attrs[] = sprintf('class="%s"', htmlspecialchars($class));
         }
 
-        // Hint
-        if ($this->_hint !== '' && $this->_showHint) {
-            $attrs[] = sprintf('title="%s"', htmlspecialchars($this->_hint));
+        // Hint / Validation message
+        $title = $this->_validationMessage !== '' ? $this->_validationMessage : $this->_hint;
+        if ($title !== '' && ($this->_showHint || $this->_validationMessage !== '')) {
+            $attrs[] = sprintf('title="%s"', htmlspecialchars($title));
+        }
+
+        // HTML5 Validation attributes
+        if ($this->_required) {
+            $attrs[] = 'required';
+        }
+
+        if ($this->_minlength > 0) {
+            $attrs[] = sprintf('minlength="%d"', $this->_minlength);
+        }
+
+        if ($this->_pattern !== '') {
+            $attrs[] = sprintf('pattern="%s"', htmlspecialchars($this->_pattern));
         }
 
         // Events
@@ -303,13 +350,13 @@ class CustomEdit extends FocusControl
         }
 
         $attrs = $this->getCommonAttributes();
-        $type = $this->_ispassword ? 'password' : 'text';
+        $type = $this->_ispassword ? 'password' : $this->_inputType;
         $value = htmlspecialchars($this->_text);
         $name = htmlspecialchars($this->Name);
 
         echo sprintf(
             '<input type="%s" id="%s" name="%s" value="%s" style="%s" %s />',
-            $type,
+            htmlspecialchars($type),
             $name,
             $name,
             $value,
@@ -384,9 +431,23 @@ class CustomEdit extends FocusControl
             $attrs[] = sprintf('tabindex="%d"', $this->_taborder);
         }
 
-        // Hint
-        if ($this->_hint !== '' && $this->_showHint) {
-            $attrs[] = sprintf('title="%s"', htmlspecialchars($this->_hint));
+        // Hint / Validation message
+        $title = $this->_validationMessage !== '' ? $this->_validationMessage : $this->_hint;
+        if ($title !== '' && ($this->_showHint || $this->_validationMessage !== '')) {
+            $attrs[] = sprintf('title="%s"', htmlspecialchars($title));
+        }
+
+        // HTML5 Validation attributes
+        if ($this->_required) {
+            $attrs[] = 'required';
+        }
+
+        if ($this->_minlength > 0) {
+            $attrs[] = sprintf('minlength="%d"', $this->_minlength);
+        }
+
+        if ($this->_pattern !== '') {
+            $attrs[] = sprintf('pattern="%s"', htmlspecialchars($this->_pattern));
         }
 
         // Events
@@ -402,7 +463,7 @@ class CustomEdit extends FocusControl
             $attrs[] = sprintf('placeholder="%s"', htmlspecialchars($this->_placeholder));
         }
 
-        $type = $this->_ispassword ? 'password' : 'text';
+        $type = $this->_ispassword ? 'password' : $this->_inputType;
         $value = htmlspecialchars($this->_text);
         $name = htmlspecialchars($this->Name);
 

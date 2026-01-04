@@ -1,19 +1,18 @@
 <?php
 /**
- * VCL for PHP - Erweiterte UI-Demo
+ * VCL for PHP - Erweiterte UI-Demo mit Tailwind CSS
  *
- * Diese Datei demonstriert verschiedene UI-Komponenten des VCL-Frameworks.
+ * Demonstriert verschiedene UI-Komponenten mit modernem Tailwind-Layout.
  * Aufruf: http://vcl.ddev.site/demo_advanced.php
  */
 
 declare(strict_types=1);
 
-// Composer Autoloader einbinden
 require_once(__DIR__ . '/../vendor/autoload.php');
 
-// Namespaces importieren
 use VCL\Forms\Page;
 use VCL\Forms\Application;
+use VCL\ExtCtrls\FlexPanel;
 use VCL\StdCtrls\Label;
 use VCL\StdCtrls\Edit;
 use VCL\StdCtrls\Button;
@@ -21,36 +20,23 @@ use VCL\StdCtrls\CheckBox;
 use VCL\StdCtrls\RadioButton;
 use VCL\StdCtrls\ComboBox;
 use VCL\StdCtrls\Memo;
+use VCL\StdCtrls\Html;
+use VCL\UI\Enums\FlexDirection;
+use VCL\UI\Enums\RenderMode;
 
-// Erweiterte Demo-Page
 class AdvancedDemoPage extends Page
 {
-    // UI-Komponenten
-    public ?Label $TitleLabel = null;
-
-    // Formular-Bereich
-    public ?Label $NameLabel = null;
+    // Form components - must be created in constructor for lifecycle
     public ?Edit $NameEdit = null;
-    public ?Label $EmailLabel = null;
     public ?Edit $EmailEdit = null;
-    public ?Label $CountryLabel = null;
     public ?ComboBox $CountryCombo = null;
     public ?CheckBox $NewsletterCheck = null;
-    public ?Label $CommentLabel = null;
     public ?Memo $CommentMemo = null;
-
-    // Buttons
-    public ?Button $SubmitButton = null;
-    public ?Button $ResetButton = null;
-
-    // Ausgabe
-    public ?Label $ResultLabel = null;
-
-    // RadioGroup für Anrede
-    public ?Label $GenderLabel = null;
     public ?RadioButton $GenderMale = null;
     public ?RadioButton $GenderFemale = null;
     public ?RadioButton $GenderOther = null;
+    public ?Button $SubmitButton = null;
+    public ?Label $ResultLabel = null;
 
     public function __construct(?object $aowner = null)
     {
@@ -58,232 +44,240 @@ class AdvancedDemoPage extends Page
 
         $this->Name = "AdvancedDemoPage";
         $this->Caption = "VCL Advanced UI Demo";
-        $this->Color = "#ffffff";
 
-        $this->createTitleSection();
-        $this->createFormSection();
-        $this->createButtonSection();
-        $this->createOutputSection();
-    }
+        // Enable Tailwind CSS
+        $this->UseTailwind = true;
+        $this->TailwindStylesheet = __DIR__ . '/../public/assets/css/vcl-theme.css';
+        $this->BodyClasses = ['bg-vcl-surface-sunken', 'min-h-screen', 'p-8'];
 
-    public function createTitleSection(): void
-    {
-        // Haupt-Titel
-        $this->TitleLabel = new Label($this);
-        $this->TitleLabel->Name = "TitleLabel";
-        $this->TitleLabel->Parent = $this;
-        $this->TitleLabel->Left = 20;
-        $this->TitleLabel->Top = 20;
-        $this->TitleLabel->Caption = "VCL for PHP - UI Komponenten Demo";
-        $this->TitleLabel->Font->Size = "24px";
-        $this->TitleLabel->Font->Weight = "bold";
-        $this->TitleLabel->Font->Color = "#333333";
-    }
-
-    public function createFormSection(): void
-    {
-        $baseTop = 70;
-        $labelWidth = 120;
-        $inputLeft = 150;
-        $rowHeight = 35;
-
-        // Anrede (RadioButtons)
-        $this->GenderLabel = new Label($this);
-        $this->GenderLabel->Name = "GenderLabel";
-        $this->GenderLabel->Parent = $this;
-        $this->GenderLabel->Left = 20;
-        $this->GenderLabel->Top = $baseTop;
-        $this->GenderLabel->Caption = "Anrede:";
-
+        // Create all form components in constructor so they exist during lifecycle
         $this->GenderMale = new RadioButton($this);
-        $this->GenderMale->Name = "GenderMale";
-        $this->GenderMale->Parent = $this;
-        $this->GenderMale->Left = $inputLeft;
-        $this->GenderMale->Top = $baseTop;
-        $this->GenderMale->Caption = "Herr";
-        $this->GenderMale->Group = "gender";
+        $this->GenderMale->Name = 'GenderMale';
+        $this->GenderMale->Caption = 'Herr';
+        $this->GenderMale->Group = 'gender';
+        $this->GenderMale->RenderMode = RenderMode::Tailwind;
 
         $this->GenderFemale = new RadioButton($this);
-        $this->GenderFemale->Name = "GenderFemale";
-        $this->GenderFemale->Parent = $this;
-        $this->GenderFemale->Left = $inputLeft + 80;
-        $this->GenderFemale->Top = $baseTop;
-        $this->GenderFemale->Caption = "Frau";
-        $this->GenderFemale->Group = "gender";
+        $this->GenderFemale->Name = 'GenderFemale';
+        $this->GenderFemale->Caption = 'Frau';
+        $this->GenderFemale->Group = 'gender';
+        $this->GenderFemale->RenderMode = RenderMode::Tailwind;
 
         $this->GenderOther = new RadioButton($this);
-        $this->GenderOther->Name = "GenderOther";
-        $this->GenderOther->Parent = $this;
-        $this->GenderOther->Left = $inputLeft + 160;
-        $this->GenderOther->Top = $baseTop;
-        $this->GenderOther->Caption = "Divers";
-        $this->GenderOther->Group = "gender";
-
-        // Name
-        $this->NameLabel = new Label($this);
-        $this->NameLabel->Name = "NameLabel";
-        $this->NameLabel->Parent = $this;
-        $this->NameLabel->Left = 20;
-        $this->NameLabel->Top = $baseTop + $rowHeight;
-        $this->NameLabel->Caption = "Name:";
+        $this->GenderOther->Name = 'GenderOther';
+        $this->GenderOther->Caption = 'Divers';
+        $this->GenderOther->Group = 'gender';
+        $this->GenderOther->RenderMode = RenderMode::Tailwind;
 
         $this->NameEdit = new Edit($this);
-        $this->NameEdit->Name = "NameEdit";
-        $this->NameEdit->Parent = $this;
-        $this->NameEdit->Left = $inputLeft;
-        $this->NameEdit->Top = $baseTop + $rowHeight - 3;
-        $this->NameEdit->Width = 250;
-
-        // Email
-        $this->EmailLabel = new Label($this);
-        $this->EmailLabel->Name = "EmailLabel";
-        $this->EmailLabel->Parent = $this;
-        $this->EmailLabel->Left = 20;
-        $this->EmailLabel->Top = $baseTop + $rowHeight * 2;
-        $this->EmailLabel->Caption = "E-Mail:";
+        $this->NameEdit->Name = 'NameEdit';
+        $this->NameEdit->RenderMode = RenderMode::Tailwind;
+        $this->NameEdit->Classes = ['flex-1'];
+        $this->NameEdit->Required = true;
+        $this->NameEdit->MinLength = 2;
+        $this->NameEdit->Placeholder = 'Ihr vollstaendiger Name';
 
         $this->EmailEdit = new Edit($this);
-        $this->EmailEdit->Name = "EmailEdit";
-        $this->EmailEdit->Parent = $this;
-        $this->EmailEdit->Left = $inputLeft;
-        $this->EmailEdit->Top = $baseTop + $rowHeight * 2 - 3;
-        $this->EmailEdit->Width = 250;
-
-        // Land (ComboBox)
-        $this->CountryLabel = new Label($this);
-        $this->CountryLabel->Name = "CountryLabel";
-        $this->CountryLabel->Parent = $this;
-        $this->CountryLabel->Left = 20;
-        $this->CountryLabel->Top = $baseTop + $rowHeight * 3;
-        $this->CountryLabel->Caption = "Land:";
+        $this->EmailEdit->Name = 'EmailEdit';
+        $this->EmailEdit->RenderMode = RenderMode::Tailwind;
+        $this->EmailEdit->Classes = ['flex-1'];
+        $this->EmailEdit->Required = true;
+        $this->EmailEdit->InputType = 'email';
+        $this->EmailEdit->Placeholder = 'ihre@email.de';
 
         $this->CountryCombo = new ComboBox($this);
-        $this->CountryCombo->Name = "CountryCombo";
-        $this->CountryCombo->Parent = $this;
-        $this->CountryCombo->Left = $inputLeft;
-        $this->CountryCombo->Top = $baseTop + $rowHeight * 3 - 3;
-        $this->CountryCombo->Width = 250;
+        $this->CountryCombo->Name = 'CountryCombo';
+        $this->CountryCombo->RenderMode = RenderMode::Tailwind;
+        $this->CountryCombo->Classes = ['flex-1'];
         $this->CountryCombo->Items = [
-            "Deutschland",
-            "Oesterreich",
-            "Schweiz",
-            "Liechtenstein",
-            "Luxemburg"
+            'Deutschland',
+            'Oesterreich',
+            'Schweiz',
+            'Liechtenstein',
+            'Luxemburg'
         ];
 
-        // Newsletter Checkbox
         $this->NewsletterCheck = new CheckBox($this);
-        $this->NewsletterCheck->Name = "NewsletterCheck";
-        $this->NewsletterCheck->Parent = $this;
-        $this->NewsletterCheck->Left = $inputLeft;
-        $this->NewsletterCheck->Top = $baseTop + $rowHeight * 4;
-        $this->NewsletterCheck->Caption = "Ja, ich moechte den Newsletter erhalten";
-        $this->NewsletterCheck->Width = 300;
-
-        // Kommentar (Memo)
-        $this->CommentLabel = new Label($this);
-        $this->CommentLabel->Name = "CommentLabel";
-        $this->CommentLabel->Parent = $this;
-        $this->CommentLabel->Left = 20;
-        $this->CommentLabel->Top = $baseTop + $rowHeight * 5;
-        $this->CommentLabel->Caption = "Kommentar:";
+        $this->NewsletterCheck->Name = 'NewsletterCheck';
+        $this->NewsletterCheck->Caption = 'Ja, ich moechte den Newsletter erhalten';
+        $this->NewsletterCheck->RenderMode = RenderMode::Tailwind;
 
         $this->CommentMemo = new Memo($this);
-        $this->CommentMemo->Name = "CommentMemo";
-        $this->CommentMemo->Parent = $this;
-        $this->CommentMemo->Left = $inputLeft;
-        $this->CommentMemo->Top = $baseTop + $rowHeight * 5 - 3;
-        $this->CommentMemo->Width = 350;
-        $this->CommentMemo->Height = 100;
-    }
+        $this->CommentMemo->Name = 'CommentMemo';
+        $this->CommentMemo->RenderMode = RenderMode::Tailwind;
+        $this->CommentMemo->Rows = 4;
+        $this->CommentMemo->Classes = ['flex-1'];
+        $this->CommentMemo->Placeholder = 'Ihr Kommentar (optional)';
 
-    public function createButtonSection(): void
-    {
-        $buttonTop = 350;
-
-        // Submit Button
         $this->SubmitButton = new Button($this);
-        $this->SubmitButton->Name = "SubmitButton";
-        $this->SubmitButton->Parent = $this;
-        $this->SubmitButton->Left = 150;
-        $this->SubmitButton->Top = $buttonTop;
-        $this->SubmitButton->Width = 120;
-        $this->SubmitButton->Caption = "Absenden";
-        $this->SubmitButton->OnClick = "SubmitButtonClick";
+        $this->SubmitButton->Name = 'SubmitButton';
+        $this->SubmitButton->Caption = 'Absenden';
+        $this->SubmitButton->RenderMode = RenderMode::Tailwind;
+        $this->SubmitButton->ThemeVariant = 'primary';
+        $this->SubmitButton->OnClick = 'SubmitButtonClick';
 
-        // Reset Button
-        $this->ResetButton = new Button($this);
-        $this->ResetButton->Name = "ResetButton";
-        $this->ResetButton->Parent = $this;
-        $this->ResetButton->Left = 280;
-        $this->ResetButton->Top = $buttonTop;
-        $this->ResetButton->Width = 120;
-        $this->ResetButton->Caption = "Zuruecksetzen";
-        $this->ResetButton->ButtonType = btReset;
-    }
-
-    public function createOutputSection(): void
-    {
-        // Ergebnis-Anzeige
         $this->ResultLabel = new Label($this);
-        $this->ResultLabel->Name = "ResultLabel";
-        $this->ResultLabel->Parent = $this;
-        $this->ResultLabel->Left = 20;
-        $this->ResultLabel->Top = 400;
-        $this->ResultLabel->Width = 500;
-        $this->ResultLabel->Caption = "";
-        $this->ResultLabel->Font->Size = "12px";
-        $this->ResultLabel->Font->Color = "#006600";
+        $this->ResultLabel->Name = 'ResultLabel';
+        $this->ResultLabel->Caption = '';
+        $this->ResultLabel->RenderMode = RenderMode::Tailwind;
         $this->ResultLabel->HtmlContent = true;
+        $this->ResultLabel->Classes = ['p-4', 'bg-green-50', 'text-green-800', 'rounded-lg', 'hidden'];
     }
 
-    // Event-Handler für Submit
+    protected function dumpChildren(): void
+    {
+        // Main container
+        $main = new FlexPanel();
+        $main->Name = 'MainContainer';
+        $main->Direction = FlexDirection::Column;
+        $main->FlexGap = 'gap-6';
+        $main->Classes = ['max-w-4xl', 'mx-auto'];
+
+        // Title
+        $title = new Html($main);
+        $title->Name = 'Title';
+        $title->WrapperTag = 'h1';
+        $title->RenderMode = RenderMode::Tailwind;
+        $title->Classes = ['text-3xl', 'font-bold', 'text-vcl-text'];
+        $title->Html = 'VCL for PHP - UI Komponenten Demo';
+        $title->Parent = $main;
+
+        // Form Panel
+        $formPanel = new FlexPanel($main);
+        $formPanel->Name = 'FormPanel';
+        $formPanel->Direction = FlexDirection::Column;
+        $formPanel->FlexGap = 'gap-4';
+        $formPanel->Padding = 'p-6';
+        $formPanel->Classes = ['bg-vcl-surface-elevated', 'rounded-lg', 'shadow-vcl-md'];
+        $formPanel->Parent = $main;
+
+        // Gender (Radio Buttons)
+        $genderRow = new FlexPanel($formPanel);
+        $genderRow->Name = 'GenderRow';
+        $genderRow->Direction = FlexDirection::Row;
+        $genderRow->FlexGap = 'gap-4';
+        $genderRow->Classes = ['items-center'];
+        $genderRow->Parent = $formPanel;
+
+        $genderLabel = new Label($genderRow);
+        $genderLabel->Name = 'GenderLabel';
+        $genderLabel->Caption = 'Anrede:';
+        $genderLabel->RenderMode = RenderMode::Tailwind;
+        $genderLabel->Classes = ['w-24', 'font-medium'];
+        $genderLabel->Parent = $genderRow;
+
+        // Attach existing radio buttons to layout
+        $this->GenderMale->Parent = $genderRow;
+        $this->GenderFemale->Parent = $genderRow;
+        $this->GenderOther->Parent = $genderRow;
+
+        // Name field
+        $this->createFormRow($formPanel, 'Name:', $this->NameEdit);
+
+        // Email field
+        $this->createFormRow($formPanel, 'E-Mail:', $this->EmailEdit);
+
+        // Country ComboBox
+        $this->createFormRow($formPanel, 'Land:', $this->CountryCombo);
+
+        // Newsletter Checkbox
+        $checkRow = new FlexPanel($formPanel);
+        $checkRow->Name = 'CheckRow';
+        $checkRow->Direction = FlexDirection::Row;
+        $checkRow->Classes = ['ml-0', 'sm:ml-28'];
+        $checkRow->Parent = $formPanel;
+        $this->NewsletterCheck->Parent = $checkRow;
+
+        // Comment Memo
+        $this->createFormRow($formPanel, 'Kommentar:', $this->CommentMemo);
+
+        // Button row
+        $buttonRow = new FlexPanel($formPanel);
+        $buttonRow->Name = 'ButtonRow';
+        $buttonRow->Direction = FlexDirection::Row;
+        $buttonRow->FlexGap = 'gap-3';
+        $buttonRow->Classes = ['ml-0', 'sm:ml-28', 'pt-2', 'flex-wrap'];
+        $buttonRow->Parent = $formPanel;
+
+        $this->SubmitButton->Parent = $buttonRow;
+
+        $resetButton = new Button($buttonRow);
+        $resetButton->Name = 'ResetButton';
+        $resetButton->Caption = 'Zuruecksetzen';
+        $resetButton->ButtonType = 'btButton';
+        $resetButton->RenderMode = RenderMode::Tailwind;
+        $resetButton->jsOnClick = 'VCL.clearForm(this.form)';
+        $resetButton->Parent = $buttonRow;
+
+        // Result Label
+        $this->ResultLabel->Parent = $main;
+
+        $main->show();
+    }
+
+    /**
+     * Helper to create a form row with label and input.
+     */
+    protected function createFormRow(FlexPanel $parent, string $label, object $control): void
+    {
+        $row = new FlexPanel($parent);
+        $row->Name = $control->Name . 'Row';
+        $row->Direction = FlexDirection::Row;
+        $row->FlexGap = 'gap-4';
+        $row->Classes = ['items-start'];
+        $row->Parent = $parent;
+
+        $labelCtrl = new Label($row);
+        $labelCtrl->Name = $control->Name . 'Label';
+        $labelCtrl->Caption = $label;
+        $labelCtrl->RenderMode = RenderMode::Tailwind;
+        $labelCtrl->Classes = ['w-24', 'font-medium', 'pt-2'];
+        $labelCtrl->Parent = $row;
+
+        $control->Parent = $row;
+    }
+
     public function SubmitButtonClick(object $sender, array $params): void
     {
-        $output = "<strong>Formulardaten empfangen:</strong><br/>";
+        $output = '<strong>Formulardaten empfangen:</strong><br/>';
 
-        // Anrede ermitteln
-        $gender = "Nicht angegeben";
+        // Gender
+        $gender = 'Nicht angegeben';
         if ($this->GenderMale->Checked) {
-            $gender = "Herr";
+            $gender = 'Herr';
         } elseif ($this->GenderFemale->Checked) {
-            $gender = "Frau";
+            $gender = 'Frau';
         } elseif ($this->GenderOther->Checked) {
-            $gender = "Divers";
+            $gender = 'Divers';
         }
-        $output .= "Anrede: " . htmlspecialchars($gender) . "<br/>";
+        $output .= 'Anrede: ' . htmlspecialchars($gender) . '<br/>';
 
         // Name
-        $name = $this->NameEdit->Text;
-        $output .= "Name: " . htmlspecialchars($name) . "<br/>";
+        $output .= 'Name: ' . htmlspecialchars($this->NameEdit->Text) . '<br/>';
 
         // Email
-        $email = $this->EmailEdit->Text;
-        $output .= "E-Mail: " . htmlspecialchars($email) . "<br/>";
+        $output .= 'E-Mail: ' . htmlspecialchars($this->EmailEdit->Text) . '<br/>';
 
-        // Land
+        // Country
         $country = $this->CountryCombo->ItemIndex >= 0
             ? $this->CountryCombo->Items[$this->CountryCombo->ItemIndex]
-            : "Nicht ausgewaehlt";
-        $output .= "Land: " . htmlspecialchars($country) . "<br/>";
+            : 'Nicht ausgewaehlt';
+        $output .= 'Land: ' . htmlspecialchars($country) . '<br/>';
 
         // Newsletter
-        $newsletter = $this->NewsletterCheck->Checked ? "Ja" : "Nein";
-        $output .= "Newsletter: " . $newsletter . "<br/>";
+        $output .= 'Newsletter: ' . ($this->NewsletterCheck->Checked ? 'Ja' : 'Nein') . '<br/>';
 
-        // Kommentar
-        $comment = $this->CommentMemo->Text;
-        if (!empty($comment)) {
-            $output .= "Kommentar: " . htmlspecialchars($comment) . "<br/>";
+        // Comment
+        if (!empty($this->CommentMemo->Text)) {
+            $output .= 'Kommentar: ' . htmlspecialchars($this->CommentMemo->Text) . '<br/>';
         }
 
         $this->ResultLabel->Caption = $output;
+        $this->ResultLabel->Classes = ['p-4', 'bg-green-50', 'text-green-800', 'rounded-lg'];
     }
 }
 
 // Seite erstellen und anzeigen
 $application = Application::getInstance();
 $page = new AdvancedDemoPage($application);
-$page->preinit();  // Formular-Werte lesen
-$page->init();     // Events verarbeiten
 $page->show();

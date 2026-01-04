@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\StdCtrls;
 
 use VCL\UI\FocusControl;
+use VCL\UI\Enums\RenderMode;
 
 /**
  * ComboBox is a dropdown selection control.
@@ -18,6 +19,7 @@ class ComboBox extends FocusControl
     protected string $_text = '';
     protected bool $_sorted = false;
     protected ?string $_onchange = null;
+    protected string $_extraAttributes = '';
 
     // Property Hooks
     public array $Items {
@@ -60,6 +62,11 @@ class ComboBox extends FocusControl
         set => $this->_onchange = $value;
     }
 
+    public string $ExtraAttributes {
+        get => $this->_extraAttributes;
+        set => $this->_extraAttributes = $value;
+    }
+
     public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
@@ -86,6 +93,11 @@ class ComboBox extends FocusControl
 
     protected function dumpContents(): void
     {
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind();
+            return;
+        }
+
         $disabled = !$this->_enabled ? ' disabled' : '';
         $style = $this->buildComboStyle();
 
@@ -99,6 +111,66 @@ class ComboBox extends FocusControl
         foreach ($this->_items as $index => $item) {
             $selected = ($index === $this->_itemindex) ? ' selected' : '';
             echo "<option value=\"" . htmlspecialchars($item) . "\"{$selected}>" . htmlspecialchars($item) . "</option>\n";
+        }
+
+        echo "</select>\n";
+    }
+
+    /**
+     * Render using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(): void
+    {
+        $name = htmlspecialchars($this->_name);
+
+        // Build class list
+        $classes = [
+            'w-full',
+            'px-3',
+            'py-2',
+            'bg-vcl-surface',
+            'text-vcl-text',
+            'border',
+            'border-vcl-border',
+            'rounded-md',
+            'focus:outline-none',
+            'focus:ring-2',
+            'focus:ring-vcl-primary',
+            'focus:border-transparent',
+            'transition-colors',
+        ];
+
+        // Disabled state
+        if (!$this->_enabled) {
+            $classes[] = 'opacity-50';
+            $classes[] = 'cursor-not-allowed';
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        $classAttr = implode(' ', $classes);
+        $disabled = !$this->_enabled ? ' disabled' : '';
+
+        $onchange = '';
+        if ($this->_onchange !== null) {
+            $onchange = ' onchange="' . htmlspecialchars($this->_onchange) . '(this)"';
+        }
+
+        // Extra attributes
+        $extra = '';
+        if ($this->_extraAttributes !== '') {
+            $extra = ' ' . $this->_extraAttributes;
+        }
+
+        echo "<select id=\"{$name}\" name=\"{$name}\" class=\"{$classAttr}\"{$disabled}{$onchange}{$extra}>\n";
+
+        foreach ($this->_items as $index => $item) {
+            $selected = ($index === $this->_itemindex) ? ' selected' : '';
+            $escapedItem = htmlspecialchars($item);
+            echo "<option value=\"{$escapedItem}\"{$selected}>{$escapedItem}</option>\n";
         }
 
         echo "</select>\n";

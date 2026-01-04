@@ -36,13 +36,14 @@ class SimpleDemoPage extends Page
         $this->Caption = "VCL Simple Demo";
         $this->Color = "#f5f5f5";
 
+        // Dekorativer Kreis (rechte Seite)
         $this->Circle1 = new Shape($this);
         $this->Circle1->Name = "Circle1";
         $this->Circle1->Parent = $this;
-        $this->Circle1->Left = 20;
-        $this->Circle1->Top = 20;
-        $this->Circle1->Width = 100;
-        $this->Circle1->Height = 100;
+        $this->Circle1->Left = 400;
+        $this->Circle1->Top = 30;
+        $this->Circle1->Width = 80;
+        $this->Circle1->Height = 80;
         $this->Circle1->Shape = "stCircle";
         $this->Circle1->Brush->Color = "#FF0000";
         $this->Circle1->Pen->Color = "#000000";
@@ -53,7 +54,7 @@ class SimpleDemoPage extends Page
         $this->Label1->Name = "Label1";
         $this->Label1->Parent = $this;
         $this->Label1->Left = 20;
-        $this->Label1->Top = 20;
+        $this->Label1->Top = 30;
         $this->Label1->Caption = "Gib deinen Namen ein:";
 
         // Eingabefeld erstellen
@@ -61,7 +62,7 @@ class SimpleDemoPage extends Page
         $this->Edit1->Name = "Edit1";
         $this->Edit1->Parent = $this;
         $this->Edit1->Left = 20;
-        $this->Edit1->Top = 50;
+        $this->Edit1->Top = 60;
         $this->Edit1->Width = 200;
         $this->Edit1->Text = "";
 
@@ -70,7 +71,7 @@ class SimpleDemoPage extends Page
         $this->Button1->Name = "Button1";
         $this->Button1->Parent = $this;
         $this->Button1->Left = 230;
-        $this->Button1->Top = 48;
+        $this->Button1->Top = 58;
         $this->Button1->Caption = "Klick mich!";
         $this->Button1->OnClick = "Button1Click";
 
@@ -79,7 +80,8 @@ class SimpleDemoPage extends Page
         $this->OutputLabel->Name = "OutputLabel";
         $this->OutputLabel->Parent = $this;
         $this->OutputLabel->Left = 20;
-        $this->OutputLabel->Top = 100;
+        $this->OutputLabel->Top = 110;
+        $this->OutputLabel->Width = 350;
         $this->OutputLabel->Caption = "";
         $this->OutputLabel->Font->Size = "14px";
         $this->OutputLabel->Font->Color = "#0066cc";
@@ -100,6 +102,4 @@ class SimpleDemoPage extends Page
 // Seite erstellen und anzeigen
 $application = Application::getInstance();
 $page = new SimpleDemoPage($application);
-$page->preinit();  // Formular-Werte lesen
-$page->init();     // Events verarbeiten
-$page->show();
+$page->show();  

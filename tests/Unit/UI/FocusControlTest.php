@@ -55,10 +55,12 @@ class FocusControlTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testDumpChildren(): void
+    public function testShowWithNoChildren(): void
     {
         // Should not throw when called with no children
-        $this->control->dumpChildren();
+        ob_start();
+        $this->control->show();
+        ob_end_clean();
         $this->assertTrue(true);
     }
 
