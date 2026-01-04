@@ -31,7 +31,8 @@
         "doctrine/dbal": "^4.0",
         "doctrine/migrations": "^3.9",
         "symfony/html-sanitizer": "^8.0",
-        "symfony/validator": "^8.0"
+        "symfony/validator": "^8.0",
+        "twig/twig": "^3.22"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0",
@@ -44,7 +45,8 @@
         "ext-pdo_sqlite": "Required for SQLite database support",
         "ext-oci8": "Required for Oracle database support",
         "ext-gd": "Required for image manipulation features",
-        "smarty/smarty": "Template engine integration"
+        "smarty/smarty": "Template engine integration",
+        "twig/twig": "Required for Html component Twig template support"
     },
     "autoload": {
         "psr-4": {
