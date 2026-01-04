@@ -106,7 +106,7 @@ class TailwindDemoPage extends Page
     /**
      * Create the page content.
      */
-    public function dumpChildren(): void
+    protected function dumpChildren(): void
     {
         // Main container
         $mainContainer = new FlexPanel();
@@ -588,7 +588,7 @@ class MyPage extends Page
         $this->UseHtmx = true;
     }
 
-    public function dumpChildren(): void
+    protected function dumpChildren(): void
     {
         // Create a flex panel form
         $form = new FlexPanel();

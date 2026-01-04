@@ -69,6 +69,10 @@ class Page extends CustomPage
     protected string $_border = '';
     protected bool $hasframes = false;
 
+    // Lifecycle state
+    protected bool $_preinitCalled = false;
+    protected bool $_initCalled = false;
+
     // Events
     protected ?string $_onbeforeshowheader = null;
     protected ?string $_onstartbody = null;
@@ -616,8 +620,9 @@ class Page extends CustomPage
 
     /**
      * Dump children controls.
+     * Override this method in subclasses to customize the page content.
      */
-    public function dumpChildren(): void
+    protected function dumpChildren(): void
     {
         $layout = $this->Layout;
 
@@ -700,7 +705,11 @@ class Page extends CustomPage
         echo <<<'SCRIPT'
 <script>
 (function() {
-    const VCLTheme = {
+    // VCL global namespace
+    window.VCL = window.VCL || {};
+
+    // Theme management
+    VCL.Theme = {
         get: function() {
             return localStorage.getItem('vcl-theme') ||
                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -727,8 +736,29 @@ class Page extends CustomPage
             });
         }
     };
-    VCLTheme.init();
-    window.VCLTheme = VCLTheme;
+
+    // Form utilities
+    VCL.clearForm = function(form) {
+        if (!form) return;
+        // Clear text inputs and textareas
+        form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], input[type="url"], input[type="search"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], input[type="week"], textarea').forEach(function(el) {
+            el.value = '';
+        });
+        // Reset selects to first option
+        form.querySelectorAll('select').forEach(function(el) {
+            el.selectedIndex = 0;
+        });
+        // Uncheck checkboxes and radio buttons
+        form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(function(el) {
+            el.checked = false;
+        });
+    };
+
+    // Initialize theme
+    VCL.Theme.init();
+
+    // Backward compatibility
+    window.VCLTheme = VCL.Theme;
 })();
 </script>
 
@@ -758,12 +788,47 @@ SCRIPT;
     }
 
     /**
-     * Override show to render the full page.
+     * Pre-initialize the page and all child components.
+     * Reads form values from POST/GET.
+     */
+    public function preinit(): void
+    {
+        if ($this->_preinitCalled) {
+            return;
+        }
+        $this->_preinitCalled = true;
+        parent::preinit();
+    }
+
+    /**
+     * Initialize the page and all child components.
+     * Processes events after all components are loaded.
+     */
+    public function init(): void
+    {
+        if ($this->_initCalled) {
+            return;
+        }
+        $this->_initCalled = true;
+        parent::init();
+    }
+
+    /**
+     * Show the page.
+     * Automatically calls preinit() and init() if not already called.
      */
     public function show(): void
     {
         if (!$this->canShow()) {
             return;
+        }
+
+        // Ensure lifecycle methods are called
+        if (!$this->_preinitCalled) {
+            $this->preinit();
+        }
+        if (!$this->_initCalled) {
+            $this->init();
         }
 
         $this->dumpContents();

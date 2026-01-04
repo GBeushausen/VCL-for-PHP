@@ -64,9 +64,20 @@ class Memo extends FocusControl
         set => $this->_scrollbars = $value;
     }
 
+    /**
+     * Extra HTML attributes to add to the textarea element.
+     * WARNING: This property should only receive trusted input from developers,
+     * never user-supplied data. Event handlers are stripped for security.
+     */
     public string $ExtraAttributes {
         get => $this->_extraAttributes;
-        set => $this->_extraAttributes = $value;
+        set {
+            // Strip potentially dangerous event handlers for security
+            $sanitized = preg_replace('/\bon\w+\s*=/i', 'data-blocked-', $value);
+            // Strip javascript: URLs
+            $sanitized = preg_replace('/javascript\s*:/i', 'blocked:', $sanitized);
+            $this->_extraAttributes = $sanitized;
+        }
     }
 
     public int $Rows {

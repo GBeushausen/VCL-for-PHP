@@ -109,6 +109,4 @@ class HtmxDemoPage extends Page
 // Create and run the application
 $application = Application::getInstance();
 $page = new HtmxDemoPage($application);
-$page->preinit();
-$page->init();
-$page->show();
+$page->show();  // Lifecycle methods (preinit, init) are automatically called
