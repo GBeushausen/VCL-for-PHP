@@ -121,7 +121,7 @@ class FlexPanel extends CustomPanel
     {
         $alignValue = $align instanceof Alignment ? $align : Alignment::tryFrom($align);
 
-        if ($alignValue === null || $alignValue === Alignment::None) {
+        if ($alignValue === null) {
             return '';
         }
 
@@ -129,13 +129,12 @@ class FlexPanel extends CustomPanel
         $isHorizontal = $this->_direction->isHorizontal();
 
         return match ($alignValue) {
+            Alignment::None, Alignment::Custom => '',
             Alignment::Top => $isHorizontal ? 'self-start' : '',
             Alignment::Bottom => $isHorizontal ? 'self-end' : '',
             Alignment::Left => $isHorizontal ? '' : 'self-start',
             Alignment::Right => $isHorizontal ? '' : 'self-end',
             Alignment::Client => 'flex-1',
-            Alignment::Custom => '',
-            default => '',
         };
     }
 
