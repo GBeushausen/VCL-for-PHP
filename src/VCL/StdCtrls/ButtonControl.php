@@ -22,6 +22,7 @@ class ButtonControl extends FocusControl
     protected string $_datafieldproperty = 'Caption';
     protected int $_taborder = 0;
     protected bool $_tabstop = true;
+    protected string $_extraAttributes = '';
 
     // Events
     protected ?string $_onclick = null;
@@ -52,6 +53,11 @@ class ButtonControl extends FocusControl
     public bool $TabStop {
         get => $this->_tabstop;
         set => $this->_tabstop = $value;
+    }
+
+    public string $ExtraAttributes {
+        get => $this->_extraAttributes;
+        set => $this->_extraAttributes = $value;
     }
 
     public ?string $OnClick {
@@ -285,8 +291,11 @@ class ButtonControl extends FocusControl
         $style = $this->getMinimalInlineStyle();
         $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
 
+        // Extra attributes (for htmx, onclick handlers, etc.)
+        $extraAttr = $this->_extraAttributes !== '' ? ' ' . $this->_extraAttributes : '';
+
         $input = sprintf(
-            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s %s />',
+            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s %s%s />',
             htmlspecialchars($inputType),
             htmlspecialchars($name),
             htmlspecialchars($name),
@@ -294,7 +303,8 @@ class ButtonControl extends FocusControl
             $classAttr,
             $styleAttr,
             $attrs,
-            $additionalAttributes
+            $additionalAttributes,
+            $extraAttr
         );
 
         echo sprintf($surroundingTags, $input);

@@ -30,6 +30,8 @@ class CustomEdit extends FocusControl
     protected string $_text = '';
     protected bool $_readonly = false;
     protected bool $_filterinput = true;
+    protected string $_placeholder = '';
+    protected string $_extraAttributes = '';
 
     // Events
     protected ?string $_onclick = null;
@@ -91,6 +93,16 @@ class CustomEdit extends FocusControl
     public bool $FilterInput {
         get => $this->_filterinput;
         set => $this->_filterinput = $value;
+    }
+
+    public string $Placeholder {
+        get => $this->_placeholder;
+        set => $this->_placeholder = $value;
+    }
+
+    public string $ExtraAttributes {
+        get => $this->_extraAttributes;
+        set => $this->_extraAttributes = $value;
     }
 
     public ?string $OnClick {
@@ -385,6 +397,11 @@ class CustomEdit extends FocusControl
             }
         }
 
+        // Placeholder
+        if ($this->_placeholder !== '') {
+            $attrs[] = sprintf('placeholder="%s"', htmlspecialchars($this->_placeholder));
+        }
+
         $type = $this->_ispassword ? 'password' : 'text';
         $value = htmlspecialchars($this->_text);
         $name = htmlspecialchars($this->Name);
@@ -395,15 +412,19 @@ class CustomEdit extends FocusControl
         $style = $this->getMinimalInlineStyle();
         $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
 
+        // Extra attributes (for htmx, etc.)
+        $extraAttr = $this->_extraAttributes !== '' ? ' ' . $this->_extraAttributes : '';
+
         echo sprintf(
-            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s />',
+            '<input type="%s" id="%s" name="%s" value="%s"%s%s %s%s />',
             $type,
             $name,
             $name,
             $value,
             $classAttr,
             $styleAttr,
-            implode(' ', $attrs)
+            implode(' ', $attrs),
+            $extraAttr
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace VCL\StdCtrls;
 
 use VCL\UI\FocusControl;
+use VCL\UI\Enums\RenderMode;
 use VCL\Security\Escaper;
 
 /**
@@ -21,6 +22,8 @@ class Memo extends FocusControl
     protected string $_placeholder = '';
     protected bool $_wordwrap = true;
     protected string $_scrollbars = 'ssNone';
+    protected string $_extraAttributes = '';
+    protected int $_rows = 4;
 
     // Property Hooks
     public string $Text {
@@ -61,11 +64,26 @@ class Memo extends FocusControl
         set => $this->_scrollbars = $value;
     }
 
+    public string $ExtraAttributes {
+        get => $this->_extraAttributes;
+        set => $this->_extraAttributes = $value;
+    }
+
+    public int $Rows {
+        get => $this->_rows;
+        set => $this->_rows = max(1, $value);
+    }
+
     public function __construct(?object $aowner = null)
     {
         parent::__construct($aowner);
         $this->_width = 200;
         $this->_height = 100;
+    }
+
+    protected function getComponentType(): string
+    {
+        return 'input';
     }
 
     public function preinit(): void
@@ -81,6 +99,12 @@ class Memo extends FocusControl
 
     public function dumpContents(): void
     {
+        // Check for Tailwind mode
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            $this->dumpContentsTailwind();
+            return;
+        }
+
         $readonly = $this->_readonly ? ' readonly' : '';
         $disabled = !$this->_enabled ? ' disabled' : '';
         $maxlength = $this->_maxlength > 0 ? " maxlength=\"{$this->_maxlength}\"" : '';
@@ -91,6 +115,69 @@ class Memo extends FocusControl
         $htmlName = Escaper::attr($this->_name);
 
         echo "<textarea id=\"{$htmlName}\" name=\"{$htmlName}\" style=\"{$style}\" wrap=\"{$wrap}\"{$readonly}{$disabled}{$maxlength}{$placeholder}>";
+        echo Escaper::html($this->_text);
+        echo "</textarea>\n";
+    }
+
+    /**
+     * Render the memo using Tailwind CSS classes.
+     */
+    protected function dumpContentsTailwind(): void
+    {
+        // Build class list
+        $classes = [];
+
+        // Theme class (vcl-input for textarea)
+        $themeClass = $this->getThemeClass();
+        if ($themeClass !== '') {
+            $classes[] = $themeClass;
+        }
+
+        // Custom CSS classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Style class from Style property
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        // Build attributes
+        $attrs = [];
+
+        if ($this->_readonly) {
+            $attrs[] = 'readonly';
+        }
+        if (!$this->_enabled) {
+            $attrs[] = 'disabled';
+        }
+        if ($this->_maxlength > 0) {
+            $attrs[] = sprintf('maxlength="%d"', $this->_maxlength);
+        }
+        if ($this->_placeholder !== '') {
+            $attrs[] = sprintf('placeholder="%s"', Escaper::attr($this->_placeholder));
+        }
+
+        $wrap = $this->_wordwrap ? 'soft' : 'off';
+        $attrs[] = sprintf('wrap="%s"', $wrap);
+        $attrs[] = sprintf('rows="%d"', $this->_rows);
+
+        $htmlName = Escaper::attr($this->_name);
+        $classAttr = !empty($classes) ? sprintf(' class="%s"', implode(' ', $classes)) : '';
+
+        // Extra attributes (for htmx, etc.)
+        $extraAttr = $this->_extraAttributes !== '' ? ' ' . $this->_extraAttributes : '';
+
+        echo sprintf(
+            '<textarea id="%s" name="%s"%s %s%s>',
+            $htmlName,
+            $htmlName,
+            $classAttr,
+            implode(' ', $attrs),
+            $extraAttr
+        );
         echo Escaper::html($this->_text);
         echo "</textarea>\n";
     }
