@@ -97,7 +97,7 @@ class CustomProgressBar extends FocusControl
     /**
      * Render the progress bar using HTML5 progress element.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
         $class = $this->readStyleClass();

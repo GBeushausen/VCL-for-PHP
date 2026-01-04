@@ -322,7 +322,7 @@ class DBGrid extends CustomDBGrid
     /**
      * Dump the grid contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if (($this->ControlState & CS_DESIGNING) === CS_DESIGNING) {
             $this->dumpDesignTimeContents();

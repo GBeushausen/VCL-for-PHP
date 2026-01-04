@@ -115,7 +115,7 @@ JS;
     /**
      * Render the month calendar.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
         $class = $this->readStyleClass();

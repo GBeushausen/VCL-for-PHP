@@ -66,7 +66,7 @@ class CustomMainMenu extends QWidget
     /**
      * Dump the menu contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $style = $this->buildMenuStyle();
         $htmlName = Escaper::attr($this->_name);

@@ -67,7 +67,7 @@ class SpeedButton extends BitBtn
     /**
      * Dump the button contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         // Hidden field for down state
         $downValue = $this->_down ? '1' : '0';

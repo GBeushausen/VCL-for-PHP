@@ -50,7 +50,7 @@ class RadioButton extends FocusControl
         }
     }
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $checked = $this->_checked ? ' checked' : '';
         $disabled = !$this->_enabled ? ' disabled' : '';

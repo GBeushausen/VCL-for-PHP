@@ -542,7 +542,7 @@ class Page extends CustomPage
     /**
      * Dump page contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $this->callEvent('onshow', []);
 

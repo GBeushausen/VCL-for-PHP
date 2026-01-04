@@ -280,7 +280,7 @@ class CustomEdit extends FocusControl
     /**
      * Render the edit control.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         // Check for Tailwind mode
         if ($this->_renderMode === RenderMode::Tailwind) {

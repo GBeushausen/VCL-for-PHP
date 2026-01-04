@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace VCL\ExtCtrls;
 
 use VCL\UI\Enums\RenderMode;
+use VCL\UI\Enums\AlignItems;
 
 /**
  * GridPanel is a container that uses CSS Grid for layout.
@@ -27,6 +28,7 @@ class GridPanel extends CustomPanel
     protected string $_gridRows = '';
     protected bool $_autoFlow = false;
     protected string $_autoFlowDirection = 'row'; // 'row', 'col', 'dense', 'row-dense', 'col-dense'
+    protected ?AlignItems $_alignItems = null;
 
     // Property Hooks
     public int $Columns {
@@ -67,6 +69,11 @@ class GridPanel extends CustomPanel
     public string $AutoFlowDirection {
         get => $this->_autoFlowDirection;
         set => $this->_autoFlowDirection = $value;
+    }
+
+    public ?AlignItems $AlignItems {
+        get => $this->_alignItems;
+        set => $this->_alignItems = $value;
     }
 
     public function __construct(?object $aowner = null)
@@ -130,13 +137,18 @@ class GridPanel extends CustomPanel
             $classes[] = $flowClass;
         }
 
+        // Align items
+        if ($this->_alignItems !== null) {
+            $classes[] = $this->_alignItems->toTailwind();
+        }
+
         return implode(' ', $classes);
     }
 
     /**
      * Render the grid panel.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
 
@@ -192,6 +204,53 @@ class GridPanel extends CustomPanel
         echo "</div>\n";
     }
 
+    /**
+     * Render only the opening tag (for manual child rendering).
+     */
+    public function renderOpen(): string
+    {
+        $name = htmlspecialchars($this->Name);
+
+        // Build class list
+        $classes = [];
+        $classes[] = $this->getGridClasses();
+
+        // Add padding/margin from Control
+        if ($this->_padding !== '') {
+            $classes[] = $this->_padding;
+        }
+        if ($this->_margin !== '') {
+            $classes[] = $this->_margin;
+        }
+
+        // Add custom Tailwind classes
+        if (!empty($this->_cssClasses)) {
+            $classes = array_merge($classes, $this->_cssClasses);
+        }
+
+        // Add Style property class
+        $styleClass = $this->readStyleClass();
+        if ($styleClass !== '') {
+            $classes[] = $styleClass;
+        }
+
+        $classAttr = 'class="' . htmlspecialchars(implode(' ', array_filter($classes))) . '"';
+
+        // Build inline style (minimal for Tailwind mode)
+        $style = $this->getInlineStyle();
+        $styleAttr = $style !== '' ? " style=\"{$style}\"" : '';
+
+        return "<div id=\"{$name}\" {$classAttr}{$styleAttr}>\n";
+    }
+
+    /**
+     * Render only the closing tag.
+     */
+    public function renderClose(): string
+    {
+        return "</div>\n";
+    }
+
     // Legacy getters/setters
     public function getColumns(): int { return $this->_columns; }
     public function setColumns(int $value): void { $this->Columns = $value; }
@@ -216,4 +275,7 @@ class GridPanel extends CustomPanel
 
     public function getAutoFlowDirection(): string { return $this->_autoFlowDirection; }
     public function setAutoFlowDirection(string $value): void { $this->AutoFlowDirection = $value; }
+
+    public function getAlignItems(): ?AlignItems { return $this->_alignItems; }
+    public function setAlignItems(?AlignItems $value): void { $this->AlignItems = $value; }
 }

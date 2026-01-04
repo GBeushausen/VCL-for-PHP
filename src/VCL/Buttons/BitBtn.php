@@ -166,7 +166,7 @@ class BitBtn extends QWidget
     /**
      * Dump the button contents.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $style = $this->buildButtonStyle();
         $attributes = $this->buildButtonAttributes();

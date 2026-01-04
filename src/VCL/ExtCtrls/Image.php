@@ -270,7 +270,7 @@ class Image extends FocusControl
     /**
      * Render the image.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         if ($this->_onshow !== null) {
             $this->callEvent('onshow', []);

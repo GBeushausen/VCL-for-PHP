@@ -84,7 +84,7 @@ class ComboBox extends FocusControl
         }
     }
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $disabled = !$this->_enabled ? ' disabled' : '';
         $style = $this->buildComboStyle();

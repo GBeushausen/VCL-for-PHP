@@ -45,7 +45,7 @@ class CustomCheckBox extends ButtonControl
     /**
      * Render the checkbox.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $style = "";
         $style .= $this->getButtonStyles();

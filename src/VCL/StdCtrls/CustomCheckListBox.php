@@ -183,7 +183,7 @@ class CustomCheckListBox extends FocusControl
     // RENDERING
     // =========================================================================
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $events = '';
         if ($this->_enabled) {

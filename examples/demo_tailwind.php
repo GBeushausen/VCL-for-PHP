@@ -99,7 +99,7 @@ class TailwindDemoPage extends Page
             'message_length' => mb_strlen($message),
             'valid_email' => str_contains($email, '@'),
         ];
-        $preview->dumpContents();
+        $preview->show();
         exit;
     }
 
@@ -109,39 +109,47 @@ class TailwindDemoPage extends Page
     public function dumpChildren(): void
     {
         // Main container
-        echo '<div class="max-w-6xl mx-auto">';
+        $mainContainer = new FlexPanel();
+        $mainContainer->Name = 'MainContainer';
+        $mainContainer->Direction = FlexDirection::Column;
+        $mainContainer->Classes = ['max-w-6xl', 'mx-auto'];
 
         // Page header
-        echo '<h1 class="text-3xl font-bold text-vcl-text mb-2">VCL Tailwind CSS 4 Demo</h1>';
-        echo '<p class="text-vcl-text-muted mb-8">Interactive demo with live preview using htmx - Built with VCL Page component</p>';
+        $pageTitle = new Html($mainContainer);
+        $pageTitle->Name = 'PageTitle';
+        $pageTitle->RenderMode = RenderMode::Tailwind;
+        $pageTitle->WrapperTag = 'h1';
+        $pageTitle->Classes = ['text-3xl', 'font-bold', 'text-vcl-text', 'mb-2'];
+        $pageTitle->Html = 'VCL Tailwind CSS 4 Demo';
+        $pageTitle->Parent = $mainContainer;
 
-        // Theme toggle button
-        $themeBtn = new Button();
+        $pageSubtitle = new Html($mainContainer);
+        $pageSubtitle->Name = 'PageSubtitle';
+        $pageSubtitle->RenderMode = RenderMode::Tailwind;
+        $pageSubtitle->WrapperTag = 'p';
+        $pageSubtitle->Classes = ['text-vcl-text-muted', 'mb-8'];
+        $pageSubtitle->Html = 'Interactive demo with live preview using htmx - Built with VCL Page component';
+        $pageSubtitle->Parent = $mainContainer;
+
+        // Theme toggle button wrapper
+        $themeBtnWrapper = new FlexPanel($mainContainer);
+        $themeBtnWrapper->Name = 'ThemeBtnWrapper';
+        $themeBtnWrapper->Classes = ['mb-8'];
+        $themeBtnWrapper->Parent = $mainContainer;
+
+        $themeBtn = new Button($themeBtnWrapper);
         $themeBtn->Name = 'ThemeToggle';
         $themeBtn->Caption = 'Toggle Dark Mode';
         $themeBtn->ButtonType = 'btButton';
         $themeBtn->RenderMode = RenderMode::Tailwind;
         $themeBtn->ExtraAttributes = 'onclick="VCLTheme?.toggle()"';
-        echo '<div class="mb-8">';
-        $themeBtn->dumpContents();
-        echo '</div>';
+        $themeBtn->Parent = $themeBtnWrapper;
+
+        // Render main container
+        $mainContainer->show();
 
         // Section 1: Interactive Form
-        echo '<section class="mb-12">';
-        echo '<h2 class="text-2xl font-semibold text-vcl-text mb-4">Interactive Contact Form</h2>';
-        echo '<p class="text-sm text-vcl-text-muted mb-4">Type in the form fields - the preview updates in real-time via htmx AJAX.</p>';
-
-        // Two-column grid (raw HTML for Tailwind class detection)
-        echo '<div id="MainGrid" class="grid grid-cols-2 gap-6 items-start">';
-
-        // Left column: Form
-        $this->renderContactForm();
-
-        // Right column: Preview
-        $this->renderPreviewPanel();
-
-        echo '</div>';
-        echo '</section>';
+        $this->renderFormSection();
 
         // Section 2: GridPanel Card Layout
         $this->renderCardGrid();
@@ -151,8 +159,61 @@ class TailwindDemoPage extends Page
 
         // Section 4: Code Example
         $this->renderCodeExample();
+    }
 
-        echo '</div>'; // Close main container
+    /**
+     * Render the interactive form section.
+     */
+    protected function renderFormSection(): void
+    {
+        // Section wrapper
+        $section = new Html();
+        $section->Name = 'FormSection';
+        $section->RenderMode = RenderMode::Tailwind;
+        $section->WrapperTag = 'section';
+        $section->Classes = ['mb-12', 'max-w-6xl', 'mx-auto'];
+
+        // Open section
+        echo $section->renderOpen();
+
+        // Section title
+        $sectionTitle = new Html();
+        $sectionTitle->Name = 'FormSectionTitle';
+        $sectionTitle->RenderMode = RenderMode::Tailwind;
+        $sectionTitle->WrapperTag = 'h2';
+        $sectionTitle->Classes = ['text-2xl', 'font-semibold', 'text-vcl-text', 'mb-4'];
+        $sectionTitle->Html = 'Interactive Contact Form';
+        $sectionTitle->show();
+
+        $sectionDesc = new Html();
+        $sectionDesc->Name = 'FormSectionDesc';
+        $sectionDesc->RenderMode = RenderMode::Tailwind;
+        $sectionDesc->WrapperTag = 'p';
+        $sectionDesc->Classes = ['text-sm', 'text-vcl-text-muted', 'mb-4'];
+        $sectionDesc->Html = 'Type in the form fields - the preview updates in real-time via htmx AJAX.';
+        $sectionDesc->show();
+
+        // Two-column grid
+        $mainGrid = new GridPanel();
+        $mainGrid->Name = 'MainGrid';
+        $mainGrid->Columns = 2;
+        $mainGrid->GridGap = 'gap-6';
+        $mainGrid->AlignItems = AlignItems::Start;
+
+        // Start the grid container
+        echo $mainGrid->renderOpen();
+
+        // Left column: Form
+        $this->renderContactForm();
+
+        // Right column: Preview
+        $this->renderPreviewPanel();
+
+        // Close the grid container
+        echo $mainGrid->renderClose();
+
+        // Close section
+        echo $section->renderClose();
     }
 
     /**
@@ -260,7 +321,7 @@ class TailwindDemoPage extends Page
         $this->clearBtn->ExtraAttributes = 'onclick="document.querySelectorAll(\'#ContactForm input, #ContactForm textarea\').forEach(e => e.value = \'\'); htmx.trigger(\'#NameEdit\', \'keyup\')"';
         $this->clearBtn->Parent = $buttonRow;
 
-        $this->formPanel->dumpContents();
+        $this->formPanel->show();
     }
 
     /**
@@ -283,20 +344,27 @@ class TailwindDemoPage extends Page
         $previewTitle->Classes = ['font-semibold', 'text-lg', 'text-vcl-text', 'pb-2', 'border-b', 'border-vcl-border'];
         $previewTitle->Parent = $this->previewPanel;
 
-        $this->previewPanel->dumpContents();
+        // Preview content (htmx target)
+        $previewContent = new Html($this->previewPanel);
+        $previewContent->Name = 'preview';
+        $previewContent->RenderMode = RenderMode::Tailwind;
+        $previewContent->Html = $this->getEmptyPreviewHtml();
+        $previewContent->Parent = $this->previewPanel;
 
-        // Preview content div (outside panel for htmx targeting)
-        echo '<script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const previewPanel = document.getElementById("PreviewPanel");
-                if (previewPanel) {
-                    const previewDiv = document.createElement("div");
-                    previewDiv.id = "preview";
-                    previewDiv.innerHTML = \'<div class="text-vcl-text-muted text-center py-8"><svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg><p>Start typing to see the live preview</p></div>\';
-                    previewPanel.appendChild(previewDiv);
-                }
-            });
-        </script>';
+        $this->previewPanel->show();
+    }
+
+    /**
+     * Get the empty state HTML for the preview.
+     */
+    protected function getEmptyPreviewHtml(): string
+    {
+        return '<div class="text-vcl-text-muted text-center py-8">'
+            . '<svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">'
+            . '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>'
+            . '</svg>'
+            . '<p>Start typing to see the live preview</p>'
+            . '</div>';
     }
 
     /**
@@ -304,9 +372,32 @@ class TailwindDemoPage extends Page
      */
     protected function renderCardGrid(): void
     {
-        echo '<section class="mb-12">';
-        echo '<h2 class="text-2xl font-semibold text-vcl-text mb-4">GridPanel - Responsive Card Grid</h2>';
-        echo '<p class="text-sm text-vcl-text-muted mb-4">GridPanel automatically creates a responsive grid layout.</p>';
+        // Section wrapper
+        $section = new Html();
+        $section->Name = 'CardGridSection';
+        $section->RenderMode = RenderMode::Tailwind;
+        $section->WrapperTag = 'section';
+        $section->Classes = ['mb-12', 'max-w-6xl', 'mx-auto'];
+
+        // Open section
+        echo $section->renderOpen();
+
+        // Section title
+        $sectionTitle = new Html();
+        $sectionTitle->Name = 'CardGridSectionTitle';
+        $sectionTitle->RenderMode = RenderMode::Tailwind;
+        $sectionTitle->WrapperTag = 'h2';
+        $sectionTitle->Classes = ['text-2xl', 'font-semibold', 'text-vcl-text', 'mb-4'];
+        $sectionTitle->Html = 'GridPanel - Responsive Card Grid';
+        $sectionTitle->show();
+
+        $sectionDesc = new Html();
+        $sectionDesc->Name = 'CardGridSectionDesc';
+        $sectionDesc->RenderMode = RenderMode::Tailwind;
+        $sectionDesc->WrapperTag = 'p';
+        $sectionDesc->Classes = ['text-sm', 'text-vcl-text-muted', 'mb-4'];
+        $sectionDesc->Html = 'GridPanel automatically creates a responsive grid layout.';
+        $sectionDesc->show();
 
         $cardGrid = new GridPanel();
         $cardGrid->Name = 'CardGrid';
@@ -344,8 +435,10 @@ class TailwindDemoPage extends Page
             $cardDesc->Parent = $card;
         }
 
-        $cardGrid->dumpContents();
-        echo '</section>';
+        $cardGrid->show();
+
+        // Close section
+        echo $section->renderClose();
     }
 
     /**
@@ -353,9 +446,32 @@ class TailwindDemoPage extends Page
      */
     protected function renderNavbar(): void
     {
-        echo '<section class="mb-12">';
-        echo '<h2 class="text-2xl font-semibold text-vcl-text mb-4">FlexPanel - Navigation Bar</h2>';
-        echo '<p class="text-sm text-vcl-text-muted mb-4">FlexPanel with justify-between for logo, nav links, and action button.</p>';
+        // Section wrapper
+        $section = new Html();
+        $section->Name = 'NavbarSection';
+        $section->RenderMode = RenderMode::Tailwind;
+        $section->WrapperTag = 'section';
+        $section->Classes = ['mb-12', 'max-w-6xl', 'mx-auto'];
+
+        // Open section
+        echo $section->renderOpen();
+
+        // Section title
+        $sectionTitle = new Html();
+        $sectionTitle->Name = 'NavbarSectionTitle';
+        $sectionTitle->RenderMode = RenderMode::Tailwind;
+        $sectionTitle->WrapperTag = 'h2';
+        $sectionTitle->Classes = ['text-2xl', 'font-semibold', 'text-vcl-text', 'mb-4'];
+        $sectionTitle->Html = 'FlexPanel - Navigation Bar';
+        $sectionTitle->show();
+
+        $sectionDesc = new Html();
+        $sectionDesc->Name = 'NavbarSectionDesc';
+        $sectionDesc->RenderMode = RenderMode::Tailwind;
+        $sectionDesc->WrapperTag = 'p';
+        $sectionDesc->Classes = ['text-sm', 'text-vcl-text-muted', 'mb-4'];
+        $sectionDesc->Html = 'FlexPanel with justify-between for logo, nav links, and action button.';
+        $sectionDesc->show();
 
         $navbar = new FlexPanel();
         $navbar->Name = 'NavBar';
@@ -400,8 +516,10 @@ class TailwindDemoPage extends Page
         $signInBtn->ThemeVariant = 'primary';
         $signInBtn->Parent = $navbar;
 
-        $navbar->dumpContents();
-        echo '</section>';
+        $navbar->show();
+
+        // Close section
+        echo $section->renderClose();
     }
 
     /**
@@ -409,10 +527,40 @@ class TailwindDemoPage extends Page
      */
     protected function renderCodeExample(): void
     {
-        echo '<section class="mb-12">';
-        echo '<h2 class="text-2xl font-semibold text-vcl-text mb-4">PHP Code Example</h2>';
-        echo '<pre class="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto text-sm"><code>';
-        echo htmlspecialchars(<<<'CODE'
+        // Section wrapper
+        $section = new Html();
+        $section->Name = 'CodeExampleSection';
+        $section->RenderMode = RenderMode::Tailwind;
+        $section->WrapperTag = 'section';
+        $section->Classes = ['mb-12', 'max-w-6xl', 'mx-auto'];
+
+        // Section title
+        $sectionTitle = new Html();
+        $sectionTitle->Name = 'CodeExampleTitle';
+        $sectionTitle->RenderMode = RenderMode::Tailwind;
+        $sectionTitle->WrapperTag = 'h2';
+        $sectionTitle->Classes = ['text-2xl', 'font-semibold', 'text-vcl-text', 'mb-4'];
+        $sectionTitle->Html = 'PHP Code Example';
+
+        // Code block
+        $codeBlock = new Html();
+        $codeBlock->Name = 'CodeBlock';
+        $codeBlock->RenderMode = RenderMode::Tailwind;
+        $codeBlock->WrapperTag = 'pre';
+        $codeBlock->Classes = ['bg-gray-900', 'text-gray-100', 'p-6', 'rounded-lg', 'overflow-x-auto', 'text-sm'];
+        $codeBlock->Html = '<code>' . htmlspecialchars($this->getCodeExample()) . '</code>';
+
+        // Build section content
+        $section->Html = $sectionTitle->render() . $codeBlock->render();
+        $section->show();
+    }
+
+    /**
+     * Get the PHP code example string.
+     */
+    protected function getCodeExample(): string
+    {
+        return <<<'CODE'
 <?php
 use VCL\Forms\Page;
 use VCL\ExtCtrls\FlexPanel;
@@ -471,7 +619,7 @@ class MyPage extends Page
         $btn->ThemeVariant = 'primary';
         $btn->Parent = $form;
 
-        $form->dumpContents();
+        $form->show();
     }
 }
 
@@ -479,10 +627,7 @@ class MyPage extends Page
 $app = Application::getInstance();
 $page = new MyPage($app);
 $page->show();
-CODE
-        );
-        echo '</code></pre>';
-        echo '</section>';
+CODE;
     }
 }
 

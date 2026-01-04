@@ -220,7 +220,7 @@ class Html extends GraphicControl
     /**
      * Render the HTML component.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         // Check for Tailwind mode
         if ($this->_renderMode === RenderMode::Tailwind) {
@@ -329,6 +329,80 @@ class Html extends GraphicControl
     public function renderContent(): string
     {
         return $this->getContent();
+    }
+
+    /**
+     * Render only the opening tag (for manual content rendering).
+     */
+    public function renderOpen(): string
+    {
+        if (!$this->_useWrapper) {
+            return '';
+        }
+
+        $tag = htmlspecialchars($this->_wrapperTag);
+        $id = htmlspecialchars($this->Name);
+
+        if ($this->_renderMode === RenderMode::Tailwind) {
+            // Build class list for Tailwind mode
+            $classes = [];
+
+            $themeClass = $this->getThemeClass();
+            if ($themeClass !== '') {
+                $classes[] = $themeClass;
+            }
+
+            if (!empty($this->_cssClasses)) {
+                $classes = array_merge($classes, $this->_cssClasses);
+            }
+
+            $styleClass = $this->readStyleClass();
+            if ($styleClass !== '') {
+                $classes[] = $styleClass;
+            }
+
+            if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+                $classes[] = 'hidden';
+            }
+
+            $classAttr = !empty($classes) ? sprintf(' class="%s"', htmlspecialchars(implode(' ', $classes))) : '';
+            $style = $this->getMinimalInlineStyle();
+            $styleAttr = $style !== '' ? sprintf(' style="%s"', $style) : '';
+
+            return "<{$tag} id=\"{$id}\"{$classAttr}{$styleAttr}>";
+        }
+
+        // Classic mode
+        $styles = [];
+        if ($this->Width > 0) {
+            $styles[] = "width: {$this->Width}px";
+        }
+        if ($this->Height > 0) {
+            $styles[] = "height: {$this->Height}px";
+        }
+        if ($this->Hidden && ($this->ControlState & CS_DESIGNING) !== CS_DESIGNING) {
+            $styles[] = "visibility: hidden";
+        }
+
+        $class = $this->readStyleClass();
+        $classAttr = $class !== '' ? " class=\"{$class}\"" : '';
+        $style = implode('; ', $styles);
+        $styleAttr = $style !== '' ? " style=\"{$style}\"" : '';
+
+        return "<{$tag} id=\"{$id}\"{$classAttr}{$styleAttr}>";
+    }
+
+    /**
+     * Render only the closing tag.
+     */
+    public function renderClose(): string
+    {
+        if (!$this->_useWrapper) {
+            return '';
+        }
+
+        $tag = htmlspecialchars($this->_wrapperTag);
+        return "</{$tag}>";
     }
 
     // Legacy getters/setters

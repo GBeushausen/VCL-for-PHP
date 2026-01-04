@@ -142,7 +142,7 @@ class FlexPanel extends CustomPanel
     /**
      * Render the flex panel.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         $name = htmlspecialchars($this->Name);
 

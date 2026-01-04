@@ -94,9 +94,7 @@ class ChartTest extends TestCase
         $this->chart->addDataset('2024', [10, 20, 30], '#FF0000');
 
         // Verify by checking that chart renders without error
-        ob_start();
-        $this->chart->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->chart->render();
 
         $this->assertStringContainsString('TestChart', $output);
         $this->assertStringContainsString('canvas', $output);

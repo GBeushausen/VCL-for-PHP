@@ -44,9 +44,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = false;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringNotContainsString('hx-post', $output);
         $this->assertStringNotContainsString('hx-trigger', $output);
@@ -57,9 +55,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('hx-post', $output);
         $this->assertStringContainsString('hx-trigger="click"', $output);
@@ -70,9 +66,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('id="TestButton_result"', $output);
     }
@@ -82,9 +76,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         // No OnClick set
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringNotContainsString('_result', $output);
     }
@@ -95,9 +87,7 @@ class ButtonHtmxTest extends TestCase
         $this->button->OnClick = 'handleClick';
         $this->button->ButtonType = 'btSubmit';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         // Should be type="button" not type="submit" to prevent form submission
         $this->assertStringContainsString('type="button"', $output);
@@ -108,9 +98,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = false;
         $this->button->ButtonType = 'btSubmit';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('type="submit"', $output);
     }
@@ -120,9 +108,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('_vcl_control', $output);
         $this->assertStringContainsString('_vcl_event', $output);
@@ -134,9 +120,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('hx-target="#TestButton_result"', $output);
     }
@@ -146,9 +130,7 @@ class ButtonHtmxTest extends TestCase
         $this->page->UseHtmx = true;
         $this->button->OnClick = 'handleClick';
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringContainsString('hx-include="#TestPage_form"', $output);
     }
@@ -193,9 +175,7 @@ class ButtonHtmxTest extends TestCase
         $this->button->OnClick = 'handleClick';
         $this->button->Enabled = false;
 
-        ob_start();
-        $this->button->dumpContents();
-        $output = ob_get_clean();
+        $output = $this->button->render();
 
         $this->assertStringNotContainsString('hx-post', $output);
         $this->assertStringContainsString('disabled', $output);

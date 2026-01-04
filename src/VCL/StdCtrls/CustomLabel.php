@@ -115,7 +115,7 @@ class CustomLabel extends GraphicControl
     /**
      * Render the label.
      */
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         // Check for Tailwind mode
         if ($this->_renderMode === RenderMode::Tailwind) {

@@ -256,7 +256,7 @@ JS;
         echo "});\n";
     }
 
-    public function dumpContents(): void
+    protected function dumpContents(): void
     {
         // Get panel styling
         $style = $this->buildStyleString();
